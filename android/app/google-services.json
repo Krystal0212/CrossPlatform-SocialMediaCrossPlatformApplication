@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "351093878135",
+    "project_id": "it-project---zineround",
+    "storage_bucket": "it-project---zineround.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351093878135:android:adbf74bf31140efd9c8572",
+        "android_client_info": {
+          "package_name": "com.itproject.socialapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDapQFQyJPjfcY6cxGGG8sMcxEYpx2nCYM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
