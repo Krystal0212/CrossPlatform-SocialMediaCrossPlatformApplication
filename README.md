@@ -10,7 +10,7 @@ The `dev` branch is the primary branch for ongoing development. It serves as the
   2. Completed features are merged into the corresponding `module` branches for modular validation.
   3. Fully validated modules are integrated into the `dev` branch for broader testing and verification.
 
-## Guidelines for Developers
+## Guidelines
 1. Use the `dev` branch to:
    - Merge validated features from `module` branches.
    - Test integrated features for compatibility and functionality.
