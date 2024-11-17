@@ -11,7 +11,7 @@ The `release` branch manages stable, production-ready versions of the project. I
   3. Modules are tested and integrated into the `dev` branch.
   4. Once all features are validated and finalized in `dev`, they are merged into the `release` branch.
 
-## Guidelines for Developers
+## Guidelines
 1. Use the `release` branch exclusively for merging stable, fully tested features.
 2. Before creating a pull request to `release`, ensure:
    - The code has been tested thoroughly in the `dev` branch.
