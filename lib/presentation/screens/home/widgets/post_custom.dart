@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:socialapp/domain/entities/post.dart';
 import 'package:socialapp/presentation/screens/post_detail/post_detail_screen.dart';
-import 'package:socialapp/presentation/widgets/add_collection_icon.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 import 'package:socialapp/utils/styles/text_style.dart';
 
@@ -44,7 +43,7 @@ class PostCustom extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const AddCollectionIcon(),
+                  // const AddCollectionIcon(),
                   const Spacer(),
                   Text(post.commentAmount.toString()),
                   IconButton(

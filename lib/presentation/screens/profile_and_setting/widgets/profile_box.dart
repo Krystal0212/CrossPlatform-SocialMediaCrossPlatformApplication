@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../utils/constants/icon_path.dart';
 import '../../../../utils/styles/colors.dart';
 import '../../../../utils/styles/themes.dart';
-import '../../../widgets/svg_icon_button.dart';
+import '../../../widgets/general/svg_icon_button.dart';
 
 class ProfileBox extends StatelessWidget {
   const ProfileBox({super.key});

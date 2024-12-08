@@ -18,6 +18,8 @@ class CategoryImageGroup extends StatefulWidget {
 }
 
 class _CategoryImageGroupState extends State<CategoryImageGroup> {
+  late double deviceWidth, deviceHeight;
+
   static List<String> imageList = [
     AppImages.category1,
     AppImages.category2,
@@ -35,6 +37,13 @@ class _CategoryImageGroupState extends State<CategoryImageGroup> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: fetchCategoriesData(),
@@ -42,8 +51,8 @@ class _CategoryImageGroupState extends State<CategoryImageGroup> {
           if (snapshot.hasData) {
             categories = snapshot.data!;
             return SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.5,
+                width: deviceWidth,
+                height: deviceHeight * 0.5,
                 child: BlocBuilder<CategoryCubit, CategoryState>(
                   builder: (context, state) {
                     return GridView.count(
@@ -60,7 +69,7 @@ class _CategoryImageGroupState extends State<CategoryImageGroup> {
                                   .read<CategoryCubit>()
                                   .getCategoryId(categoryId);
                               if (kDebugMode) {
-                                print("ID được nhấn: $categoryId");
+                                print("Category ID pressed: $categoryId");
                               }
                             },
                             child: Opacity(
@@ -69,11 +78,10 @@ class _CategoryImageGroupState extends State<CategoryImageGroup> {
                               child: Stack(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.only(bottom: 20),
+                                    padding: AppTheme.paddingBottom,
                                     alignment: Alignment.bottomCenter,
                                     decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12)),
+                                      borderRadius: AppTheme.smallBorderRadius,
                                       image: DecorationImage(
                                         image: AssetImage(imageList[i]),
                                         fit: BoxFit.cover,
@@ -86,18 +94,11 @@ class _CategoryImageGroupState extends State<CategoryImageGroup> {
                                       alignment: Alignment.center,
                                       transform: Matrix4.rotationY(3.14159),
                                       child: Container(
-                                        decoration: const BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(AppImages
-                                                .editProfileAppbarBackground),
-                                            fit: BoxFit.cover,
-                                          ),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(12)),
+                                        decoration: AppTheme.profileBackgroundBoxDecoration,
                                         ),
                                       ),
                                     ),
-                                  ),
+
                                   Positioned(
                                     left: 0,
                                     right: 0,

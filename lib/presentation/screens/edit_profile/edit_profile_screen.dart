@@ -1,24 +1,20 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/data/repository/auth/auth_repository_impl.dart';
 import 'package:socialapp/data/repository/storage/storate_repository_impl.dart';
-import 'package:socialapp/domain/repository/auth/auth_repository.dart';
 import 'package:socialapp/presentation/screens/edit_profile/widgets/header_and_avatar.dart';
-import 'package:socialapp/presentation/widgets/placeholder.dart';
+import 'package:socialapp/presentation/widgets/general/custom_alert_dialog.dart';
 import 'package:socialapp/presentation/widgets/edit_profile/app_text_form_field.dart';
+import 'package:socialapp/presentation/widgets/general/placeholder.dart';
 
 import '../../../domain/entities/user.dart';
 import '../../../domain/repository/storage/storage_repository.dart';
-import '../../../utils/mixin/validators/validators.dart';
-import '../../widgets/custom_alert_dialog.dart';
 import '../../widgets/edit_profile/gradient_button.dart';
 
 import 'cubit/edit_page_cubit.dart';
 import 'cubit/edit_page_state.dart';
+import 'package:socialapp/utils/import.dart';
+
 
 class EditProfile extends StatefulWidget {
 

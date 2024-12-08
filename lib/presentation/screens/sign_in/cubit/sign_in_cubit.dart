@@ -1,13 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/domain/repository/auth/auth_repository.dart';
-import 'package:socialapp/domain/repository/user/user_repository.dart';
-import 'package:socialapp/presentation/screens/sign_in/cubit/sign_in_state.dart';
-
-import '../../../../data/models/auth/sign_in_user_req.dart';
-import '../../../../data/sources/firestore/firestore_service.dart';
 // import '../../../../domain/repository/user/user.dart';
-import '../../../../service_locator.dart';
+import 'package:socialapp/utils/import.dart';
+
 
 class SignInCubit extends Cubit<SignInState> {
   SignInCubit() : super(SignInInitial());
@@ -32,8 +25,9 @@ class SignInCubit extends Cubit<SignInState> {
         }
       } else {
         emit(SignInFailure());
-        _showAlertDialog(context, "Error", e.toString());
-      }
+        if(context.mounted){
+        _showAlertDialog(context, AppStrings.authError, e.toString());
+      }}
     }
   }
 

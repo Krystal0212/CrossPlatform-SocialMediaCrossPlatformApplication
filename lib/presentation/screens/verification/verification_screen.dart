@@ -1,13 +1,4 @@
-import 'package:flutter/material.dart';
-
-import '../../../utils/styles/themes.dart';
-import '../../widgets/auth/auth_body.dart';
-import '../../widgets/auth/auth_elevated_button.dart';
-import '../../widgets/auth/auth_header_image.dart';
-import '../../widgets/auth/auth_text_form_field.dart';
-import '../../widgets/forgot_password/linear_gradient_title.dart';
-import '../../widgets/forgot_password/message_content.dart';
-import '../../widgets/forgot_password/stacks_bottom.dart';
+import 'package:socialapp/utils/import.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -20,12 +11,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
   late final TextEditingController _codeController;
 
   late ValueNotifier<bool> _isLoading;
+  late double deviceWidth, deviceHeight;
+  late bool _isWeb;
 
   @override
   void initState() {
     _codeController = TextEditingController();
     _isLoading = ValueNotifier<bool>(false);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _isWeb = PlatformConfig.of(context)?.isWeb ?? false;
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
   }
 
   @override
@@ -38,59 +39,69 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: Stack(
-        children: [
-          const AuthHeaderImage(
-            height: 0.36,
-            childAspectRatio: 1.85,
-          ),
-          AuthBody(
-            marginTop: MediaQuery.of(context).size.height * 0.26,
-            height: double.infinity,
-            column: Column(
-              children: [
-                LinearGradientTitle(
-                  text: "VERIFICATION",
-                  textStyle: AppTheme.forgotPasswordLabelStyle,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                const MessageContent(
-                    text:
-                        "A message with verification code was sent to your email."),
-                const SizedBox(
-                  height: 30,
-                ),
-                AuthTextFormField(
-                    textEditingController: _codeController,
-                    hintText: "Type verification code"),
-                const SizedBox(
-                  height: 10,
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Don't receive the code".toUpperCase(),
+      child: BackgroundContainer(
+        center: AuthSizedBox(
+          isWeb: _isWeb,
+          deviceWidth: deviceWidth,
+          deviceHeight: deviceHeight,
+          child: Stack(
+            children: [
+              AuthHeaderImage(
+                heightRatio: 0.36,
+                childAspectRatio: 1.85,
+                isWeb: _isWeb,
+              ),
+              AuthBody(
+                isWeb: _isWeb,
+                marginTop: deviceHeight * 0.26,
+                height: deviceHeight,
+                child: AuthScrollView(
+                  child: Column(
+                    children: [
+                      LinearGradientTitle(
+                        text: AppStrings.verification,
+                        textStyle: AppTheme.forgotPasswordLabelStyle,
+                      ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      const MessageContent(
+                          text: AppStrings.verificationMessage),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      AuthTextFormField(
+                          textEditingController: _codeController,
+                          hintText: AppStrings.typeCode ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          AppStrings.notReceiveTheCode,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      AuthElevatedButton(
+                        width: deviceWidth,
+                        height: 52,
+                        inputText: AppStrings.verify,
+                        isLoading: false,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      const StacksBottom(),
+                    ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const AuthElevatedButton(
-                  width: double.infinity,
-                  height: 52,
-                  inputText: "VERIFY",
-                  isLoading: false,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const StacksBottom(),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

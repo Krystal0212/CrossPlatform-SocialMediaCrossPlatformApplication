@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:socialapp/domain/entities/post.dart';
 import 'package:socialapp/presentation/screens/post_detail/post_detail/post_detail.dart';
-import 'package:socialapp/presentation/widgets/add_collection_icon.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 
 class PostDetailScreen extends StatelessWidget {
@@ -26,7 +25,7 @@ class PostDetailScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border, color: AppColors.carbon,)),
-                  const AddCollectionIcon(),
+                  // const AddCollectionIcon(),
                   IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share, color: AppColors.carbon,))
                 ],),
                 

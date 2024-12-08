@@ -12,7 +12,12 @@
           "package_name": "com.itproject.socialapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "351093878135-9ks952k0fctj2qo891lkkvktln7ik2sm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDapQFQyJPjfcY6cxGGG8sMcxEYpx2nCYM"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351093878135-9ks952k0fctj2qo891lkkvktln7ik2sm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

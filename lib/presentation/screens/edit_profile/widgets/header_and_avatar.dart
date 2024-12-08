@@ -8,7 +8,7 @@ import '../../../../utils/constants/icon_path.dart';
 import '../../../../utils/constants/image_path.dart';
 import '../../../../utils/styles/themes.dart';
 import '../../../widgets/edit_profile/bottom_rounded_appbar.dart';
-import '../../../widgets/svg_icon_button.dart';
+import '../../../widgets/general/svg_icon_button.dart';
 
 class ImagePickerHelper {
   final ImagePicker _imagePicker = ImagePicker();

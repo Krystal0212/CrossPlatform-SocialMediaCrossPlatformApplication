@@ -33,9 +33,7 @@ class _HeaderNewPostState extends State<HeaderNewPost> {
       // print('image: ${state.getImage}');
       image = state.getImage;
       content = state.getContent;
-      if (content == null) {
-        content = '';
-      }
+      content ??= '';
     }
 
     if (image != null) {

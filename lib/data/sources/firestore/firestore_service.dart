@@ -10,6 +10,7 @@ import 'package:socialapp/domain/entities/comment.dart';
 import 'package:socialapp/domain/entities/post.dart';
 import 'package:socialapp/domain/entities/topic.dart';
 import 'package:socialapp/data/sources/storage/storage_service.dart';
+import 'package:socialapp/utils/import.dart';
 
 import '../../../domain/entities/user.dart';
 import '../../models/user_firestore/add_user_data.dart';
@@ -111,7 +112,7 @@ class FirestoreServiceImpl extends FirestoreService {
         rethrow;
       }
       if (kDebugMode) {
-        print(error.toString());
+        print("${AppStrings.firestoreUserError} ${error.toString()}");
       }
       return null;
     }
@@ -584,7 +585,7 @@ class FirestoreServiceImpl extends FirestoreService {
         collections.add(collection);
       }
 
-      return collections.length == 0 ? null : collections;
+      return collections.isEmpty ? null : collections;
     } catch (e) {
       rethrow;
     }

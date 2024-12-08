@@ -27,14 +27,14 @@ class AuthElevatedButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(30),
       ),
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: isLoading ?(){}: onPressed ,
         style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent),
         child: isLoading
             ? const SizedBox(
                 height: 24,
                 width: 24,
                 child: CircularProgressIndicator(
-                  color: AppColors.white,
+                  color: AppColors.blueDeFrance,
                   strokeWidth: 2,
                 ),
               )
