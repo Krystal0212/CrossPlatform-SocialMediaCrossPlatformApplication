@@ -16,7 +16,6 @@ import '../../../domain/entities/user.dart';
 import '../../models/user_firestore/add_user_data.dart';
 import '../../models/user_firestore/update_user_req.dart';
 
-
 abstract class FirestoreService {
   Future<UserModel?>? getUserData(String userID);
 
@@ -45,7 +44,8 @@ abstract class FirestoreService {
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
 
-  Future<List<CollectionModel>> getCollectionsData(List<String> collectionIDsList);
+  Future<List<CollectionModel>> getCollectionsData(
+      List<String> collectionIDsList);
 
   Future<List<PostModel>?> getPostsByUserId(String userId);
 
@@ -66,29 +66,37 @@ class FirestoreServiceImpl extends FirestoreService {
   User? get currentUser => _auth.currentUser;
 
   CollectionReference get _usersCollection => _firestoreDB.collection('User');
+
   // ToDo : Reference Define
   CollectionReference get _usersRef => _firestoreDB.collection('User');
+
   CollectionReference _usersFollowersRef(String uid) {
     return _usersRef.doc(uid).collection('followers');
   }
+
   CollectionReference _usersFollowingsRef(String uid) {
     return _usersRef.doc(uid).collection('followings');
   }
+
   CollectionReference _usersCollectionsRef(String uid) {
     return _usersRef.doc(uid).collection('collections');
   }
 
   CollectionReference get _categoryRef => _firestoreDB.collection('Category');
 
-  CollectionReference get _collectionRef => _firestoreDB.collection('Collection');
+  CollectionReference get _collectionRef =>
+      _firestoreDB.collection('Collection');
+
   CollectionReference _collectionPostsRef(String collectionId) {
     return _collectionRef.doc(collectionId).collection('posts');
   }
 
-  CollectionReference get _categoryCollection => _firestoreDB.collection('Category');
-  CollectionReference get _postCollection => _firestoreDB.collection('Post');
-  CollectionReference get _postRef => _firestoreDB.collection('Post');
+  CollectionReference get _categoryCollection =>
+      _firestoreDB.collection('Category');
 
+  CollectionReference get _postCollection => _firestoreDB.collection('Post');
+
+  CollectionReference get _postRef => _firestoreDB.collection('Post');
 
   // ToDo: Service Functions
   @override
@@ -179,7 +187,8 @@ class FirestoreServiceImpl extends FirestoreService {
     List<String> followers = [];
 
     QuerySnapshot<Map<String, dynamic>> followersSnapshot =
-    await _usersFollowersRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+        await _usersFollowersRef(uid).get()
+            as QuerySnapshot<Map<String, dynamic>>;
 
     for (var doc in followersSnapshot.docs) {
       followers.add(doc.id);
@@ -193,7 +202,8 @@ class FirestoreServiceImpl extends FirestoreService {
     List<String> followings = [];
 
     QuerySnapshot<Map<String, dynamic>> followingsSnapshot =
-        await _usersFollowingsRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+        await _usersFollowingsRef(uid).get()
+            as QuerySnapshot<Map<String, dynamic>>;
 
     for (var doc in followingsSnapshot.docs) {
       followings.add(doc.id);
@@ -207,7 +217,8 @@ class FirestoreServiceImpl extends FirestoreService {
     List<String> collections = [];
 
     QuerySnapshot<Map<String, dynamic>> collectionsSnapshot =
-    await _usersCollectionsRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+        await _usersCollectionsRef(uid).get()
+            as QuerySnapshot<Map<String, dynamic>>;
 
     for (var doc in collectionsSnapshot.docs) {
       collections.add(doc.id);
@@ -295,7 +306,8 @@ class FirestoreServiceImpl extends FirestoreService {
       // QuerySnapshot postsSnapshot = await _postRef.get();
       // Future<Map<String, dynamic>> userData = userRef.get().then((value) => value.data() as Map<String, dynamic>);
 
-      QuerySnapshot postsSnapshot = await _postCollection.orderBy('timestamp', descending: true).get();
+      QuerySnapshot postsSnapshot =
+          await _postCollection.orderBy('timestamp', descending: true).get();
       if (postsSnapshot.docs.isEmpty) {
         throw CustomFirestoreException(
           code: 'no-posts',
@@ -354,8 +366,8 @@ class FirestoreServiceImpl extends FirestoreService {
       String userRefString = "User/$userId";
       DocumentReference tempUserRef = _usersRef.doc(userId);
 
-      QuerySnapshot postsSnapshot = await _postRef.where('userRef', isEqualTo: tempUserRef ).get();
-
+      QuerySnapshot postsSnapshot =
+          await _postRef.where('userRef', isEqualTo: tempUserRef).get();
 
       if (postsSnapshot.docs.isEmpty) {
         throw CustomFirestoreException(
@@ -418,15 +430,14 @@ class FirestoreServiceImpl extends FirestoreService {
     try {
       DocumentSnapshot documentSnapshot = await getPostDataById(postId);
 
-      Map<String, dynamic>? postData = documentSnapshot.data() as Map<String, dynamic>?;
+      Map<String, dynamic>? postData =
+          documentSnapshot.data() as Map<String, dynamic>?;
 
       return postData?["image"] as String?;
     } catch (e) {
       rethrow;
     }
   }
-
-
 
   @override
   Future<List<CommentModel>?> getCommentPost(PostModel post) async {
@@ -441,7 +452,11 @@ class FirestoreServiceImpl extends FirestoreService {
     String userAvatar = '';
 
     try {
-      QuerySnapshot commentListSnapshot = await _firestoreDB.collection('Post').doc(post.postId).collection('comments').get();
+      QuerySnapshot commentListSnapshot = await _firestoreDB
+          .collection('Post')
+          .doc(post.postId)
+          .collection('comments')
+          .get();
       print('check2');
       print(commentListSnapshot.docs);
       // Future<Map<String, dynamic>> userData = userRef.get().then((value) => value.data() as Map<String, dynamic>);
@@ -452,7 +467,7 @@ class FirestoreServiceImpl extends FirestoreService {
         );
       }
       for (var doc in commentListSnapshot.docs) {
-        // print(doc.id); 
+        // print(doc.id);
         // print(doc.data());
         // print(doc['commentRef']);
         commentRef = doc['commentRef'];
@@ -499,7 +514,6 @@ class FirestoreServiceImpl extends FirestoreService {
         //   //   });
         //   // });
 
-        
         // }
         // userRef = doc['user_id'];
         // userData = userRef.get();
@@ -565,7 +579,8 @@ class FirestoreServiceImpl extends FirestoreService {
   Future<List<CollectionModel>?>? getCollections() async {
     List<CollectionModel> collections = [];
     try {
-      QuerySnapshot collectionSnapshot = await _firestoreDB.collection('NewCollection').get();
+      QuerySnapshot collectionSnapshot =
+          await _firestoreDB.collection('NewCollection').get();
 
       if (collectionSnapshot.docs.isEmpty) {
         throw CustomFirestoreException(
@@ -592,17 +607,20 @@ class FirestoreServiceImpl extends FirestoreService {
   }
 
   @override
-  Future<List<CollectionModel>> getCollectionsData(List<String> collectionIDsList) async {
+  Future<List<CollectionModel>> getCollectionsData(
+      List<String> collectionIDsList) async {
     List<CollectionModel> collections = [];
 
     try {
       for (String collectionID in collectionIDsList) {
-        DocumentSnapshot<Map<String, dynamic>> snapshot =
-        await _collectionRef.doc(collectionID).get() as DocumentSnapshot<Map<String, dynamic>>;
+        DocumentSnapshot<Map<String, dynamic>> snapshot = await _collectionRef
+            .doc(collectionID)
+            .get() as DocumentSnapshot<Map<String, dynamic>>;
 
         if (snapshot.exists && snapshot.data() != null) {
-          CollectionModel collection = CollectionModel.fromMap(snapshot.data()!);
-          collections.add(collection);  // Add to list of collections
+          CollectionModel collection =
+              CollectionModel.fromMap(snapshot.data()!);
+          collections.add(collection); // Add to list of collections
         }
       }
     } catch (e) {
@@ -611,7 +629,7 @@ class FirestoreServiceImpl extends FirestoreService {
       }
     }
 
-    return collections;  // Return the list of CollectionModel objects
+    return collections; // Return the list of CollectionModel objects
   }
 
   @override
@@ -619,7 +637,8 @@ class FirestoreServiceImpl extends FirestoreService {
     List<String> postIDs = [];
 
     QuerySnapshot<Map<String, dynamic>> followingsSnapshot =
-        await _collectionPostsRef(collectionID).get() as QuerySnapshot<Map<String, dynamic>>;
+        await _collectionPostsRef(collectionID).get()
+            as QuerySnapshot<Map<String, dynamic>>;
 
     for (var doc in followingsSnapshot.docs) {
       postIDs.add(doc.id);
@@ -640,4 +659,3 @@ class CustomFirestoreException implements Exception {
     return 'CustomFirestoreException($code): $message';
   }
 }
-

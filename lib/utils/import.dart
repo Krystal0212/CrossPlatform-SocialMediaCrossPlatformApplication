@@ -11,6 +11,8 @@ export 'package:flutter_bloc/flutter_bloc.dart';
 export 'package:flutter_svg/svg.dart';
 export 'package:firebase_auth/firebase_auth.dart';
 export 'package:google_sign_in/google_sign_in.dart';
+export 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+
 
 export 'package:socialapp/config/platforms.dart';
 
@@ -33,12 +35,14 @@ export 'package:socialapp/data/sources/firestore/firestore_service.dart';
 export 'package:socialapp/data/sources/storage/storage_service.dart';
 export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 export 'package:socialapp/data/models/auth/create_user_req.dart';
+export 'package:socialapp/data/repository/dynamic_link/dynamic_link_repository_impl.dart';
 
 export 'package:socialapp/domain/repository/post/post_repository.dart';
 export 'package:socialapp/domain/repository/topic/topic_repository.dart';
 export 'package:socialapp/domain/repository/auth/auth_repository.dart';
 export 'package:socialapp/domain/repository/collection/collection_repository.dart';
 export 'package:socialapp/domain/repository/user/user_repository.dart';
+export 'package:socialapp/domain/repository/auth/deep_link_repository.dart';
 
 export 'package:socialapp/presentation/screens/splash/widgets/splash_background.dart';
 export 'package:socialapp/presentation/screens/splash/widgets/splash_image_group.dart';

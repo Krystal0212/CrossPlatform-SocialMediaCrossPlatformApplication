@@ -3,12 +3,11 @@ import 'package:socialapp/utils/import.dart';
 class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
   VerificationCubit() : super(VerificationInitial());
 
-  void verification(BuildContext context, GlobalKey<FormState> formKey,
-      String code) async {
+  void verification(BuildContext context, GlobalKey<FormState> formKey, String code) async {
     try {
       if (formKey.currentState!.validate()) {
         emit(VerificationLoading());
-        // await serviceLocator<AuthRepository>().Verification(VerificationUserReq);
+        await serviceLocator<DynamicLinkRepository>().generateVerifyLink("123456");
         emit(VerificationSuccess());
       }
     } catch (error) {

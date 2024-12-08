@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:socialapp/data/models/auth/create_user_req.dart';
 import 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 
-
 abstract class AuthRepository {
   Future<void> signUp(SignUpUserReq signUpUserReq);
 
