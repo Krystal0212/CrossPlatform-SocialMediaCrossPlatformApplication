@@ -1,6 +1,0 @@
-pop scope cases
-
-reusable alert dialog
-emit success of new user ?
-dispose cubit ?
-boilerplate of alertdialog
