@@ -1,4 +1,3 @@
-import 'package:socialapp/presentation/screens/verification/verification_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AppRoutes {
@@ -12,31 +11,61 @@ class AppRoutes {
   //   };
   // }
 
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case '/':
-        return _buildPageRoute(const SplashScreen());
-      case '/boarding':
-        return _buildPageRoute(const BoardingScreen());
-      case '/sign-in':
-        return _buildPageRoute(BlocProvider(
-            create: (_) => SignInCubit(), child: const SignInScreen()));
-      case '/sign-up':
-        return _buildPageRoute(const SignUpScreen());
-      case '/verify':
-        return _buildPageRoute(const VerificationScreen());
-      // Add more cases for other routes
-      default:
-        return _buildPageRoute(
-            const AppPlaceHolder()); // Define a default 404 page
-    }
+  static GoRouter getRoutes() {
+    final GoRouter router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          pageBuilder: (context, state) => _buildPageRoute(const SplashScreen()),
+        ),
+        GoRoute(
+          path: '/boarding',
+          pageBuilder: (context, state) => _buildPageRoute(const BoardingScreen()),
+        ),
+        GoRoute(
+          path: '/sign-in',
+          pageBuilder: (context, state) => _buildPageRoute(const SignInScreen()),
+        ),
+        GoRoute(
+          path: '/sign-up',
+          pageBuilder: (context, state) => _buildPageRoute(const SignUpScreen()),
+        ),
+        GoRoute(
+          path: '/verify',
+          pageBuilder: (context, state) => _buildPageRoute(const VerificationScreen()),
+        ),
+      ],
+      errorBuilder: (context, state) => const AppPlaceHolder(),
+    );
+
+    return router;
   }
 
+  // static Route<dynamic> generateRoute(RouteSettings settings) {
+  //   switch (settings.name) {
+  //     case '/':
+  //       return _buildPageRoute(const SplashScreen());
+  //     case '/boarding':
+  //       return _buildPageRoute(const BoardingScreen());
+  //     case '/sign-in':
+  //       return _buildPageRoute(const SignInScreen());
+  //     case '/sign-up':
+  //       return _buildPageRoute(const SignUpScreen());
+  //     case '/verify':
+  //       return _buildPageRoute(const VerificationScreen());
+  //     // Add more cases for other routes
+  //     default:
+  //       return _buildPageRoute(
+  //           const AppPlaceHolder()); // Define a default 404 page
+  //   }
+  // }
+
   // Method to handle route creation with no animation
-  static PageRouteBuilder _buildPageRoute(Widget page) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
+  static CustomTransitionPage _buildPageRoute(Widget page) {
+    return CustomTransitionPage(
+      child: page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Return the child directly without any animation
         return child;
       },
     );

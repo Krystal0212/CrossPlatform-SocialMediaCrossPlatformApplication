@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.itproject.socialapp",
+    "sha256_cert_fingerprints": ["B9:94:D3:5F:A4:D1:7A:21:79:95:99:E3:6F:B3:4F:2A:95:9B:8F:3D:95:42:17:08:1F:F8:FE:45:8F:B0:69:74"]
+  }
+}]

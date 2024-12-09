@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:socialapp/presentation/screens/splash/widgets/splash_background.dart';
 import 'package:socialapp/presentation/screens/splash/widgets/splash_image_group.dart';
+import 'package:socialapp/utils/import.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 
 class BoardingScreen extends StatelessWidget {
@@ -30,7 +31,7 @@ class BoardingScreen extends StatelessWidget {
                 backgroundColor: WidgetStateProperty.all(
                     AppColors.ancestralWater.withOpacity(0.3)),
               ),
-              onPressed: () => {},
+              onPressed: () => context.go('/verify'),
               child: const Text(
                 "GET STARTED",
                 style: TextStyle(

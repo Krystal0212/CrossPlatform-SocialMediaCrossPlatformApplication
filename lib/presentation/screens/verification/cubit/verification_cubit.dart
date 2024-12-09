@@ -7,7 +7,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
     try {
       if (formKey.currentState!.validate()) {
         emit(VerificationLoading());
-        await serviceLocator<DynamicLinkRepository>().generateVerifyLink("123456");
+        await serviceLocator<DeepLinkRepository>().generateVerifyLink("123456");
         emit(VerificationSuccess());
       }
     } catch (error) {

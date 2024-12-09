@@ -150,7 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
                         BlocConsumer<SignUpCubit, SignUpState>(
                           listener: (context, state) {
                             if (state is SignUpSuccess) {
-                              Navigator.pushNamed(context, '/verify'); // Adjust the route name as needed
+                              context.go('/verify'); // Adjust the route name as needed
                             }
                           },
                           builder: (context, state) => AuthElevatedButton(
@@ -184,7 +184,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
                             const SizedBox(width: 5,),
                             TextButton(
                               style: AppTheme.navigationTextButtonStyle,
-                              onPressed: () => Navigator.pushNamed(context, 'sign-in'),
+                              onPressed: () => context.go('/verify'),
                               child: Text(
                                 AppStrings.signIn,
                                 style: AppTheme.authSignUpStyle,

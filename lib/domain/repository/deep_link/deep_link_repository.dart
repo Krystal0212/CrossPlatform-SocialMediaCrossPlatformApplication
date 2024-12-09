@@ -1,3 +1,3 @@
-abstract class DynamicLinkRepository{
+abstract class DeepLinkRepository{
   Future<void> generateVerifyLink(String otp);
 }

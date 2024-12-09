@@ -30,10 +30,10 @@ class _SplashScreenState extends State<SplashScreen> {
         await prefs.setBool('isFirstLaunch', false);
 
         if (!mounted) return;
-        Navigator.pushNamed(context, '/boarding');
+        context.go('/boarding');
       } else {
         if (!mounted) return;
-        Navigator.pushNamed(context, '/sign-in');
+        context.go('/sign-in');
       }
     } catch (e) {
       if (kDebugMode) {

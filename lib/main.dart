@@ -1,10 +1,7 @@
-import 'package:socialapp/config/app_routes.dart';
 import 'package:socialapp/utils/import.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
@@ -19,6 +16,9 @@ void main() async {
   );
 
   await initializeDependencies();
+
+  final dynamicLinkService = DeepLinkServiceImpl();
+  dynamicLinkService.handleIncomingLinks();
 
   runApp(
     const PlatformConfig(
@@ -37,16 +37,23 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
+  void initState() {
+    super.initState();
+
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: MaterialApp(
+      child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        // darkTheme:
-        // themeMode: mode,
-        // routes: AppRoutes.getRoutes(),
-        onGenerateRoute: AppRoutes.generateRoute,
-        initialRoute: '/',
+        routerConfig: AppRoutes.getRoutes(),
       ),
     );
   }

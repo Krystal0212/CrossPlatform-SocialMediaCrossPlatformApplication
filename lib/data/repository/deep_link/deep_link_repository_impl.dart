@@ -1,0 +1,13 @@
+
+
+import 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
+import 'package:socialapp/domain/repository/deep_link/deep_link_repository.dart';
+import 'package:socialapp/service_locator.dart';
+
+class DeepLinkRepositoryImpl extends DeepLinkRepository{
+  @override
+  Future<void> generateVerifyLink(String otp) async {
+    // serviceLocator<DeepLinkService>() = abstract class DynamicLinkService
+    return await serviceLocator<DeepLinkService>().generateVerifyLink(otp);
+  }
+}
