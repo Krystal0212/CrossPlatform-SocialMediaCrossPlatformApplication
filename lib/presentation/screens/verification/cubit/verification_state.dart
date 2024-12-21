@@ -6,4 +6,8 @@ class VerificationLoading extends VerificationState {}
 
 class VerificationSuccess extends VerificationState {}
 
-class VerificationFailure extends VerificationState {}
+class VerificationFailure extends VerificationState {
+  final String errorMessage;
+
+  VerificationFailure({required this.errorMessage});
+}

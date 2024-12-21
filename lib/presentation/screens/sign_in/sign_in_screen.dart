@@ -1,4 +1,4 @@
-import 'package:socialapp/presentation/widgets/general/custom_scroll_view.dart';
+import 'package:socialapp/presentation/screens/sign_up/widgets/googleButton.dart';
 import 'package:socialapp/utils/import.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -19,6 +19,8 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
 
   @override
   void initState() {
+
+    FlutterNativeSplash.remove();
     _formKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
@@ -32,6 +34,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
     _isWeb = PlatformConfig.of(context)?.isWeb ?? false;
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
+
   }
 
   @override
@@ -73,7 +76,8 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => SignInCubit(),child: Material(
+      create: (_) => SignInCubit(),
+      child: Material(
           child: BackgroundContainer(
             center: AuthSizedBox(
                 isWeb: _isWeb,
@@ -156,54 +160,35 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                               ),
                               BlocBuilder<SignInCubit, SignInState>(
                                 builder: (context, state) {
-                                  return AuthElevatedButton(
-                                    width: deviceWidth,
-                                    height: 45,
-                                    inputText: AppStrings.logIn,
-                                    onPressed: () => context
-                                        .read<SignInCubit>()
-                                        .loginWithEmailAndPassword(
-                                          context,
-                                          _formKey,
-                                          SignInUserReq(
-                                              email: _emailController.text,
-                                              password: _passwordController.text),
-                                        ),
-                                    isLoading:
-                                        (state is SignInLoading ? true : false),
+                                  return Column(
+                                    children: [
+                                      AuthElevatedButton(
+                                        width: deviceWidth,
+                                        height: 45,
+                                        inputText: AppStrings.logIn,
+                                        onPressed: () => context
+                                            .read<SignInCubit>()
+                                            .loginWithEmailAndPassword(
+                                              context,
+                                              _formKey,
+                                              SignInUserReq(
+                                                  email: _emailController.text,
+                                                  password: _passwordController.text),
+                                            ),
+                                        isLoading:
+                                            (state is SignInLoading ? true : false),
+                                      ),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      Text(
+                                        AppStrings.orLogInBy,
+                                        style: AppTheme.authNormalStyle,
+                                      ),
+                                      GoogleButton(onPressed: () => context.read<SignInCubit>().loginWithGoogle(context),)
+                                    ],
                                   );
                                 },
-                              ),
-                              const SizedBox(
-                                height: 20,
-                              ),
-                              Text(
-                                AppStrings.orLogInBy,
-                                style: AppTheme.authNormalStyle,
-                              ),
-                              IconButton(
-                                onPressed: () => context
-                                    .read<SignInCubit>()
-                                    .loginWithGoogle(context),
-                                icon: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.lavenderMist,
-                                  ),
-                                  child: ShaderMask(
-                                    shaderCallback: (Rect bounds) {
-                                      return AppTheme.mainGradient
-                                          .createShader(bounds);
-                                    },
-                                    child: SvgPicture.asset(
-                                      AppIcons.googleLogo,
-                                      width: 20.0,
-                                      height: 20.0,
-                                      colorFilter: AppTheme.iconColorFilter,
-                                    ),
-                                  ),
-                                ),
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -238,3 +223,4 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
     );
   }
 }
+

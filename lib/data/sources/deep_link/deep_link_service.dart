@@ -1,50 +1,38 @@
 import 'package:socialapp/utils/import.dart';
 
 abstract class DeepLinkService {
-  Future<void> generateVerifyLink(String otpCode);
+
 }
 
 class DeepLinkServiceImpl extends DeepLinkService {
   final AppLinks _appLinks = AppLinks();
 
-  @override
-  Future<void> generateVerifyLink(String otpCode) async {
-    if (kDebugMode) {
-      print("Clicked");
-    }
-    if (!kIsWeb) {
-    } else {
-      try {
-        final Uri dynamicLink = Uri(
-          scheme: 'https',
-          host: 'zineround.site',
-          path: '/verify', // Specify the path for OTP verification
-          queryParameters: {
-            'otp': otpCode, // OTP code query parameter
-          },
-        );
-
-        if (kDebugMode) {
-          print("Generated OTP link: $dynamicLink");
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error generating dynamic link : $e");
-        }
-      }
-    }
-  }
-
-  void handleIncomingLinks() {
+  void handleIncomingLinks(GoRouter router) {
     // Listen for incoming dynamic links
     _appLinks.uriLinkStream.listen(
       (deepLink) {
-        if (deepLink.path == '/verify') {
-          final otpCode = deepLink.queryParameters['otp'];
-          if (otpCode != null) {
-            if (kDebugMode) {
-              print("Navigating to verification page with OTP: $otpCode");
+        if (deepLink.hasEmptyPath) return;
+        if (deepLink.hasFragment) {
+          final String fragment = deepLink.fragment; // Get everything after `#`
+
+          if (fragment.isNotEmpty && fragment.contains('?')) {
+            final Map<String, String> hashParameters = Uri.splitQueryString(fragment.split('?').last);
+
+            // if (kDebugMode) {
+            //   print("Navigating to verification page with link: ${hashParameters.toString()}");
+            // }
+
+            if (hashParameters.isNotEmpty) {
+              router.go('/verify', extra: hashParameters);
             }
+          }
+        } else {
+          final Map<String, String> hashParameters = deepLink.queryParameters;
+          if (deepLink.path == '/verify' && hashParameters.isNotEmpty ) {
+            if (kDebugMode) {
+              print("Navigating to verification page with OTP: ${hashParameters.toString()}");
+            }
+            router.go('/verify', extra: hashParameters);
           }
         }
       },

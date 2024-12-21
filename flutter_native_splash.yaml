@@ -10,7 +10,7 @@ flutter_native_splash:
   # platform.
   # android: false
   # ios: false
-  # web: false
+  web: false
 
   # The screen orientation can be set in Android with the android_screen_orientation parameter.
   # Valid parameters can be found here:
@@ -114,13 +114,13 @@ flutter_native_splash:
 
   # WEB
   # web_image_mode can be one of the following modes: center, contain, stretch, and cover.
-  web_image_mode: center
-  background_image_web: "assets/images/web_splash_background.png"
-  background_image_dark_web: "assets/images/web_splash_background.png"
+#  web_image_mode: center
+#  background_image_web: "assets/images/web_splash_background.png"
+#  background_image_dark_web: "assets/images/web_splash_background.png"
   #color_web: "#42a5f5"
   #color_dark_web: "#042a49"
-  image_web: assets/images/logos/default_logo.png
-  image_dark_web: assets/images/logos/default_logo.png
+#  image_web: assets/images/logos/default_logo.png
+#  image_dark_web: assets/images/logos/default_logo.png
   #branding_web: assets/brand-web.gif
   #branding_dark_web: assets/dart_dark-web.gif
 

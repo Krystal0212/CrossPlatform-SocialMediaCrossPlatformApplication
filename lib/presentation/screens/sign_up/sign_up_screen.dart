@@ -20,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
 
   @override
   void initState() {
+    FlutterNativeSplash.remove();
     _formKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
@@ -150,7 +151,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
                         BlocConsumer<SignUpCubit, SignUpState>(
                           listener: (context, state) {
                             if (state is SignUpSuccess) {
-                              context.go('/verify'); // Adjust the route name as needed
+                              context.go('/verify');
                             }
                           },
                           builder: (context, state) => AuthElevatedButton(

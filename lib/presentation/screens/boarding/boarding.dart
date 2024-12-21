@@ -31,7 +31,9 @@ class BoardingScreen extends StatelessWidget {
                 backgroundColor: WidgetStateProperty.all(
                     AppColors.ancestralWater.withOpacity(0.3)),
               ),
-              onPressed: () => context.go('/verify'),
+              onPressed: () {
+                // context.go('/verify');
+              },
               child: const Text(
                 "GET STARTED",
                 style: TextStyle(

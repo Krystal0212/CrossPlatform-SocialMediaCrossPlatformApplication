@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:socialapp/utils/import.dart';
+import 'package:http/http.dart' as http;
 
 abstract class AuthFirebaseService {
   Future<void> signUp(SignUpUserReq signUpUserReq);
@@ -6,6 +8,8 @@ abstract class AuthFirebaseService {
   Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq);
 
   Future<void> signInWithGoogle();
+
+  Future<void> verifyOTPByLink(String encryptedLink);
 
   Future<void> sendPasswordResetEmail(String email);
 
@@ -35,9 +39,6 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       );
 
       User? user = userCredential.user;
-      // if (kDebugMode) {
-      //   print("User signed in : ${user?.email}");
-      // }
 
       if (user == null) {
         throw FirebaseAuthException(
@@ -61,7 +62,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         case 'user-not-found':
           throw (AppStrings.userNotFoundError);
         case 'wrong-password':
-            throw(AppStrings.incorrectEmailOrPasswordError);
+          throw (AppStrings.incorrectEmailOrPasswordError);
         case 'invalid-credential':
           throw (AppStrings.incorrectEmailOrPasswordError);
         default:
@@ -78,14 +79,18 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> signUp(SignUpUserReq signUpUserReq) async {
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: signUpUserReq.email,
         password: signUpUserReq.password,
       );
 
-      await userCredential.user!.sendEmailVerification();
-      await userCredential.user!.updatePhotoURL(AppStrings.defaultAvatarUrl);
-      signOut();
+      final accessToken = await userCredential.user?.getIdToken() ?? "";
+
+      sendVerification(signUpUserReq.email, userCredential, accessToken);
+
+      // await userCredential.user!.sendEmailVerification();
+      // await userCredential.user!.updatePhotoURL(AppStrings.defaultAvatarUrl);
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         print("${AppStrings.firebaseAuthError}: ${e.message}");
@@ -105,137 +110,205 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     }
   }
 
-    @override
-    Future<void> signInWithGoogle() async {
-      try {
-        UserCredential googleUserCredential;
-        if (kIsWeb) {
-          googleUserCredential = await _auth.signInWithPopup(_googleProvider);
-          // _googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-          // _googleProvider.setCustomParameters({
-          //   'login_hint': 'user@example.com'
-          // });
+  Future<void> sendVerification(String recipientEmail,
+      UserCredential userCredential, String accessToken) async {
+    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmail');
 
-        } else {
-          final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-          final GoogleSignInAuthentication? googleAuth =
-              await googleUser?.authentication;
+    final otpCode = '123456';
 
-          // Create a GoogleAuthProvider credential
-          final AuthCredential googleCredential = GoogleAuthProvider.credential(
-            accessToken: googleAuth?.accessToken,
-            idToken: googleAuth?.idToken,
-          );
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "auth-token": accessToken,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'recipientEmail': recipientEmail,
+          'otpCode': otpCode,
+          'verificationLink': 'zineround.site/#/verify?code='
+        }),
+      );
 
-          // Sign in to Firebase with Google credentials
-          googleUserCredential =
-          await _auth.signInWithCredential(googleCredential);
-        }
-
-        User? user = googleUserCredential.user;
-
-        if (user == null) {
-          throw FirebaseAuthException(
-            code: 'user-not-found',
-          );
-        }
-
+      if (response.statusCode == 200) {
         if (kDebugMode) {
-          print("User signed in : ${user.email}");
+          print('Email sent successfully: ${response.body}');
         }
-      } catch (error) {
+      } else {
         if (kDebugMode) {
-          print("${AppStrings.authenticationError} : ${error.toString()}");
+          print(
+              'Failed to send email: ${response.statusCode} - ${response.body}');
         }
-
-        rethrow;
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error sending email: $error');
       }
     }
+  }
 
-    @override
-    Future<void> sendPasswordResetEmail(String email) async {
-      try {
-        final signInMethod = await _auth.fetchSignInMethodsForEmail(email);
+  @override
+  Future<void> verifyOTPByLink(String encryptedLink) async {
+    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/verifyOTP');
 
-        if (signInMethod.isNotEmpty) {
-          await _auth.sendPasswordResetEmail(email: email);
-        } else {
-          throw FirebaseAuthException(
-            code: 'email-not-found',
-            message: AppStrings.emailNotFoundError,
-          );
-        }
-      } catch (error) {
+    String newEncryptedLink = encryptedLink.trim();
+    try {
+      final response = await http.get(url.replace(queryParameters: {
+        'encryptedLink': newEncryptedLink,
+      }));
+
+      if (response.statusCode == 200) {
         if (kDebugMode) {
-          print("${AppStrings.authenticationError} : ${error.toString()}");
+          print(response.body);
         }
-
-        rethrow;
+      } else {
+        throw response.body;
       }
-    }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Verification failed: $error');
+      }
+      rethrow;
 
-    @override
-    Future<void> signOut() async {
-      await _auth.signOut();
     }
+  }
 
-    @override
-    User? getCurrentUser() {
-      return _auth.currentUser;
+  @override
+  Future<void> signInWithGoogle() async {
+    try {
+      UserCredential googleUserCredential;
+      if (kIsWeb) {
+        googleUserCredential = await _auth.signInWithPopup(_googleProvider);
+        // _googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+        // _googleProvider.setCustomParameters({
+        //   'login_hint': 'user@example.com'
+        // });
+      } else {
+        final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+        final GoogleSignInAuthentication? googleAuth =
+            await googleUser?.authentication;
+
+        // Create a GoogleAuthProvider credential
+        final AuthCredential googleCredential = GoogleAuthProvider.credential(
+          accessToken: googleAuth?.accessToken,
+          idToken: googleAuth?.idToken,
+        );
+
+        // Sign in to Firebase with Google credentials
+        googleUserCredential =
+            await _auth.signInWithCredential(googleCredential);
+      }
+
+      User? user = googleUserCredential.user;
+      String? token = await user?.getIdToken();
+      // if (kDebugMode) {
+      //   print('token : $token');
+      // }
+
+      sendVerification(user?.email ?? '', googleUserCredential, token ?? "");
+
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+        );
+      }
+
+      if (kDebugMode) {
+        print("User signed in : ${user.email}");
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print("${AppStrings.authenticationError} : ${error.toString()}");
+      }
+
+      rethrow;
     }
+  }
 
-    @override
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      final signInMethod = await _auth.fetchSignInMethodsForEmail(email);
+
+      if (signInMethod.isNotEmpty) {
+        await _auth.sendPasswordResetEmail(email: email);
+      } else {
+        throw FirebaseAuthException(
+          code: 'email-not-found',
+          message: AppStrings.emailNotFoundError,
+        );
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print("${AppStrings.authenticationError} : ${error.toString()}");
+      }
+
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
+
+  @override
+  User? getCurrentUser() {
+    return _auth.currentUser;
+  }
+
+  @override
   Future<void> reAuthenticationAndChangeEmail(
-        String email, String newEmail, String password) async {
-      try {
-        User? user = _auth.currentUser;
-        if (user != null) {
-          AuthCredential credential = EmailAuthProvider.credential(
-            email: email,
-            password: password,
-          );
+      String email, String newEmail, String password) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: email,
+          password: password,
+        );
 
-          await user
-              .reauthenticateWithCredential(credential)
-              .then((userCredential) async {
-            await userCredential.user?.updateEmail(newEmail);
-            await userCredential.user?.reload();
-            await userCredential.user?.sendEmailVerification();
-          });
-        }
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'email-already-in-use') {
-          throw (AppStrings.emailNotFoundError);
-        } else {
-          rethrow;
-        }
-      } catch (error) {
-        if (kDebugMode) {
-          print("${AppStrings.authenticationError} : ${error.toString()}");
-        }
-
+        await user
+            .reauthenticateWithCredential(credential)
+            .then((userCredential) async {
+          await userCredential.user?.updateEmail(newEmail);
+          await userCredential.user?.reload();
+          await userCredential.user?.sendEmailVerification();
+        });
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw (AppStrings.emailNotFoundError);
+      } else {
         rethrow;
       }
+    } catch (error) {
+      if (kDebugMode) {
+        print("${AppStrings.authenticationError} : ${error.toString()}");
+      }
+
+      rethrow;
     }
+  }
 
-    @override
+  @override
   Future<void> updateAvatarUrl(String avatarUrl) async {
-      try {
-        User? user = _auth.currentUser;
+    try {
+      User? user = _auth.currentUser;
 
-        if (user != null) {
-          await user.updatePhotoURL(avatarUrl);
+      if (user != null) {
+        await user.updatePhotoURL(avatarUrl);
 
-          await user.reload();
-        } else {
-          throw FirebaseAuthException(code: 'no-user-is-currently-signed-in');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print("${AppStrings.failedToUpdateAvatarError} : $e");
-        }
+        await user.reload();
+      } else {
+        throw FirebaseAuthException(code: 'no-user-is-currently-signed-in');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("${AppStrings.failedToUpdateAvatarError} : $e");
       }
     }
+  }
 
   @override
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl) {

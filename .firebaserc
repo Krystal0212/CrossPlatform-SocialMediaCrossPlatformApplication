@@ -3,5 +3,9 @@
     "default": "it-project---zineround"
   },
   "targets": {},
-  "etags": {}
+  "etags": {
+    "it-project---zineround": {
+      "extensionInstances": {}
+    }
+  }
 }

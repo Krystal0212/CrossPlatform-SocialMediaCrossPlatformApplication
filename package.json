@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "firebase-admin": "^13.0.1",
+    "firebase-functions": "^6.1.2",
+    "nodemailer": "^6.9.16",
+    "sib-api-v3-sdk": "^8.5.0"
+  }
+}

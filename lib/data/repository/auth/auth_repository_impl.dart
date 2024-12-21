@@ -25,7 +25,9 @@ class AuthRepositoryImpl extends AuthRepository {
 
   @override
   Future<User?> getCurrentUser() async {
-    return serviceLocator<AuthFirebaseService>().getCurrentUser();}
+    return serviceLocator<AuthFirebaseService>().getCurrentUser();
+  }
+
   Future<void> sendPasswordResetEmail(String email) async {
     return await serviceLocator<AuthFirebaseService>()
         .sendPasswordResetEmail(email);
@@ -37,13 +39,20 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  Future<void> reAuthenticationAndChangeEmail(String email, String newEmail, String password) async{
-    return await serviceLocator<AuthFirebaseService>().reAuthenticationAndChangeEmail(email,newEmail, password);
+  Future<void> reAuthenticationAndChangeEmail(
+      String email, String newEmail, String password) async {
+    return await serviceLocator<AuthFirebaseService>()
+        .reAuthenticationAndChangeEmail(email, newEmail, password);
   }
 
   @override
-  Future<void> updateCurrentUserAvatarUrl(String avatarUrl) async{
-    return await serviceLocator<AuthFirebaseService>().updateAvatarUrl(avatarUrl);
+  Future<void> updateCurrentUserAvatarUrl(String avatarUrl) async {
+    return await serviceLocator<AuthFirebaseService>()
+        .updateAvatarUrl(avatarUrl);
   }
 
+  @override
+  Future<void> verifyOTPByLink(String encryptedLink) async {
+    return await serviceLocator<AuthFirebaseService>().verifyOTPByLink(encryptedLink);
+  }
 }

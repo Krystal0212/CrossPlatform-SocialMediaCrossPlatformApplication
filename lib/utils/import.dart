@@ -14,7 +14,6 @@ export 'package:firebase_auth/firebase_auth.dart';
 export 'package:google_sign_in/google_sign_in.dart';
 export 'package:go_router/go_router.dart';
 
-
 export 'package:socialapp/config/platforms.dart';
 
 export 'package:socialapp/utils/styles/themes.dart';
@@ -74,6 +73,5 @@ export 'package:socialapp/presentation/widgets/auth/auth_text_form_field.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/linear_gradient_title.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/message_content.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/stacks_bottom.dart';
-
 
 export 'package:socialapp/presentation/widgets/edit_profile/app_text_form_field.dart';

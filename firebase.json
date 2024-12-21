@@ -27,11 +27,24 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      { "source": "/verify/**", "dynamicLinks": true },
       {
         "source": "**",
         "destination": "/index.html"
       }
     ]
-  }
+  },
+  "extensions": {},
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
 }

@@ -5,6 +5,7 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  // WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -18,7 +19,7 @@ void main() async {
   await initializeDependencies();
 
   final dynamicLinkService = DeepLinkServiceImpl();
-  dynamicLinkService.handleIncomingLinks();
+  dynamicLinkService.handleIncomingLinks(AppRoutes.router);
 
   runApp(
     const PlatformConfig(
@@ -36,10 +37,15 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // final dynamicLinkService = DeepLinkServiceImpl();
   @override
   void initState() {
     super.initState();
-
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // dynamicLinkService.handleIncomingLinks(AppRoutes.getRoutes());
   }
 
   @override

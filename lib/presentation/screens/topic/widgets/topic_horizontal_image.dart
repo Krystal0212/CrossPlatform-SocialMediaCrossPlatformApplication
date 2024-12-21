@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:socialapp/domain/entities/topic.dart';
 
+import '../../../../utils/import.dart';
+
 class TopicHorizontalImage extends StatelessWidget {
   TopicHorizontalImage({super.key, required this.topic, required this.topicIndex});
 
@@ -10,8 +12,12 @@ class TopicHorizontalImage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    print('topic: $topic.');
-    print('topicIndex: $topicIndex');
+    if (kDebugMode) {
+      print('topic: $topic.');
+    }
+    if (kDebugMode) {
+      print('topicIndex: $topicIndex');
+    }
     return Stack(
       children: [
         Positioned(

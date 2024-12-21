@@ -1,3 +1,3 @@
 abstract class DeepLinkRepository{
-  Future<void> generateVerifyLink(String otp);
+  // Future<void> generateVerifyLink(String otp);
 }
