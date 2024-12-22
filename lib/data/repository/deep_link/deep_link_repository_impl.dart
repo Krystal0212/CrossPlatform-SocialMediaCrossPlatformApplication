@@ -1,6 +1,5 @@
 
 
-import 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 import 'package:socialapp/domain/repository/deep_link/deep_link_repository.dart';
 import 'package:socialapp/service_locator.dart';
 
