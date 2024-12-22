@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:socialapp/utils/import.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,6 +11,8 @@ abstract class AuthFirebaseService {
   Future<void> signInWithGoogle();
 
   Future<void> verifyOTPByLink(String encryptedLink);
+
+  Future<void> verifyOTPByCode(String otpCode);
 
   Future<void> sendPasswordResetEmail(String email);
 
@@ -110,11 +113,17 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     }
   }
 
+  String generateOtp() {
+    final random = Random();
+    // Generate a random 6-digit number
+    int otp = 100000 + random.nextInt(900000); // Ensures a 6-digit number
+    return otp.toString();
+  }
+
   Future<void> sendVerification(String recipientEmail,
       UserCredential userCredential, String accessToken) async {
-    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmail');
-
-    final otpCode = '123456';
+    final Uri url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailWithOTP');
+    final String otpCode = generateOtp();
 
     try {
       final response = await http.post(
@@ -149,12 +158,42 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
 
   @override
   Future<void> verifyOTPByLink(String encryptedLink) async {
-    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/verifyOTP');
+    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByLink');
 
     String newEncryptedLink = encryptedLink.trim();
     try {
       final response = await http.get(url.replace(queryParameters: {
         'encryptedLink': newEncryptedLink,
+      }));
+
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print(response.body);
+        }
+      } else {
+        throw response.body;
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Verification failed: $error');
+      }
+      rethrow;
+
+    }
+  }
+
+  @override
+  Future<void> verifyOTPByCode(String otpCode) async {
+    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByCode');
+
+    try {
+      if(_auth.currentUser == null){
+        throw 'No user is currently signed in';
+      }
+
+      final response = await http.get(url.replace(queryParameters: {
+        'otpCode': otpCode,
+        'userLoggedEmail': _auth.currentUser?.email
       }));
 
       if (response.statusCode == 200) {

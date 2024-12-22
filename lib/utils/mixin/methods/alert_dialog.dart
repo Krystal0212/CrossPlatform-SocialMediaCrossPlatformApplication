@@ -16,7 +16,7 @@ mixin AppDialogs {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text("Cancel"),
+              child: const Text("Okay"),
             )
           ],
         );

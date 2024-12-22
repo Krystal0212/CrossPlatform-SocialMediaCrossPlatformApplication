@@ -103,14 +103,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         BlocListener<VerificationCubit, VerificationState>(
                           listener: (context, state) {
                             if (state is VerificationSuccess) {
-                              context.go('/home'); // Example navigation
-                            } else if (state is VerificationFailure) {
-                              // Handle failure state, show error message
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(state.errorMessage ??
-                                        'Verification failed')),
-                              );
+                              context.go('/home');
                             }
                           },
                           child:
@@ -120,7 +113,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               width: deviceWidth,
                               height: 52,
                               inputText: AppStrings.verify,
-                              onPressed: () async {},
+                              onPressed: () async {
+                                context.read<VerificationCubit>().verifyByCode(context, _codeController.text);
+                              },
                               isLoading:
                                   (state is VerificationLoading ? true : false),
                             );

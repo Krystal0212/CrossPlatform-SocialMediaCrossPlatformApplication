@@ -18,4 +18,6 @@ abstract class AuthRepository {
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl);
 
   Future<void> verifyOTPByLink(String encryptedLink);
+
+  Future<void> verifyOTPByCode(String otpCode);
 }

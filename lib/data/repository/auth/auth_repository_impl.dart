@@ -55,4 +55,9 @@ class AuthRepositoryImpl extends AuthRepository {
   Future<void> verifyOTPByLink(String encryptedLink) async {
     return await serviceLocator<AuthFirebaseService>().verifyOTPByLink(encryptedLink);
   }
+
+  @override
+  Future<void> verifyOTPByCode(String otpCode) async {
+    return await serviceLocator<AuthFirebaseService>().verifyOTPByCode(otpCode);
+  }
 }
