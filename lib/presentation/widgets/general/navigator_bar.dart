@@ -1,10 +1,8 @@
 // import 'package:custom_navigation_bar/custom_navigation_bar.dart';
-import 'package:flutter/material.dart';
-import 'package:socialapp/presentation/screens/discover/discover_screen.dart';
-import 'package:socialapp/presentation/screens/home/home_screen.dart';
-import 'package:socialapp/presentation/screens/notification/notification_screen.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/main_profile_screen.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+
+import 'package:socialapp/presentation/screens/module_2/discover/discover_screen.dart';
+import 'package:socialapp/presentation/screens/module_2/home/home_screen.dart';
+import 'package:socialapp/utils/import.dart';
 
 class NavigatorBarCustom extends StatefulWidget {
   const NavigatorBarCustom({super.key});

@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../utils/constants/icon_path.dart';
+
+import 'package:socialapp/utils/import.dart';
 
 class RoundedTrailingIcon extends StatelessWidget {
   // final String assetPath;

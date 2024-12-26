@@ -1,15 +1,12 @@
-
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/topic.dart';
-
-import '../../../../utils/import.dart';
+import 'package:socialapp/utils/import.dart';
 
 class TopicHorizontalImage extends StatelessWidget {
-  TopicHorizontalImage({super.key, required this.topic, required this.topicIndex});
+  const TopicHorizontalImage(
+      {super.key, required this.topic, required this.topicIndex});
 
-  TopicModel topic;
-  int topicIndex;
-  
+  final TopicModel topic;
+  final int topicIndex;
+
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
@@ -29,23 +26,17 @@ class TopicHorizontalImage extends StatelessWidget {
             width: 200,
             height: 140,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: NetworkImage(topic.thumbnail),
-                fit: BoxFit.cover
-              )
-            ),
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                    image: NetworkImage(topic.thumbnail), fit: BoxFit.cover)),
           ),
         ),
-    
         Positioned(
           left: topicIndex % 2 == 0 ? 16 : 168,
           top: 48,
-          child: Text(topic.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14
-            ),
+          child: Text(
+            topic.name,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
         )
       ],

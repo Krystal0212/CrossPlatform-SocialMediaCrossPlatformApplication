@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_cubit.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_state.dart';
+import 'package:socialapp/utils/import.dart';
+
+import '../cubit/post_cubit.dart';
+import '../cubit/post_state.dart';
 
 class PostContent extends StatefulWidget {
   const PostContent({super.key});
@@ -44,7 +44,9 @@ class _PostContentState extends State<PostContent> {
               ),
               onChanged: (value) {
                 // _postCubit.createPost(content: value);
-                print(value);
+                if (kDebugMode) {
+                  print(value);
+                }
                 _postCubit.updateContent(value.isEmpty ? null : value);
               },
               textInputAction: TextInputAction.done,

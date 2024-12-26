@@ -20,4 +20,6 @@ abstract class AuthRepository {
   Future<void> verifyOTPByLink(String encryptedLink);
 
   Future<void> verifyOTPByCode(String otpCode);
+
+  Future<void> sendForCurrentUserVerificationEmail();
 }

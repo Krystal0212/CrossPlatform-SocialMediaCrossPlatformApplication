@@ -1,11 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/collection.dart';
 
-import '../../../../data/repository/collection/collection_repository_impl.dart';
-import '../../../../data/repository/post/post_repository_impl.dart';
-import '../../../../domain/repository/collection/collection_repository.dart';
-import '../../../../domain/repository/post/post_repository.dart';
-import '../../../../utils/styles/themes.dart';
+
+import 'package:socialapp/utils/import.dart';
+
 import 'collection_grid_view.dart';
 
 class CollectionTab extends StatefulWidget {

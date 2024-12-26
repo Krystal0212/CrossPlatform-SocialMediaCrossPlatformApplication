@@ -1,14 +1,6 @@
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
-import 'package:socialapp/domain/repository/auth/auth_repository.dart';
-import 'package:socialapp/service_locator.dart';
 
-import '../../../../utils/constants/icon_path.dart';
-import '../../../../utils/styles/themes.dart';
-import '../cubit/profile_cubit.dart';
+import 'package:socialapp/utils/import.dart';
 
 class LogOutButton extends StatelessWidget {
   const LogOutButton({super.key});

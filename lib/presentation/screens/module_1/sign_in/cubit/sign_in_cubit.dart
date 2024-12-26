@@ -1,5 +1,6 @@
 // import '../../../../domain/repository/user/user.dart';
 import 'package:socialapp/utils/import.dart';
+import 'sign_in_state.dart';
 
 class SignInCubit extends Cubit<SignInState> {
   SignInCubit() : super(SignInInitial());
@@ -24,7 +25,6 @@ class SignInCubit extends Cubit<SignInState> {
     } catch (e) {
       if (e is CustomFirestoreException) {
         if (e.code == 'new-user') {
-
           emit(SignInSuccess());
         }
       }else if (e is FirebaseAuthException) {

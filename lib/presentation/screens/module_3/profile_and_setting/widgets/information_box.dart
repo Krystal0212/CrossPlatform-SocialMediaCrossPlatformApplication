@@ -1,11 +1,6 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:socialapp/domain/entities/user.dart';
-import 'package:socialapp/utils/constants/icon_path.dart';
-import 'package:socialapp/utils/styles/colors.dart';
 
-import '../../../../utils/styles/themes.dart';
+
+import 'package:socialapp/utils/import.dart';
 
 class InformationBox extends StatelessWidget {
   final UserModel userModel;

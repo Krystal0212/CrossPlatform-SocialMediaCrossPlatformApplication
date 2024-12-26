@@ -1,6 +1,3 @@
-import 'package:socialapp/data/models/user_firestore/add_user_data.dart';
-import 'package:socialapp/data/models/user_firestore/update_user_req.dart';
-
 import '../../entities/user.dart';
 
 abstract class UserRepository {
@@ -8,9 +5,9 @@ abstract class UserRepository {
 
   Future<UserModel?>? getCurrentUserData();
 
-  Future<void> addCurrentUserData(AddUserReq addUserReq);
+  Future<void> addCurrentUserData(UserModel addUserReq);
 
-  Future<void> updateCurrentUserData(UpdateUserReq updateUserReq);
+  Future<void> updateCurrentUserData(UserModel updateUserReq);
 
   Future<List<Map<String, String>>> fetchCategoriesData();
 

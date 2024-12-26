@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:socialapp/data/sources/firestore/firestore_service.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_cubit.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_state.dart';
 import 'package:socialapp/service_locator.dart';
 import 'package:socialapp/utils/styles/colors.dart';
+
+import '../cubit/post_cubit.dart';
+import '../cubit/post_state.dart';
 
 class HeaderNewPost extends StatefulWidget {
   const HeaderNewPost({super.key});

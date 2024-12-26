@@ -1,4 +1,4 @@
-import 'splash_image.dart';
+import 'auth_splash_image.dart';
 import '../../../../../utils/import.dart';
 
 //Group create splash image

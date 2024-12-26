@@ -22,20 +22,20 @@ class AuthBody extends StatelessWidget {
       final double deviceWidth = constraints.constrainWidth();
 
       if (isWeb && constraints.constrainWidth() < 530) {
-        return AuthBodyForm(edgeInsets: EdgeInsets.only(top: marginTop),
+        return AuthBodyForm(
+          edgeInsets: EdgeInsets.only(top: marginTop),
           width: deviceWidth,
           height: height,
-          child: child,);      } else {
-        return AuthBodyForm(edgeInsets: EdgeInsets.only(top: marginTop),
+          child: child,
+        );
+      } else {
+        return AuthBodyForm(
+          edgeInsets: EdgeInsets.only(top: marginTop),
           width: cardWidth,
           height: height,
-          child: child,);      }
-
-      return AuthBodyForm(edgeInsets: EdgeInsets.only(top: marginTop),
-      width: (isWeb && deviceWidth < 530) ? deviceWidth : 500,
-      height: height,
-      child: child,);
-
+          child: child,
+        );
+      }
     });
   }
 }

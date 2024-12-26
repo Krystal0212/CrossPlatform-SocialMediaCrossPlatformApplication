@@ -1,7 +1,8 @@
-import 'package:socialapp/presentation/screens/home/home_screen.dart';
+import 'package:socialapp/presentation/screens/module_2/home/home_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
-import '../presentation/screens/verification/cubit/verification_cubit.dart';
+
+
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -28,10 +29,16 @@ class AppRoutes {
       GoRoute(
           path: '/verify',
           builder: (context, state) {
-            String params = (state.extra != null) ? (state.extra as Map<String, String>)["code"].toString() : "";
+            String params = "";
+            int? stateOption;
+            if (state.extra != null && state.extra is Map<String, dynamic>) {
+              final extraData = state.extra as Map<String, dynamic>;
+              params = extraData["code"]?.toString() ?? "";
+              stateOption = extraData["state"] as int?;
+            }
             return BlocProvider(
                 create: (context) => VerificationCubit(),
-                child: VerificationScreen(hashParameters: params));
+                child: VerificationScreen(hashParameters: params, stateOption: stateOption,));
           }),
       GoRoute(path: '/home', pageBuilder: (context, state) => _buildPageRoute(const HomeScreen())),
     ],

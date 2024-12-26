@@ -1,7 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-
-import '../../../../utils/styles/colors.dart';
+import 'package:socialapp/utils/import.dart';
 
 class RadiusContainer extends StatefulWidget {
   final List<String?> imageUrls;

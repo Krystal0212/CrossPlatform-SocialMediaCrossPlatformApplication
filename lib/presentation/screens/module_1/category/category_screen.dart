@@ -1,15 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/presentation/screens/category/cubit/category_cubit.dart';
-import 'package:socialapp/presentation/screens/category/cubit/category_state.dart';
-import 'package:socialapp/presentation/screens/category/widgets/category_image_group.dart';
-import 'package:socialapp/presentation/widgets/auth/auth_elevated_button.dart';
-import 'package:socialapp/presentation/widgets/forgot_password/linear_gradient_title.dart';
-import 'package:socialapp/utils/styles/colors.dart';
-import 'package:socialapp/utils/styles/themes.dart';
-
-import '../../../utils/constants/image_path.dart';
-import '../../widgets/edit_profile/bottom_rounded_appbar.dart';
+import '../../../widgets/edit_profile/bottom_rounded_appbar.dart';
+import 'widgets/category_image_group.dart';
+import 'package:socialapp/utils/import.dart';
+import 'cubit/category_cubit.dart';
+import 'cubit/category_state.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});

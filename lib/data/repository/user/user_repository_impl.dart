@@ -1,7 +1,3 @@
-import 'package:socialapp/data/models/user_firestore/add_user_data.dart';
-
-import 'package:socialapp/data/models/user_firestore/update_user_req.dart';
-
 import 'package:socialapp/domain/entities/user.dart';
 
 import '../../../domain/repository/user/user_repository.dart';
@@ -10,7 +6,7 @@ import '../../sources/firestore/firestore_service.dart';
 
 class UserRepositoryImpl extends UserRepository {
   @override
-  Future<void> addCurrentUserData(AddUserReq addUserReq) {
+  Future<void> addCurrentUserData(UserModel addUserReq) {
     return serviceLocator<FirestoreService>().addCurrentUserData(addUserReq);
   }
 
@@ -25,7 +21,7 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
-  Future<void> updateCurrentUserData(UpdateUserReq updateUserReq) {
+  Future<void> updateCurrentUserData(UserModel updateUserReq) {
     return serviceLocator<FirestoreService>()
         .updateCurrentUserData(updateUserReq);
   }

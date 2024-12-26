@@ -1,14 +1,6 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/presentation/screens/category/cubit/category_cubit.dart';
-import 'package:socialapp/presentation/screens/category/cubit/category_state.dart';
-import 'package:socialapp/utils/styles/colors.dart';
-import 'package:socialapp/utils/styles/themes.dart';
-
-import '../../../../domain/repository/user/user_repository.dart';
-import '../../../../service_locator.dart';
-import '../../../../utils/constants/image_path.dart';
+import 'package:socialapp/utils/import.dart';
+import '../cubit/category_cubit.dart';
+import '../cubit/category_state.dart';
 
 class CategoryImageGroup extends StatefulWidget {
   const CategoryImageGroup({super.key});

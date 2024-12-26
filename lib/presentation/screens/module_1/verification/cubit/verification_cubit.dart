@@ -1,5 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 
+import 'verification_state.dart';
+
 class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
   VerificationCubit() : super(VerificationInitial());
 

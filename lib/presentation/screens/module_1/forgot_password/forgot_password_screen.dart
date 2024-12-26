@@ -1,11 +1,6 @@
-
-import 'package:socialapp/presentation/screens/forgot_password/cubit/forgot_password_cubit.dart';
-import 'package:socialapp/presentation/screens/forgot_password/cubit/forgot_password_state.dart';
 import 'package:socialapp/utils/import.dart';
-
-import '../../widgets/forgot_password/linear_gradient_title.dart';
-import '../../widgets/forgot_password/message_content.dart';
-import '../../widgets/forgot_password/stacks_bottom.dart';
+import 'cubit/forgot_password_cubit.dart';
+import 'cubit/forgot_password_state.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});

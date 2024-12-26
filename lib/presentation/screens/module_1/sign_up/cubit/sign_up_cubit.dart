@@ -1,4 +1,4 @@
-
+import 'sign_up_state.dart';
 import 'package:socialapp/utils/import.dart';
 
 class SignUpCubit extends Cubit<SignUpState> with AppDialogs {
@@ -15,10 +15,9 @@ class SignUpCubit extends Cubit<SignUpState> with AppDialogs {
     } catch (error) {
       emit(SignUpFailure());
 
-      if(!context.mounted) return;
-      showSimpleAlertDialog(context: context,title: AppStrings.error,message: error.toString());
+      if (!context.mounted) return;
+      showSimpleAlertDialog(
+          context: context, title: AppStrings.error, message: error.toString());
     }
   }
-
-
 }

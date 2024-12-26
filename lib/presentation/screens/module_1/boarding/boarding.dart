@@ -1,10 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/presentation/screens/splash/widgets/splash_background.dart';
-import 'package:socialapp/presentation/screens/splash/widgets/splash_image_group.dart';
+import 'package:socialapp/presentation/widgets/auth/auth_splash_background.dart';
+import 'package:socialapp/presentation/widgets/auth/auth_splash_image_group.dart';
 import 'package:socialapp/utils/import.dart';
-import 'package:socialapp/utils/styles/colors.dart';
-
-
 
 class BoardingScreen extends StatelessWidget {
   const BoardingScreen({super.key});

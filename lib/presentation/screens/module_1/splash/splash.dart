@@ -1,5 +1,6 @@
-import 'package:socialapp/config/platforms.dart';
 import 'package:socialapp/utils/import.dart';
+import 'widgets/splash_background.dart';
+import 'widgets/splash_image_group.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

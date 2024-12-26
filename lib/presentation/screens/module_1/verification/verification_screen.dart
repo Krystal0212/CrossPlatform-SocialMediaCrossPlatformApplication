@@ -1,5 +1,5 @@
-import 'package:socialapp/presentation/screens/verification/cubit/verification_cubit.dart';
 import 'package:socialapp/utils/import.dart';
+import 'cubit/verification_state.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String? hashParameters;

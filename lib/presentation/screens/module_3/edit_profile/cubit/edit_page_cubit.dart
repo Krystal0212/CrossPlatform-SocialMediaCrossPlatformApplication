@@ -1,13 +1,7 @@
-import 'package:bloc/bloc.dart';
-import 'package:flutter/material.dart';
-import 'package:socialapp/data/repository/auth/auth_repository_impl.dart';
-import 'package:socialapp/data/repository/user/user_repository_impl.dart';
-import 'package:socialapp/domain/repository/auth/auth_repository.dart';
+import 'package:socialapp/data/repository/storage/storate_repository_impl.dart';
+import 'package:socialapp/domain/repository/storage/storage_repository.dart';
+import 'package:socialapp/utils/import.dart';
 
-import '../../../../data/repository/storage/storate_repository_impl.dart';
-import '../../../../domain/entities/user.dart';
-import '../../../../domain/repository/storage/storage_repository.dart';
-import '../../../../domain/repository/user/user_repository.dart';
 import 'edit_page_state.dart';
 
 class EditPageCubit extends Cubit<EditPageState> {
@@ -41,8 +35,12 @@ class EditPageCubit extends Cubit<EditPageState> {
       String password) async {
     emit(EditPageLoading());
     try {
-      print("Changing.....");
-      await authRepository.reAuthenticationAndChangeEmail(email, newEmail, password).then((_){
+      if (kDebugMode) {
+        print("Changing.....");
+      }
+      await authRepository
+          .reAuthenticationAndChangeEmail(email, newEmail, password)
+          .then((_) {
         emit(EditPageLoaded(updatedUser.copyWith(newEmail: newEmail)));
       });
     } catch (e) {
@@ -50,19 +48,19 @@ class EditPageCubit extends Cubit<EditPageState> {
     }
   }
 
-  // Future<void> uploadAvatar(XFile image, String userId) async {
-  //   emit(EditPageLoading());
-  //
-  //   try {
-  //     storageRepository.uploadAvatar(image, userId);
-  //
-  //     emit(EditPageLoaded(updatedUser));
-  //   } catch (e) {
-  //     emit(EditPageError('Failed to upload avatar'));
-  //   }
-  // }
+// Future<void> uploadAvatar(XFile image, String userId) async {
+//   emit(EditPageLoading());
+//
+//   try {
+//     storageRepository.uploadAvatar(image, userId);
+//
+//     emit(EditPageLoaded(updatedUser));
+//   } catch (e) {
+//     emit(EditPageError('Failed to upload avatar'));
+//   }
+// }
 
-  // Future<void> updateAvatarInFirestore(String userId, String avatarUrl) async {
-  //   // Code to update avatar URL in Firestore
-  // }
+// Future<void> updateAvatarInFirestore(String userId, String avatarUrl) async {
+//   // Code to update avatar URL in Firestore
+// }
 }

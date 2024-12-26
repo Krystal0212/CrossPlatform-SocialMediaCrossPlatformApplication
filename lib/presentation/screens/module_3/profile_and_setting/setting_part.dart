@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/widgets/log_out_button.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/widgets/rounded_icon_image.dart';
 
-import '../../../utils/constants/strings.dart';
-import '../../../utils/styles/themes.dart';
 
+
+import 'package:socialapp/utils/import.dart';
+
+import 'widgets/rounded_icon_image.dart';
 
 class SettingPart extends StatefulWidget {
   const SettingPart({super.key});

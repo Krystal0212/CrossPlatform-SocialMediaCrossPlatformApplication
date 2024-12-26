@@ -1,11 +1,7 @@
-import 'package:socialapp/presentation/screens/splash/widgets/splash_image.dart';
-import 'package:socialapp/utils/constants/image_path.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+import 'splash_image.dart';
+import '../../../../../utils/import.dart';
 
-import '../../../../config/platforms.dart';
-import '../../../../utils/import.dart';
-
-//Group hình splash
+//Group create splash image
 class SplashImageGroup extends StatelessWidget {
   final EdgeInsets? margin;
   const SplashImageGroup({super.key, this.margin});

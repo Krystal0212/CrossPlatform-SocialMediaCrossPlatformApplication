@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/post.dart';
-import 'package:socialapp/presentation/screens/post_detail/post_detail/post_detail.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+
+
+import 'package:socialapp/utils/import.dart';
+
+import 'post_detail/post_detail.dart';
 
 class PostDetailScreen extends StatelessWidget {
-  PostDetailScreen({super.key, required this.post});
+  const PostDetailScreen({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
  
   // CollectionReference<Map<String, dynamic>> postCollection = FirebaseFirestore.instance.collection('NewPost').doc('');
   

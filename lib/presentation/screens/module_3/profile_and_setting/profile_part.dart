@@ -1,26 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:socialapp/data/repository/auth/auth_repository_impl.dart';
-import 'package:socialapp/domain/repository/auth/auth_repository.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/widgets/collection_tab.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/widgets/information_box.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/widgets/shot_tab.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+import 'package:socialapp/presentation/screens/module_3/profile_and_setting/widgets/information_box.dart';
 
-import '../../../data/repository/post/post_repository_impl.dart';
-import '../../../domain/entities/collection.dart';
-import '../../../domain/entities/post.dart';
-import '../../../domain/entities/user.dart';
-import '../../../domain/repository/post/post_repository.dart';
-import '../../../utils/constants/icon_path.dart';
-import '../../../utils/constants/image_path.dart';
-import '../../../utils/styles/themes.dart';
-import '../../widgets/edit_profile/bottom_rounded_appbar.dart';
+import 'package:socialapp/presentation/widgets/edit_profile/bottom_rounded_appbar.dart';
+import 'package:socialapp/utils/import.dart';
+
 import 'cubit/profile_cubit.dart';
 import 'cubit/profile_state.dart';
+import 'widgets/collection_tab.dart';
+import 'widgets/shot_tab.dart';
 
 class ProfilePart extends StatefulWidget {
   const ProfilePart({super.key});
@@ -60,7 +46,7 @@ class _ProfilePartState extends State<ProfilePart>
     getShotsForUser();
   }
 
-  void getShotsForUser()async{
+  void getShotsForUser() async {
     User? currentUser = await authRepository.getCurrentUser();
     urls = await getImageUrlsForUserPosts(currentUser!.uid);
   }
@@ -124,7 +110,6 @@ class _ProfilePartState extends State<ProfilePart>
     return imageUrls;
   }
 
-
   @override
   Widget build(BuildContext context) {
     // double deviceHeight = MediaQuery.of(context).size.height;
@@ -146,17 +131,19 @@ class _ProfilePartState extends State<ProfilePart>
             borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
         child: DefaultTabController(
           length: 2,
-          child: BlocBuilder<ProfileCubit, ProfileState>(builder: (context, state) {
+          child: BlocBuilder<ProfileCubit, ProfileState>(
+              builder: (context, state) {
             if (state is ProfileLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is ProfileError) {
               return Center(child: Text(state.message));
             } else if (state is ProfileLoaded) {
-
               final UserModel userModel = state.userModel;
               final List<CollectionModel> userCollections = state.collections;
               return NestedScrollView(
-                physics: isDrawerOpen ? const NeverScrollableScrollPhysics() : const AlwaysScrollableScrollPhysics(),
+                physics: isDrawerOpen
+                    ? const NeverScrollableScrollPhysics()
+                    : const AlwaysScrollableScrollPhysics(),
                 headerSliverBuilder:
                     (BuildContext context, bool innerBoxIsScrolled) {
                   return [
@@ -193,7 +180,10 @@ class _ProfilePartState extends State<ProfilePart>
                                             },
                                             icon: SvgPicture.asset(
                                               AppIcons.setting,
-                                              color: AppColors.white,
+                                              colorFilter: const ColorFilter.mode(
+                                              AppColors.white,
+                                              BlendMode.srcIn,
+                                            ),
                                             ),
                                           ),
                                         ),
@@ -227,7 +217,9 @@ class _ProfilePartState extends State<ProfilePart>
                                           child: CircleAvatar(
                                             // 0.6 Appbar Background
                                             radius: avatarRadius,
-                                            backgroundImage: CachedNetworkImageProvider(userModel.avatar),
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    userModel.avatar),
                                           ),
                                         ),
                                       ],
@@ -241,8 +233,9 @@ class _ProfilePartState extends State<ProfilePart>
                           //ToDo : Profile Information
                           IgnorePointer(
                             ignoring: isDrawerOpen,
-                            child: InformationBox(userModel: userModel,
-                            userFollowers: state.userFollowers,
+                            child: InformationBox(
+                              userModel: userModel,
+                              userFollowers: state.userFollowers,
                               userFollowings: state.userFollowings,
                             ),
                           ),
@@ -253,25 +246,28 @@ class _ProfilePartState extends State<ProfilePart>
                             child: SizedBox(
                               width: deviceWidth * 0.9,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   ProfileTab(
                                     index: 0,
-                                    selectedIndexNotifier: _selectedIndexNotifier,
+                                    selectedIndexNotifier:
+                                        _selectedIndexNotifier,
                                     label: '${urls.length} Shots',
                                     onTabSelected: _onTabSelected,
                                   ),
                                   ProfileTab(
                                     index: 1,
-                                    selectedIndexNotifier: _selectedIndexNotifier,
-                                    label: '${userCollections.length} Collections',
+                                    selectedIndexNotifier:
+                                        _selectedIndexNotifier,
+                                    label:
+                                        '${userCollections.length} Collections',
                                     onTabSelected: _onTabSelected,
                                   ),
                                 ],
                               ),
                             ),
                           ),
-
                         ],
                       ),
                     )
@@ -289,7 +285,9 @@ class _ProfilePartState extends State<ProfilePart>
                       controller: _tabController,
                       children: [
                         ShotTab(imageUrls: urls),
-                        CollectionTab(collections: userCollections,),
+                        CollectionTab(
+                          collections: userCollections,
+                        ),
                       ],
                     ),
                   ),

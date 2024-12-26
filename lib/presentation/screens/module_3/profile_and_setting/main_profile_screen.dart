@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/profile_part.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/setting_part.dart';
-import 'package:socialapp/presentation/screens/profile_and_setting/widgets/profile_box.dart';
 
-import '../../../utils/constants/image_path.dart';
-import '../../../utils/styles/themes.dart';
+import 'package:socialapp/utils/import.dart';
+
+
 import 'cubit/profile_cubit.dart';
 import 'cubit/profile_state.dart';
+import 'profile_part.dart';
+import 'setting_part.dart';
+import 'widgets/profile_box.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

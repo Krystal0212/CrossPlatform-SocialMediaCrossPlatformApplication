@@ -1,5 +1,8 @@
 import 'package:socialapp/utils/import.dart';
 
+import 'cubit/sign_up_cubit.dart';
+import 'cubit/sign_up_state.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 

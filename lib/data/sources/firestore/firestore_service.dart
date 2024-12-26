@@ -3,18 +3,13 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:socialapp/domain/entities/collection.dart';
 import 'package:socialapp/domain/entities/comment.dart';
 import 'package:socialapp/domain/entities/post.dart';
 import 'package:socialapp/domain/entities/topic.dart';
-import 'package:socialapp/data/sources/storage/storage_service.dart';
 import 'package:socialapp/utils/import.dart';
 
 import '../../../domain/entities/user.dart';
-import '../../models/user_firestore/add_user_data.dart';
-import '../../models/user_firestore/update_user_req.dart';
 
 abstract class FirestoreService {
   Future<UserModel?>? getUserData(String userID);
@@ -24,9 +19,9 @@ abstract class FirestoreService {
   // No need add to repository
   Future<UserModel?> fetchUserData(String userID);
 
-  Future<void> addCurrentUserData(AddUserReq addUserReq);
+  Future<void> addCurrentUserData(UserModel addUser);
 
-  Future<void> updateCurrentUserData(UpdateUserReq updateUserReq);
+  Future<void> updateCurrentUserData(UserModel updateUser);
 
   Future<List<Map<String, String>>> fetchCategoriesData();
 
@@ -137,6 +132,7 @@ class FirestoreServiceImpl extends FirestoreService {
           code: 'new-user',
           message: 'User data does not exist in Firestore',
         );
+
       }
 
       return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
@@ -146,7 +142,7 @@ class FirestoreServiceImpl extends FirestoreService {
   }
 
   @override
-  Future<void> addCurrentUserData(AddUserReq addUserReq) async {
+  Future<void> addCurrentUserData(UserModel addUser) async {
     if (currentUser == null) {
       if (kDebugMode) {
         print("No user is currently signed in.");
@@ -154,7 +150,7 @@ class FirestoreServiceImpl extends FirestoreService {
       return;
     }
 
-    Map<String, dynamic> userData = addUserReq.newUserData.toMap();
+    Map<String, dynamic> userData = addUser.toMap();
     await _usersRef
         .doc(currentUser?.uid)
         .set(userData)
@@ -163,7 +159,7 @@ class FirestoreServiceImpl extends FirestoreService {
   }
 
   @override
-  Future<void> updateCurrentUserData(UpdateUserReq updateUserReq) async {
+  Future<void> updateCurrentUserData(UserModel userData) async {
     if (currentUser == null) {
       if (kDebugMode) {
         print("No user is currently signed in.");
@@ -174,7 +170,7 @@ class FirestoreServiceImpl extends FirestoreService {
     try {
       await _usersRef
           .doc(currentUser?.uid)
-          .update(updateUserReq.updatedUserData.toMap());
+          .update(userData.toMap());
     } catch (e) {
       if (kDebugMode) {
         print("Error updating user data: $e");
@@ -441,7 +437,9 @@ class FirestoreServiceImpl extends FirestoreService {
 
   @override
   Future<List<CommentModel>?> getCommentPost(PostModel post) async {
-    print('check');
+    if (kDebugMode) {
+      print('check');
+    }
     List<CommentModel> comments = [];
     DocumentReference commentRef;
     Future<DocumentSnapshot<Object?>> commentData;
@@ -457,8 +455,10 @@ class FirestoreServiceImpl extends FirestoreService {
           .doc(post.postId)
           .collection('comments')
           .get();
-      print('check2');
-      print(commentListSnapshot.docs);
+
+      if (kDebugMode) {
+        print(commentListSnapshot.docs);
+      }
       // Future<Map<String, dynamic>> userData = userRef.get().then((value) => value.data() as Map<String, dynamic>);
       if (commentListSnapshot.docs.isEmpty) {
         throw CustomFirestoreException(
@@ -473,7 +473,9 @@ class FirestoreServiceImpl extends FirestoreService {
         commentRef = doc['commentRef'];
         commentData = commentRef.get();
         await commentData.then((comment) {
-          print(comment['content']);
+          if (kDebugMode) {
+            print(comment['content']);
+          }
 
           userRef = comment['userRef'];
           userData = userRef.get();
@@ -554,10 +556,13 @@ class FirestoreServiceImpl extends FirestoreService {
   Future<void> createPost(String content, File image) async {
     String? imageUrl = await _storage.uploadPostImage('Post', image);
 
-    print('imageUrl: $imageUrl');
-    print('content: $content');
-    // print('image: $image');
-    print('currentUser: $currentUser');
+    if (kDebugMode) {
+      print('imageUrl: $imageUrl');
+      print('content: $content');
+      // print('image: $image');
+      print('currentUser: $currentUser');
+    }
+
 
     if (imageUrl != null) {
       CollectionReference collectionRef = _firestoreDB.collection('Post');
@@ -590,8 +595,6 @@ class FirestoreServiceImpl extends FirestoreService {
       }
 
       for (var doc in collectionSnapshot.docs) {
-        // print(doc.id);
-        print('name: ${doc['name']}');
         CollectionModel collection = CollectionModel(
           collectionId: doc.id,
           name: doc['name'],

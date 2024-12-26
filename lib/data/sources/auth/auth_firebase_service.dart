@@ -14,14 +14,16 @@ abstract class AuthFirebaseService {
 
   Future<void> verifyOTPByCode(String otpCode);
 
+  Future<void> sendForCurrentUserVerificationEmail();
+
   Future<void> sendPasswordResetEmail(String email);
 
   User? getCurrentUser();
 
   Future<void> signOut();
 
-  Future<void> reAuthenticationAndChangeEmail(
-      String email, String newEmail, String password);
+  Future<void> reAuthenticationAndChangeEmail(String email, String newEmail,
+      String password);
 
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl);
 
@@ -36,7 +38,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq) async {
     try {
       final UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: signInUserReq.email.trim(),
         password: signInUserReq.password.trim(),
       );
@@ -49,19 +51,19 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         );
       }
 
-      if (user.emailVerified) {
-        await signOut();
+      if (!user.emailVerified) {
         throw FirebaseAuthException(
           code: 'email-not-verified',
+          message: 'Your email address has not been verified. Please verify your email before proceeding.',
         );
       }
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
-        print("${AppStrings.firebaseAuthError}: ${e.message}");
+        print("${AppStrings.firebaseAuthError}: ${e.toString()}");
       }
       switch (e.code) {
         case 'email-not-verified':
-          throw (AppStrings.emailNotVerifiedError);
+          rethrow;
         case 'user-not-found':
           throw (AppStrings.userNotFoundError);
         case 'wrong-password':
@@ -73,7 +75,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }
     } catch (error) {
       if (kDebugMode) {
-        print("${AppStrings.authenticationError} : ${error.toString()}");
+        print("${AppStrings.authenticationUnknownError}: ${error.toString()}");
       }
       rethrow;
     }
@@ -83,17 +85,16 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   Future<void> signUp(SignUpUserReq signUpUserReq) async {
     try {
       final UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
+      await _auth.createUserWithEmailAndPassword(
         email: signUpUserReq.email,
         password: signUpUserReq.password,
       );
 
       final accessToken = await userCredential.user?.getIdToken() ?? "";
 
-      sendVerification(signUpUserReq.email, userCredential, accessToken);
+      sendVerificationEmail(signUpUserReq.email, accessToken);
 
-      // await userCredential.user!.sendEmailVerification();
-      // await userCredential.user!.updatePhotoURL(AppStrings.defaultAvatarUrl);
+      await userCredential.user!.updatePhotoURL(AppStrings.defaultAvatarUrl);
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         print("${AppStrings.firebaseAuthError}: ${e.message}");
@@ -120,16 +121,42 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     return otp.toString();
   }
 
-  Future<void> sendVerification(String recipientEmail,
-      UserCredential userCredential, String accessToken) async {
-    final Uri url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailWithOTP');
+  @override
+  Future<void> sendForCurrentUserVerificationEmail() async {
+    try {
+      if (_auth.currentUser == null) {
+        throw 'No user is currently signed in';
+      }
+      String recipientEmail = _auth.currentUser?.email ?? '';
+      String accessToken = await _auth.currentUser?.getIdToken() ?? '';
+
+      if (recipientEmail.isEmpty) {
+        throw 'Failed to retrieve user email';
+      }
+
+      if (accessToken.isEmpty) {
+        throw 'Failed to retrieve access token';
+      }
+
+      sendVerificationEmail(recipientEmail, accessToken);
+    } catch (error) {
+      if (kDebugMode) {
+        print('Verification failed: $error');
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> sendVerificationEmail(String recipientEmail, String accessToken) async {
+    final Uri url = Uri.parse(
+        'https://api-m2ogw2ba2a-uc.a.run.app/sendEmailWithOTP');
     final String otpCode = generateOtp();
 
     try {
       final response = await http.post(
         url,
         headers: {
-          "auth-token": accessToken,
+          // "auth-token": accessToken,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -146,7 +173,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       } else {
         if (kDebugMode) {
           print(
-              'Failed to send email: ${response.statusCode} - ${response.body}');
+              'Failed to send email: ${response.statusCode} - ${response
+                  .body}');
         }
       }
     } catch (error) {
@@ -158,7 +186,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
 
   @override
   Future<void> verifyOTPByLink(String encryptedLink) async {
-    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByLink');
+    final url = Uri.parse(
+        'https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByLink');
 
     String newEncryptedLink = encryptedLink.trim();
     try {
@@ -178,16 +207,16 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         print('Verification failed: $error');
       }
       rethrow;
-
     }
   }
 
   @override
   Future<void> verifyOTPByCode(String otpCode) async {
-    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByCode');
+    final url = Uri.parse(
+        'https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByCode');
 
     try {
-      if(_auth.currentUser == null){
+      if (_auth.currentUser == null) {
         throw 'No user is currently signed in';
       }
 
@@ -208,7 +237,6 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         print('Verification failed: $error');
       }
       rethrow;
-
     }
   }
 
@@ -218,14 +246,10 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       UserCredential googleUserCredential;
       if (kIsWeb) {
         googleUserCredential = await _auth.signInWithPopup(_googleProvider);
-        // _googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-        // _googleProvider.setCustomParameters({
-        //   'login_hint': 'user@example.com'
-        // });
       } else {
         final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
         final GoogleSignInAuthentication? googleAuth =
-            await googleUser?.authentication;
+        await googleUser?.authentication;
 
         // Create a GoogleAuthProvider credential
         final AuthCredential googleCredential = GoogleAuthProvider.credential(
@@ -235,16 +259,15 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
 
         // Sign in to Firebase with Google credentials
         googleUserCredential =
-            await _auth.signInWithCredential(googleCredential);
+        await _auth.signInWithCredential(googleCredential);
       }
 
       User? user = googleUserCredential.user;
-      String? token = await user?.getIdToken();
-      // if (kDebugMode) {
-      //   print('token : $token');
-      // }
+      // String? token = await user?.getIdToken();
 
-      sendVerification(user?.email ?? '', googleUserCredential, token ?? "");
+      // if(!(_auth.currentUser?.emailVerified ?? true) ) {
+      //   sendVerificationEmail(user?.email ?? '', token ?? '');
+      // }
 
       if (user == null) {
         throw FirebaseAuthException(
@@ -297,8 +320,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> reAuthenticationAndChangeEmail(
-      String email, String newEmail, String password) async {
+  Future<void> reAuthenticationAndChangeEmail(String email, String newEmail,
+      String password) async {
     try {
       User? user = _auth.currentUser;
       if (user != null) {

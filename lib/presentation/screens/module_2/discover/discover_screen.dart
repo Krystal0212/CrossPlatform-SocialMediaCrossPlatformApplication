@@ -3,8 +3,8 @@ import 'package:socialapp/domain/entities/collection.dart';
 import 'package:socialapp/domain/entities/topic.dart';
 import 'package:socialapp/domain/repository/collection/collection_repository.dart';
 import 'package:socialapp/domain/repository/topic/topic_repository.dart';
-import 'package:socialapp/presentation/screens/discover/widgets/collection_list.dart';
-import 'package:socialapp/presentation/screens/discover/widgets/topic_list.dart';
+import 'package:socialapp/presentation/screens/module_2/discover/widgets/collection_list.dart';
+import 'package:socialapp/presentation/screens/module_2/discover/widgets/topic_list.dart';
 import 'package:socialapp/service_locator.dart';
 
 class DiscoverScreen extends StatefulWidget {

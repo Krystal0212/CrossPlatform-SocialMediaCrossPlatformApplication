@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:socialapp/domain/entities/topic.dart';
-import 'package:socialapp/presentation/screens/topic/topic_screen.dart';
+import 'package:socialapp/presentation/screens/module_2/topic/topic_screen.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 import 'package:socialapp/utils/styles/text_style.dart';
 

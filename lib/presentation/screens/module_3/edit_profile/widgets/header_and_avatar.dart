@@ -1,26 +1,21 @@
-import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img;
-import 'package:image_picker/image_picker.dart';
-
-import '../../../../utils/constants/icon_path.dart';
-import '../../../../utils/constants/image_path.dart';
-import '../../../../utils/styles/themes.dart';
-import '../../../widgets/edit_profile/bottom_rounded_appbar.dart';
-import '../../../widgets/general/svg_icon_button.dart';
+import 'package:socialapp/presentation/widgets/edit_profile/bottom_rounded_appbar.dart';
+import 'package:socialapp/presentation/widgets/general/svg_icon_button.dart';
+import 'package:socialapp/utils/import.dart';
 
 class ImagePickerHelper {
   final ImagePicker _imagePicker = ImagePicker();
 
-  Future<void> pickImageFromGallery(BuildContext context, Function(File) onImagePicked) async {
-    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+  Future<void> pickImageFromGallery(
+      BuildContext context, Function(File) onImagePicked) async {
+    final pickedFile =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       onImagePicked(File(pickedFile.path));
     }
   }
 
-  Future<void> pickImageFromCamera(BuildContext context, Function(File) onImagePicked) async {
+  Future<void> pickImageFromCamera(
+      BuildContext context, Function(File) onImagePicked) async {
     final pickedFile = await _imagePicker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       onImagePicked(File(pickedFile.path));
@@ -33,7 +28,7 @@ class HeaderAndAvatar extends StatefulWidget {
   final ValueNotifier<bool> isFileImageNotifier;
 
   HeaderAndAvatar({super.key, required this.avatarNotifier})
-      :isFileImageNotifier = ValueNotifier<bool>(false);
+      : isFileImageNotifier = ValueNotifier<bool>(false);
 
   String get avatarValue => avatarNotifier.value;
 
@@ -85,14 +80,16 @@ class _HeaderAndAvatarState extends State<HeaderAndAvatar> {
   Future<File> compressImage(File imageFile) async {
     final imageBytes = await imageFile.readAsBytes();
 
-    final originalImage = img.decodeImage(imageBytes);
+    final originalImage = decodeImage(imageBytes);
 
-    final resizedImage = img.copyResize(originalImage!, width: 600);
+    final resizedImage = copyResize(originalImage!, width: 600);
 
-    final compressedBytes = img.encodeJpg(resizedImage, quality: 85); // Adjust quality (0-100)
+    final compressedBytes =
+        encodeJpg(resizedImage, quality: 85); // Adjust quality (0-100)
 
     final directory = Directory.systemTemp;
-    final compressedImageFile = File('${directory.path}/compressed_${imageFile.uri.pathSegments.last}');
+    final compressedImageFile =
+        File('${directory.path}/compressed_${imageFile.uri.pathSegments.last}');
 
     await compressedImageFile.writeAsBytes(compressedBytes);
 
@@ -158,19 +155,20 @@ class _HeaderAndAvatarState extends State<HeaderAndAvatar> {
                         return ValueListenableBuilder<bool>(
                           valueListenable: widget.isFileImageNotifier,
                           builder: (context, isFileImage, _) {
-                            if(isFileImage){
+                            if (isFileImage) {
                               return CircleAvatar(
                                 radius: avatarRadius,
                                 backgroundImage: // Use FileImage for local files
-                                FileImage(File(avatarURL)),// Use CachedNetworkImageProvider for network images
+                                    FileImage(File(
+                                        avatarURL)), // Use CachedNetworkImageProvider for network images
                               );
-                            }
-                              else {
+                            } else {
                               return CircleAvatar(
-                              radius: avatarRadius,
-                              backgroundImage: // Use FileImage for local files
-                                   CachedNetworkImageProvider(avatarURL), // Use CachedNetworkImageProvider for network images
-                            );
+                                radius: avatarRadius,
+                                backgroundImage: // Use FileImage for local files
+                                    CachedNetworkImageProvider(
+                                        avatarURL), // Use CachedNetworkImageProvider for network images
+                              );
                             }
                           },
                         );
@@ -183,7 +181,8 @@ class _HeaderAndAvatarState extends State<HeaderAndAvatar> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(Radius.circular(12)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
                         gradient: AppTheme.mainGradient,
                       ),
                       child: SvgIconButton(

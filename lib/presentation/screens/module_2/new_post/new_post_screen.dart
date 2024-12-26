@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_cubit.dart';
-import 'package:socialapp/presentation/screens/new_post/widgets/action_post.dart';
-import 'package:socialapp/presentation/screens/new_post/widgets/header_new_post.dart';
-import 'package:socialapp/presentation/screens/new_post/widgets/post_content.dart';
 import 'package:socialapp/utils/styles/colors.dart';
+
+import 'cubit/post_cubit.dart';
+import 'widgets/action_post.dart';
+import 'widgets/header_new_post.dart';
+import 'widgets/post_content.dart';
 // import 'package:socialapp/presentation/screens/post_detail/post_detail/post_detail.dart';
 
 class NewPostScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
 
   @override
   void dispose() {
-    print('dispose cubit post');
+
     _postCubit.close();
     super.dispose();
   }

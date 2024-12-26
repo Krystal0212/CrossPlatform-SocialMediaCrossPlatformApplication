@@ -1,14 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/post.dart';
-import 'package:socialapp/domain/repository/post/post_repository.dart';
-import 'package:socialapp/presentation/screens/comment/widgets/single_comment.dart';
-import 'package:socialapp/service_locator.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+
+
+import 'package:socialapp/utils/import.dart';
+import 'widgets/single_comment.dart';
 
 class CommentScreen extends StatelessWidget {
-  CommentScreen({super.key, required this.post});
+  const CommentScreen({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
 
   @override
   Widget build(BuildContext context) {

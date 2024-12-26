@@ -1,15 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/post.dart';
-import 'package:socialapp/presentation/screens/post_detail/post_detail_screen.dart';
-import 'package:socialapp/utils/styles/colors.dart';
-import 'package:socialapp/utils/styles/text_style.dart';
 
-import '../../../../utils/mixin/methods/convert_timestamp.dart';
+
+import 'package:socialapp/utils/import.dart';
+import 'package:socialapp/presentation/screens/module_2/post_detail/post_detail_screen.dart';
+
 
 class PostCustom extends StatelessWidget {
-  PostCustom({super.key, required this.post});
+  const PostCustom({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +65,9 @@ class PostCustom extends StatelessWidget {
 }
 
 class PostInfo extends StatefulWidget {
-  PostInfo({super.key, required this.post});
+  const PostInfo({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
 
   @override
   State<PostInfo> createState() => _PostInfoState();

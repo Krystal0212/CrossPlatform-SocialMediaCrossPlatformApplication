@@ -1,6 +1,4 @@
-import 'package:socialapp/domain/entities/collection.dart';
-
-import '../../../../domain/entities/user.dart';
+import 'package:socialapp/utils/import.dart';
 
 abstract class ProfileState {}
 

@@ -1,10 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/data/sources/auth/auth_firebase_service.dart';
-import 'package:socialapp/presentation/screens/forgot_password/cubit/forgot_password_state.dart';
-import 'package:socialapp/service_locator.dart';
+import 'package:socialapp/utils/import.dart';
+import 'forgot_password_state.dart';
+
+
 
 class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
   ForgotPasswordCubit() : super(ForgotPasswordInitial());

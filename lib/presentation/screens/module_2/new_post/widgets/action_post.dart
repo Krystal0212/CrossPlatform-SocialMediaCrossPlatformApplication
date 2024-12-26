@@ -1,11 +1,8 @@
-import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_cubit.dart';
-import 'package:socialapp/utils/styles/colors.dart';
-import 'package:socialapp/utils/styles/text_style.dart';
+
+import 'package:socialapp/utils/import.dart';
+
+import '../cubit/post_cubit.dart';
 
 class ActionPost extends StatefulWidget {
   const ActionPost({super.key});

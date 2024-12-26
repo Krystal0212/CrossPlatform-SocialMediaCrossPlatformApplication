@@ -29,6 +29,13 @@ mixin Validator {
     return null;
   }
 
+  String? validateSignInPassword(String value) {
+    if (validateEmpty(value)) {
+      return "Please enter a your password";
+    }
+    return null;
+  }
+
   String? validatePassword(String value) {
     final hasUppercase = RegExp(r'[A-Z]').hasMatch(value);
     final hasDigits = RegExp(r'[0-9]').hasMatch(value);

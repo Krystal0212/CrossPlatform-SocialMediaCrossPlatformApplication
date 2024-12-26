@@ -1,7 +1,6 @@
-import 'dart:io';
+import 'package:socialapp/utils/import.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:socialapp/presentation/screens/new_post/cubit/post_state.dart';
+import 'post_state.dart';
 
 class PostCubit extends Cubit<PostState> {
   PostCubit() : super(const PostInitial());
@@ -43,14 +42,22 @@ class PostCubit extends Cubit<PostState> {
       final content = currentState.content;
 
       if (image == null) {
-        print("You must provide an image to create a post.");
+        if (kDebugMode) {
+          print("You must provide an image to create a post.");
+        }
       } else {
         // Perform submission logic (e.g., send to server)
-        print("Content: ${content ?? 'No content'}");
-        print("Image: ${image.path}");
+        if (kDebugMode) {
+          print("Content: ${content ?? 'No content'}");
+        }
+        if (kDebugMode) {
+          print("Image: ${image.path}");
+        }
       }
     } else {
-      print("You must provide an image to create a post.");
+      if (kDebugMode) {
+        print("You must provide an image to create a post.");
+      }
     }
   }
 }

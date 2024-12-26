@@ -1,16 +1,8 @@
-// screens/home_screen.dart
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/repository/post/post_repository.dart';
-import 'package:socialapp/presentation/screens/home/widgets/home_header_custom.dart';
-import 'package:socialapp/presentation/screens/home/widgets/post_custom.dart';
-import 'package:socialapp/presentation/screens/home/widgets/tab_item.dart';
-import 'package:socialapp/service_locator.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+import 'package:socialapp/utils/import.dart';
 
-import '../../../domain/repository/user/user_repository.dart';
-import '../../../utils/import.dart';
-import '../profile_and_setting/widgets/log_out_button.dart';
+import 'widgets/home_header_custom.dart';
+import 'widgets/post_custom.dart';
+import 'widgets/tab_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

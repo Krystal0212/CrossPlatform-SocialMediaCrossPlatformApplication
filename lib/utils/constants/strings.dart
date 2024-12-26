@@ -25,9 +25,11 @@ class AppStrings {
   static const String successDialog = "An email has just been sent to you, click the link provided to complete registration";
   static const String error = "Error";
   static const String verification = "VERIFICATION";
-  static const String verificationMessage = "A message with verification code was sent to your email.";
+  static const String messageDefault = "A message with verification code was sent to your email.";
+  static const String messageNotVerifiedYet = "Your email is not verified. Please verify to proceed.";
   static const String notReceiveTheCode = "DON'T RECEIVE THE CODE";
   static const String typeCode = "Type verification code";
+  static const String buttonSendToMyEmail = 'Send OTP code to my email';
   static const String verify = "VERIFY";
 
   // For collection section
@@ -42,6 +44,7 @@ class AppStrings {
   static const String emailNotVerifiedError = "Your account is not verified. Please check your inbox.";
   static const String incorrectEmailOrPasswordError = "Incorrect email or password.";
   static const String authenticationError = "Authentication error: ";
+  static const String authenticationUnknownError = "Authentication unknown error: ";
   static const String accountExistsError = "The account already exists for that email.";
   static const String emailNotFoundError = "Email does not exist.";
   static const String userNotFoundError = "User not found";

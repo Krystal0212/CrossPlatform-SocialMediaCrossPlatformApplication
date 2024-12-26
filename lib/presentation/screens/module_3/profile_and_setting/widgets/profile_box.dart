@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
 
-import '../../../../utils/constants/icon_path.dart';
-import '../../../../utils/styles/colors.dart';
-import '../../../../utils/styles/themes.dart';
-import '../../../widgets/general/svg_icon_button.dart';
+
+import 'package:socialapp/presentation/widgets/general/svg_icon_button.dart';
+import 'package:socialapp/utils/import.dart';
 
 class ProfileBox extends StatelessWidget {
   const ProfileBox({super.key});

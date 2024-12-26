@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:socialapp/utils/import.dart';
 
 abstract class PostState {
   const PostState();
@@ -28,6 +28,7 @@ class PostWithData extends PostState {
   final String? content;
 
   File? get getImage => image;
+
   String? get getContent => content;
 
   const PostWithData({this.image, this.content});

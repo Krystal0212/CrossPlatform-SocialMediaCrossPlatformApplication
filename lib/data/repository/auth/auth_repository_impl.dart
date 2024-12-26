@@ -60,4 +60,9 @@ class AuthRepositoryImpl extends AuthRepository {
   Future<void> verifyOTPByCode(String otpCode) async {
     return await serviceLocator<AuthFirebaseService>().verifyOTPByCode(otpCode);
   }
+
+  @override
+  Future<void> sendForCurrentUserVerificationEmail() async{
+    return await serviceLocator<AuthFirebaseService>().sendForCurrentUserVerificationEmail();
+  }
 }

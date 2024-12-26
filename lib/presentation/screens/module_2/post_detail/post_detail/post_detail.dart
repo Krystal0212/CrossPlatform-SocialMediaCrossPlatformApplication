@@ -1,15 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/post.dart';
-import 'package:socialapp/presentation/screens/comment/comment_screen.dart';
-import 'package:socialapp/utils/styles/colors.dart';
-import 'package:socialapp/utils/styles/text_style.dart';
+import 'package:socialapp/utils/import.dart';
 
-import '../../../../utils/mixin/methods/convert_timestamp.dart';
+import '../../comment/comment_screen.dart';
 
 class PostDetail extends StatelessWidget {
-  PostDetail({super.key, required this.post});
+  const PostDetail({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -33,7 +30,7 @@ class PostDetail extends StatelessWidget {
             //       if (!snapshot.hasData || snapshot.data!.isEmpty) {
             //         return Center(child: Text('There is no comment.'));
             //       }
-                  
+
             //       return ListView.builder(
             //         // shrinkWrap: true,
             //         // physics: NeverScrollableScrollPhysics(),
@@ -53,9 +50,9 @@ class PostDetail extends StatelessWidget {
 }
 
 class PostUserInfo extends StatefulWidget {
-  PostUserInfo({super.key, required this.post});
+  const PostUserInfo({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
 
   @override
   State<PostUserInfo> createState() => _PostUserInfoState();
@@ -85,13 +82,9 @@ class _PostUserInfoState extends State<PostUserInfo> with Methods {
                   backgroundImage: NetworkImage(widget.post.userAvatar),
                 ),
               ),
-              Text(
-                widget.post.username,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold
-                )
-              ),
+              Text(widget.post.username,
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.bold)),
               const Spacer(),
               Text(
                 timeAgo,
@@ -109,9 +102,9 @@ class _PostUserInfoState extends State<PostUserInfo> with Methods {
 }
 
 class PostImage extends StatelessWidget {
-  PostImage({super.key, required this.post});
+  const PostImage({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +126,10 @@ class PostImage extends StatelessWidget {
 }
 
 class PostStatsBar extends StatelessWidget {
-  PostStatsBar({super.key, required this.post});
+  const PostStatsBar({super.key, required this.post});
 
-  PostModel post;
-  
+  final PostModel post;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -146,35 +139,51 @@ class PostStatsBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(post.viewAmount.toString(), style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),),
+              Text(
+                post.viewAmount.toString(),
+                style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),
+              ),
               IconButton(
-                icon: Icon(Icons.remove_red_eye_outlined, color: AppColors.iric.withOpacity(0.5),),
+                icon: Icon(
+                  Icons.remove_red_eye_outlined,
+                  color: AppColors.iric.withOpacity(0.5),
+                ),
                 onPressed: () {},
               ),
             ],
           ),
           Row(
             children: [
-              Text(post.commentAmount.toString(), style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),),
+              Text(
+                post.commentAmount.toString(),
+                style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),
+              ),
               IconButton(
-                icon: Icon(Icons.insert_comment_outlined, color: AppColors.iric.withOpacity(0.5),),
+                icon: Icon(
+                  Icons.insert_comment_outlined,
+                  color: AppColors.iric.withOpacity(0.5),
+                ),
                 onPressed: () {
                   // context.go('/signin/comment');
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CommentScreen(post: post)
-                    )
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => CommentScreen(post: post)));
                 },
               ),
             ],
           ),
           Row(
             children: [
-              Text(post.likeAmount.toString(), style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),),
+              Text(
+                post.likeAmount.toString(),
+                style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),
+              ),
               IconButton(
-                icon: Icon(Icons.favorite_border, color: AppColors.iric.withOpacity(0.5),),
+                icon: Icon(
+                  Icons.favorite_border,
+                  color: AppColors.iric.withOpacity(0.5),
+                ),
                 onPressed: () {},
               ),
             ],
@@ -186,23 +195,23 @@ class PostStatsBar extends StatelessWidget {
 }
 
 class PostContent extends StatelessWidget {
-  PostContent({super.key, required this.post});
+  const PostContent({super.key, required this.post});
 
-  PostModel post;
+  final PostModel post;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Text(
-        post.content * 20,
-        // style: TextStyle(
-        //   fontSize: 14,
-        //   color: AppColors.trolleyGrey,
-        //   fontFamily: 'CircularStd',
-        //   wordSpacing: 4
-        // ),
-        style: AppTextStyle.contentPost,
-      )
-    );
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          post.content * 20,
+          // style: TextStyle(
+          //   fontSize: 14,
+          //   color: AppColors.trolleyGrey,
+          //   fontFamily: 'CircularStd',
+          //   wordSpacing: 4
+          // ),
+          style: AppTextStyle.contentPost,
+        ));
   }
 }

@@ -1,19 +1,15 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:socialapp/domain/entities/comment.dart';
-
-import '../../../../utils/mixin/methods/convert_timestamp.dart';
+import 'package:socialapp/utils/import.dart';
 
 class SingleComment extends StatefulWidget {
-  SingleComment({super.key, required this.comment});
+  const SingleComment({super.key, required this.comment});
 
-  CommentModel comment;
+  final CommentModel comment;
 
   @override
   State<SingleComment> createState() => _SingleCommentState();
 }
 
-class _SingleCommentState extends State<SingleComment> with Methods{
+class _SingleCommentState extends State<SingleComment> with Methods {
   late String timestamp;
 
   @override
@@ -34,7 +30,6 @@ class _SingleCommentState extends State<SingleComment> with Methods{
         padding: const EdgeInsets.all(8.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -52,7 +47,10 @@ class _SingleCommentState extends State<SingleComment> with Methods{
                   Text(widget.comment.content),
                   Row(
                     children: [
-                      Text(timestamp, overflow: TextOverflow.ellipsis,),
+                      Text(
+                        timestamp,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       InkWell(
                         onTap: () {},
                         child: const Padding(
@@ -71,7 +69,6 @@ class _SingleCommentState extends State<SingleComment> with Methods{
                 ],
               ),
             ),
-            
           ],
         ),
       ),

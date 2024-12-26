@@ -1,4 +1,4 @@
-import '../../../../domain/entities/user.dart';
+import 'package:socialapp/domain/entities/user.dart';
 
 abstract class EditPageState {}
 
