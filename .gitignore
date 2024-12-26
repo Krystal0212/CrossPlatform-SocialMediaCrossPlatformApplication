@@ -44,5 +44,7 @@ app.*.map.json
 
 README.md
 
+lib/structure.txt
 lib/todo.txt
+lib/about_verify_link.txt
 /functions/
