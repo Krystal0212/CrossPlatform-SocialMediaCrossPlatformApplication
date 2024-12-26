@@ -1,7 +1,6 @@
-import 'dart:convert';
-import 'dart:math';
+
 import 'package:socialapp/utils/import.dart';
-import 'package:http/http.dart' as http;
+import "package:http/http.dart";
 
 abstract class AuthFirebaseService {
   Future<void> signUp(SignUpUserReq signUpUserReq);
@@ -153,7 +152,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     final String otpCode = generateOtp();
 
     try {
-      final response = await http.post(
+      final response = await post(
         url,
         headers: {
           // "auth-token": accessToken,
@@ -191,7 +190,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
 
     String newEncryptedLink = encryptedLink.trim();
     try {
-      final response = await http.get(url.replace(queryParameters: {
+      final response = await get(url.replace(queryParameters: {
         'encryptedLink': newEncryptedLink,
       }));
 
@@ -220,7 +219,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         throw 'No user is currently signed in';
       }
 
-      final response = await http.get(url.replace(queryParameters: {
+      final response = await get(url.replace(queryParameters: {
         'otpCode': otpCode,
         'userLoggedEmail': _auth.currentUser?.email
       }));
@@ -290,16 +289,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      final signInMethod = await _auth.fetchSignInMethodsForEmail(email);
+       // use a post function from url of send reset email deployed on cloud functions
 
-      if (signInMethod.isNotEmpty) {
-        await _auth.sendPasswordResetEmail(email: email);
-      } else {
-        throw FirebaseAuthException(
-          code: 'email-not-found',
-          message: AppStrings.emailNotFoundError,
-        );
-      }
     } catch (error) {
       if (kDebugMode) {
         print("${AppStrings.authenticationError} : ${error.toString()}");

@@ -31,7 +31,7 @@ class SignInCubit extends Cubit<SignInState> {
         if (e.code == 'email-not-verified') {
           emit(SignInFailure());
           if (context.mounted) {
-            context.go('/verify', extra: {"state": 1});
+            context.go('/verify', extra: {"isFromSignIn": true});
           }
         }
       } else {
@@ -61,7 +61,7 @@ class SignInCubit extends Cubit<SignInState> {
         if (e.code == 'email-not-verified') {
           emit(SignInFailure());
           if (context.mounted) {
-            context.go('/verify', extra: {"state": 1});
+            context.go('/verify', extra: {"isFromSignIn": true});
           }
         }
       } else {

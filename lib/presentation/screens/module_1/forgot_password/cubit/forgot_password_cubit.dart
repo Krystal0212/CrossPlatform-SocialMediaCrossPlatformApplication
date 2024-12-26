@@ -1,9 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 import 'forgot_password_state.dart';
 
-
-
-class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
+class ForgotPasswordCubit extends Cubit<ForgotPasswordState> with AppDialogs {
   ForgotPasswordCubit() : super(ForgotPasswordInitial());
 
   void sendPasswordResetEmail(
@@ -14,48 +12,27 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
         await serviceLocator<AuthFirebaseService>()
             .sendPasswordResetEmail(email);
         emit(ForgotPasswordSuccess());
-        _showAlertDialog(context, "Success",
-            "Send reset password email success. Please check your mail to reset password");
-        // context.go("/signin/forgotpassword/verification");
+
+        if (context.mounted) {
+          showSimpleAlertDialog(
+              context: context,
+              title: "Success",
+              message:
+                  "Send reset password email success. Please check your mail to reset password");
+        }
+        // Go to otp verify screen with passType = resetEmail using
       }
     } catch (e) {
-      emit(ForgotPasswordFailure());
       if (e is FirebaseAuthException) {
-        if (e.code == "email-not-found") {
-          _showAlertDialog(context, "Error", e.message);
-        } else {
-          if (kDebugMode) {
-            print("Error send password reset email: $e");
-          }
+        if (kDebugMode) {
+          print("Error firebase auth error: $e");
         }
       } else {
         if (kDebugMode) {
           print("Error send password reset email: $e");
         }
       }
+      emit(ForgotPasswordFailure());
     }
-  }
-
-  void _showAlertDialog(BuildContext context, String? title, String? message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            "$title",
-            textAlign: TextAlign.center,
-          ),
-          content: Text("$message"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            )
-          ],
-        );
-      },
-    );
   }
 }

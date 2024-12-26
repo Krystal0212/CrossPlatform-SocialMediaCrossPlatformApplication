@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:socialapp/service_locator.dart';
 
-import '../../../domain/repository/collection/collection_repository.dart';
+import '../../../../domain/repository/collection/collection_repository.dart';
+
 
 class CollectionScreen extends StatelessWidget {
   const CollectionScreen({super.key});

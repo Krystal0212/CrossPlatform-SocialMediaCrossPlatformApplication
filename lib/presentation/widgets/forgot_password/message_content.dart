@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../utils/styles/colors.dart';
 
 class MessageContent extends StatelessWidget {
-  const MessageContent({super.key, required this.stringNotifier});
+  const MessageContent({super.key, required this.text});
 
-  final ValueNotifier<String> stringNotifier;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -14,18 +14,15 @@ class MessageContent extends StatelessWidget {
       decoration: BoxDecoration(
           color: AppColors.foundationWhite,
           borderRadius: BorderRadius.circular(12)),
-      child: ValueListenableBuilder(
-        valueListenable: stringNotifier,
-        builder: (context, value, child) {
-          return Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.verifiedBlack,
-            ),
-            textAlign: TextAlign.center,
-          );
-        },
-      ),
+      child:
+      Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.verifiedBlack,
+        ),
+        textAlign: TextAlign.center,
+      )
+      ,
     );
   }
 }

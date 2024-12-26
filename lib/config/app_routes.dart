@@ -1,8 +1,6 @@
+import 'package:socialapp/presentation/screens/module_1/forgot_password/forgot_password_screen.dart';
 import 'package:socialapp/presentation/screens/module_2/home/home_screen.dart';
 import 'package:socialapp/utils/import.dart';
-
-
-
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -12,6 +10,11 @@ class AppRoutes {
       GoRoute(
         path: '/',
         pageBuilder: (context, state) => _buildPageRoute(const SplashScreen()),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        pageBuilder: (context, state) =>
+            _buildPageRoute(const ForgotPasswordScreen()),
       ),
       GoRoute(
         path: '/boarding',
@@ -30,17 +33,25 @@ class AppRoutes {
           path: '/verify',
           builder: (context, state) {
             String params = "";
-            int? stateOption;
+            bool? stateOption;
+            String? mode;
             if (state.extra != null && state.extra is Map<String, dynamic>) {
               final extraData = state.extra as Map<String, dynamic>;
               params = extraData["code"]?.toString() ?? "";
-              stateOption = extraData["state"] as int?;
+              stateOption = extraData["state"] as bool?;
+              mode = extraData["pass-type"] as String?;
             }
             return BlocProvider(
                 create: (context) => VerificationCubit(),
-                child: VerificationScreen(hashParameters: params, stateOption: stateOption,));
+                child: VerificationScreen(
+                  hashParameters: params,
+                  isFromSignIn: stateOption,
+                  mode: mode,
+                ));
           }),
-      GoRoute(path: '/home', pageBuilder: (context, state) => _buildPageRoute(const HomeScreen())),
+      GoRoute(
+          path: '/home',
+          pageBuilder: (context, state) => _buildPageRoute(const HomeScreen())),
     ],
     errorBuilder: (context, state) => const AppPlaceHolder(),
   );

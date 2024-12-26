@@ -1,5 +1,4 @@
 import 'package:socialapp/utils/import.dart';
-
 import 'verification_state.dart';
 
 class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
@@ -11,6 +10,10 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
         emit(VerificationLoading());
         await serviceLocator<AuthRepository>().verifyOTPByLink(encryptedLink);
         emit(VerificationSuccess());
+
+        if (context.mounted) {
+          context.go('/home');
+        }
       }
     } catch (error) {
       emit(VerificationFailure(errorMessage: error.toString()));
@@ -41,20 +44,18 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
     }
   }
 
-  void managePageState(BuildContext context, int? stringOptions,
+  void managePageState(BuildContext context, bool? isFromSignIn,
       ValueNotifier<String> verifyMessageChangeNotifier) async {
     try {
       User? user = await serviceLocator<AuthRepository>().getCurrentUser();
+
       if (user != null) {
-        switch (stringOptions) {
-          // 0 for sign in page in case email is not verified
-          case (1):
-            verifyMessageChangeNotifier.value =
-                AppStrings.messageNotVerifiedYet;
-            emit(VerificationLoadingFromSignIn());
-          // Default state of the page
-          default:
-            verifyMessageChangeNotifier.value =AppStrings.messageDefault;
+        // For sign in page in case email is not verified
+        if (isFromSignIn != true) {
+          verifyMessageChangeNotifier.value = AppStrings.messageNotVerifiedYet;
+          emit(VerificationLoadingFromSignIn());
+        } else {
+          verifyMessageChangeNotifier.value = AppStrings.messageDefault;
         }
       } else {
         emit(VerificationNoUserSignedIn());
@@ -80,7 +81,8 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
     }
   }
 
-  void sendVerifyEmail(ValueNotifier<String> verifyMessageChangeNotifier) async {
+  void sendVerifyEmail(
+      ValueNotifier<String> verifyMessageChangeNotifier) async {
     try {
       emit(VerificationLoading());
       await serviceLocator<AuthRepository>()

@@ -154,7 +154,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
                         BlocConsumer<SignUpCubit, SignUpState>(
                           listener: (context, state) {
                             if (state is SignUpSuccess) {
-                              context.go('/verify');
+                              context.go('/verify', extra: {'mode': ''});
                             }
                           },
                           builder: (context, state) => AuthElevatedButton(

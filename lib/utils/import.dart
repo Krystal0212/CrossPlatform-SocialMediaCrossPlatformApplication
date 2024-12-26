@@ -1,5 +1,7 @@
 // Core Flutter and third-party dependencies
 export 'dart:io';
+export 'dart:math';
+export 'dart:convert';
 export 'package:flutter/material.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:shared_preferences/shared_preferences.dart';

@@ -20,6 +20,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   @override
   void initState() {
+    FlutterNativeSplash.remove();
     _formKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _isLoading = ValueNotifier<bool>(false);
@@ -43,68 +44,79 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Stack(
-        children: [
-          AuthHeaderImage(
-            heightRatio: 0.36,
-            childAspectRatio: 1.85,
+    return BlocProvider(
+      create: (_) => ForgotPasswordCubit(),
+      child: Material(
+        child: BackgroundContainer(
+          center: AuthSizedBox(
             isWeb: _isWeb,
-          ),
-          AuthBody(
-            isWeb: _isWeb,
-            marginTop: MediaQuery.of(context).size.height * 0.26,
-            height: double.infinity,
-            child: Column(
+            deviceWidth: deviceWidth,
+            deviceHeight: deviceHeight,
+            child: Stack(
               children: [
-                LinearGradientTitle(
-                  text: "TYPE YOUR EMAIL",
-                  textStyle: AppTheme.forgotPasswordLabelStyle,
+                AuthHeaderImage(
+                  heightRatio: 0.36,
+                  childAspectRatio: 1.85,
+                  isWeb: _isWeb,
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                // const MessageContent(
-                //     text:
-                //         "We will send you instruction on how to reset your password", stringNotifier: null,),
-                const SizedBox(
-                  height: 25,
-                ),
-                Form(
-                  key: _formKey,
-                  child: AuthTextFormField(
-                    textEditingController: _emailController,
-                    hintText: "Email",
-                    textInputAction: TextInputAction.done,
-                    validator: (value) => validateEmail(value),
-                  ),
-                ),
-                const SizedBox(
-                  height: 35,
-                ),
-                BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
-                  builder: (context, state) => AuthElevatedButton(
-                    width: double.infinity,
-                    height: 45,
-                    inputText: "SEND",
-                    onPressed: () => context
-                        .read<ForgotPasswordCubit>()
-                        .sendPasswordResetEmail(
-                          context,
-                          _formKey,
-                          _emailController.text.trim(),
+                AuthBody(
+                  isWeb: _isWeb,
+                  marginTop: deviceHeight * 0.26,
+                  height: deviceHeight,
+                  child: AuthScrollView(
+                    child: Column(
+                      children: [
+                        LinearGradientTitle(
+                          text: "TYPE YOUR EMAIL",
+                          textStyle: AppTheme.forgotPasswordLabelStyle,
                         ),
-                    isLoading: (state is ForgotPasswordLoading ? true : false),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        const MessageContent(
+                            text: AppStrings.defaultResetPasswordMessage, ),
+                        const SizedBox(
+                          height: 25,
+                        ),
+                        Form(
+                          key: _formKey,
+                          child: AuthTextFormField(
+                            textEditingController: _emailController,
+                            hintText: "Email",
+                            textInputAction: TextInputAction.done,
+                            validator: (value) => validateEmail(value),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 35,
+                        ),
+                        BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
+                          builder: (context, state) => AuthElevatedButton(
+                            width: deviceWidth,
+                            height: 45,
+                            inputText: "SEND",
+                            onPressed: () => context
+                                .read<ForgotPasswordCubit>()
+                                .sendPasswordResetEmail(
+                                  context,
+                                  _formKey,
+                                  _emailController.text.trim(),
+                                ),
+                            isLoading: (state is ForgotPasswordLoading ? true : false),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const StacksBottom(),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(
-                  height: 40,
-                ),
-                const StacksBottom(),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

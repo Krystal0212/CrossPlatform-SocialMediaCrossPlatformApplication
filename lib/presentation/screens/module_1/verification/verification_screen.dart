@@ -1,11 +1,14 @@
 import 'package:socialapp/utils/import.dart';
+import 'cubit/verification_cubit.dart';
 import 'cubit/verification_state.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String? hashParameters;
-  final int? stateOption;
+  final String? mode;
+  final bool? isFromSignIn;
 
-  const VerificationScreen({super.key, this.hashParameters, this.stateOption});
+  const VerificationScreen(
+      {super.key, this.hashParameters, this.isFromSignIn, this.mode});
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -18,6 +21,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   late ValueNotifier<String> _verifyMessageChangeNotifier;
   late double deviceWidth, deviceHeight;
   late bool _isWeb;
+  late String? _mode;
 
   @override
   void initState() {
@@ -27,11 +31,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
     _codeController = TextEditingController();
     _isLoading = ValueNotifier<bool>(false);
     _verifyMessageChangeNotifier = ValueNotifier<String>("");
+    _mode = widget.mode;
 
     String hash = widget.hashParameters ?? "";
 
     if (hash.isNotEmpty) {
       context.read<VerificationCubit>().verifyByLink(context, hash);
+    }
+    else if (_mode == null) {
+      context.go('/home');
     }
 
     super.initState();
@@ -45,7 +53,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     deviceWidth = MediaQuery.of(context).size.width;
 
     context.read<VerificationCubit>().managePageState(
-        context, widget.stateOption, _verifyMessageChangeNotifier);
+        context, widget.isFromSignIn, _verifyMessageChangeNotifier);
   }
 
   @override
@@ -87,8 +95,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         const SizedBox(
                           height: 15,
                         ),
-                        MessageContent(
-                            stringNotifier: _verifyMessageChangeNotifier),
+                        ValueListenableBuilder(
+                            valueListenable: _verifyMessageChangeNotifier,
+                            builder: (context, value, child) {
+                              return MessageContent(
+                                text: value,
+                              );
+                            }),
                         const SizedBox(
                           height: 30,
                         ),
@@ -98,61 +111,55 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         const SizedBox(
                           height: 10,
                         ),
-                        BlocListener<VerificationCubit, VerificationState>(
-                          listener: (context, state) {
-                            if (state is VerificationSuccess) {
-                              context.go('/home');
-                            }
-                          },
-                          child:
-                              BlocBuilder<VerificationCubit, VerificationState>(
-                                  builder: (context, state) {
-                            return Column(
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    if (state
-                                        is VerificationLoadingFromSignIn) {
-                                      context.go('/sign-in');
-                                    } else {
-                                      context
-                                          .read<VerificationCubit>()
-                                          .sendVerifyEmail(_verifyMessageChangeNotifier);
-                                    }
-                                  },
-                                  child: Text(
-                                    (state is VerificationLoadingFromSignIn)? "Cancel" :AppStrings.notReceiveTheCode ,
-                                  ),
+                        BlocBuilder<VerificationCubit, VerificationState>(
+                            builder: (context, state) {
+                          return Column(
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  if (state is VerificationLoadingFromSignIn) {
+                                    context.go('/sign-in');
+                                  } else {
+                                    context
+                                        .read<VerificationCubit>()
+                                        .sendVerifyEmail(
+                                            _verifyMessageChangeNotifier);
+                                  }
+                                },
+                                child: Text(
+                                  (state is VerificationLoadingFromSignIn)
+                                      ? "Cancel"
+                                      : AppStrings.notReceiveTheCode,
                                 ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                AuthElevatedButton(
-                                  width: deviceWidth,
-                                  height: 52,
-                                  inputText:
-                                      state is VerificationLoadingFromSignIn
-                                          ? AppStrings.buttonSendToMyEmail
-                                          : AppStrings.verify,
-                                  onPressed: () async {
-                                    if (state
-                                        is VerificationLoadingFromSignIn) {
-                                      context
-                                          .read<VerificationCubit>()
-                                          .sendVerifyEmail(_verifyMessageChangeNotifier);
-                                    } else {
-                                      context
-                                          .read<VerificationCubit>()
-                                          .verifyByCode(
-                                              context, _codeController.text);
-                                    }
-                                  },
-                                  isLoading: (state is VerificationLoading),
-                                ),
-                              ],
-                            );
-                          }),
-                        ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              AuthElevatedButton(
+                                width: deviceWidth,
+                                height: 52,
+                                inputText:
+                                    state is VerificationLoadingFromSignIn
+                                        ? AppStrings.buttonSendToMyEmail
+                                        : AppStrings.verify,
+                                onPressed: () async {
+                                  if (state is VerificationLoadingFromSignIn) {
+                                    context
+                                        .read<VerificationCubit>()
+                                        .sendVerifyEmail(
+                                            _verifyMessageChangeNotifier);
+                                  } else {
+                                    context
+                                        .read<VerificationCubit>()
+                                        .verifyByCode(
+                                            context, _codeController.text);
+                                  }
+                                },
+                                isLoading: (state is VerificationLoading),
+                              ),
+                            ],
+                          );
+                        }),
                         const SizedBox(
                           height: 20,
                         ),

@@ -32,6 +32,9 @@ class AppStrings {
   static const String buttonSendToMyEmail = 'Send OTP code to my email';
   static const String verify = "VERIFY";
 
+  // For reset password section
+  static const String defaultResetPasswordMessage = "We will send you instruction on how to reset your password";
+
   // For collection section
   static const String createCollection = "Create collection";
   static const String collectionName = "Collection name";
