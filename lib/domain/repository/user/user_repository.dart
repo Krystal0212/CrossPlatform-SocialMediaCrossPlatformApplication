@@ -9,11 +9,5 @@ abstract class UserRepository {
 
   Future<void> updateCurrentUserData(UserModel updateUserReq);
 
-  Future<List<Map<String, String>>> fetchCategoriesData();
-
-  Future<List<String>> getUserFollowers(String uid);
-
-  Future<List<String>> getUserFollowings(String uid);
-
-  Future<List<String>> getUserCollectionIDs(String uid);
+  Future<List<String>> getUserRelatedData(String uid, String datatype);
 }

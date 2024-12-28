@@ -25,7 +25,9 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         CollectionReference,
         DocumentSnapshot,
         QuerySnapshot,
-        DocumentReference;
+        DocumentReference,
+        Timestamp,
+        FieldValue;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 
 // App Configurations
@@ -53,11 +55,13 @@ export 'package:socialapp/data/repository/user/user_repository_impl.dart';
 export 'package:socialapp/data/repository/deep_link/deep_link_repository_impl.dart';
 export 'package:socialapp/data/sources/auth/auth_firebase_service.dart';
 export 'package:socialapp/data/sources/firestore/firestore_service.dart';
+export 'package:socialapp/data/sources/firestore/user_service_impl.dart';
 export 'package:socialapp/data/sources/storage/storage_service.dart';
 export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 export 'package:socialapp/data/models/auth/create_user_req.dart';
-
+export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';
+export 'package:socialapp/data/sources/firestore/post_service_impl.dart';
 
 // Domain
 export 'package:socialapp/domain/repository/post/post_repository.dart';
@@ -71,6 +75,7 @@ export 'package:socialapp/domain/entities/collection.dart';
 export 'package:socialapp/domain/entities/topic.dart';
 export 'package:socialapp/domain/entities/post.dart';
 export 'package:socialapp/domain/entities/comment.dart';
+
 
 // Presentation Screens and Self Widgets
 export 'package:socialapp/presentation/screens/module_1/module_1_exports.dart';

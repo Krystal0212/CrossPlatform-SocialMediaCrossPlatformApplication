@@ -152,7 +152,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                         ),
                         TextButton(
                           style: AppTheme.navigationTextButtonStyle,
-                          onPressed: () => context.go('/forgot-password'),
+                          onPressed: () => context.go('/preferred-topic'),
                           child: Text(
                             AppStrings.forgotPassword,
                             style: AppTheme.authForgotStyle,

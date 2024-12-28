@@ -1,23 +1,20 @@
-// Name the class UserModel to avoid duplicating the name of User class
-// in Firebase Authentication
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class UserModel {
   final String name;
   final String email;
   final String lastName;
   final String location;
-  final String category;
+
   final String avatar;
   bool emailChanged;
   bool avatarChanged;
+  late final Map<String, String> preferredTopics;
   final Map<String, String> socialAccounts;
 
   UserModel({
     required this.name,
     required this.lastName,
     required this.location,
-    required this.category,
+    required this.preferredTopics,
     required this.avatar,
     required this.email,
     required this.socialAccounts,
@@ -25,16 +22,18 @@ class UserModel {
     this.avatarChanged = false,
   });
 
-  UserModel.newUser(String categoryID, String? userAvatar, String? userEmail)
+  UserModel.newUser(
+      Map<String, bool> chosenTopics, String? userAvatar, String? userEmail)
       : name = '',
         lastName = '',
         location = '',
         emailChanged = false,
         avatarChanged = false,
-        category = categoryID,
         avatar = userAvatar!,
         email = userEmail!,
-        socialAccounts = {};
+        socialAccounts = {} {
+    preferredTopics = toPreferredTopic(chosenTopics);
+  }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
@@ -44,12 +43,20 @@ class UserModel {
       email: map['email'] ?? '',
       lastName: map['lastname'] ?? '',
       location: map['location'] ?? '',
-      category: map['category'] is DocumentReference
-          ? (map['category'] as DocumentReference).id
-          : '',
+      preferredTopics: Map<String, String>.from(map['preferred-topics'] ?? {}),
       avatar: map['avatar'] ?? '',
       socialAccounts: Map<String, String>.from(map['socials'] ?? {}),
     );
+  }
+
+  Map<String, String> toPreferredTopic(Map<String, bool> chosenTopics) {
+    int number = 1;
+    Map<String, String> results = chosenTopics.map((key, _) {
+      number += 1;
+      return MapEntry(number.toString(), key.toString());
+    });
+
+    return results;
   }
 
   Map<String, dynamic> toMap() {
@@ -58,32 +65,32 @@ class UserModel {
       'lastname': lastName,
       'email': email,
       'location': location,
-      'category': category,
+      'preferred-topics': preferredTopics,
       'avatar': avatar,
       'socials': socialAccounts,
     };
   }
 
-  UserModel resetState(){
+  UserModel resetState() {
     return UserModel(
       emailChanged: false,
       avatarChanged: false,
-      avatar:  avatar,
-      name:  name,
+      avatar: avatar,
+      name: name,
       lastName: lastName,
       location: location,
-      category: category ,
+      preferredTopics: preferredTopics,
       socialAccounts: socialAccounts,
       email: email,
     );
-}
+  }
 
   UserModel copyWith({
     String? name,
     String? newEmail,
     String? lastName,
     String? location,
-    String? category,
+    Map<String, String>? preferredTopics,
     String? newAvatar,
     Map<String, String>? socialAccounts,
     List<String>? followers,
@@ -101,7 +108,7 @@ class UserModel {
       name: name ?? this.name,
       lastName: lastName ?? this.lastName,
       location: location ?? this.location,
-      category: category ?? this.category,
+      preferredTopics: preferredTopics ?? this.preferredTopics,
       socialAccounts: socialAccounts ?? this.socialAccounts,
       email: newEmail ?? email,
     );

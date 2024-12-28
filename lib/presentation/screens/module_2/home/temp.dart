@@ -16,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late CollectionReference<Map<String, dynamic>> postCollection;
   // late CollectionReference<Map<String, dynamic>> commentPostCollection;
   late dynamic userInfo;
-  
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +31,107 @@ class _HomeScreenState extends State<HomeScreen> {
     // posts = Provider.of<PostRepository>(context).getPostsData();
   }
 
-   @override
+  Future<void> fetchData() async {
+    try {
+      // QuerySnapshot querySnapshot = await postCollection.doc('post_000001').collection('lists').get();
+      QuerySnapshot querySnapshot = await postCollection.get();
+      for (var doc in querySnapshot.docs) {
+        // QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('NewPost').doc('post_000001').collection('lists').get();
+        // print(userSnapshot);
+        // print(userSnapshot.runtimeType);
+        // print(doc['user_id']);
+        DocumentReference userRef = doc['user_id'];
+        // Future<Map<String, dynamic>> userData = userRef.get().then((value) => value.data() as Map<String, dynamic>);
+        // print(doc);
+        // print(userRef);
+        // print(userRef.id);
+        // print(userData);
+        // userData.then((value) {
+        //   userInfo = value;
+        //   print(userInfo);
+        //   print(userInfo['name']);
+        // });
+        dynamic userData = await userRef.get();
+        for (var data in userData.data()!.entries) {
+          if (data.key == 'name') {
+            if (kDebugMode) {
+              print(data.value);
+            }
+          }
+          // print(data.key);
+          // print(data.value);
+        }
+        // print(userSnapshot.data());
+      }
+
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   // print('test ${userInfo}');
+  //   // super.build(context);
+  //   return SafeArea(
+  //     bottom: false,
+  //     child: Scaffold(
+  //       appBar: AppBar(
+  //         title: const Text('Home'),
+  //         actions: [
+  //           IconButton(
+  //             icon: const Icon(Icons.search),
+  //             onPressed: () {},
+  //           ),
+  //           IconButton(
+  //             icon: const Icon(Icons.notifications),
+  //             onPressed: () {},
+  //           ),
+  //         ],
+  //       ),
+  //       body: Column(children: [
+  //           const HomeHeaderCustom(),
+  //           ElevatedButton(onPressed: () {
+  //             fetchData();
+
+  //             // Navigator.push(
+  //             //   context,
+  //             //   MaterialPageRoute(builder: (context) => const SplashScreen())
+  //             // );
+  //           }, child: Text('logout', style: TextStyle(
+  //             color: AppColors.white
+  //           ),)),
+  //       Expanded(
+  //         child: FutureBuilder(
+  //           future: serviceLocator.get<PostRepository>().getPostsData(),
+  //           builder: (context, snapshot) {
+  //             if (snapshot.connectionState == ConnectionState.waiting) {
+  //               return Center(child: CircularProgressIndicator());
+  //             }
+
+  //             if (!snapshot.hasData || snapshot.data!.isEmpty) {
+  //               return Center(child: Text('No data found.'));
+  //             }
+
+  //             // print(snapshot.data);
+  //             // for (var doc in snapshot.data!.docs) {
+  //             //   print(doc.data());
+  //             // }
+  //             return ListView(
+  //               children: snapshot.data!.map((doc) {
+  //                 print(doc);
+  //                 // commentPostCollection = postCollection.doc(doc.id).collection('lists');
+  //                 return PostCustom(post: doc);
+  //               }).toList(),
+  //             );
+  //           },
+  //         )
+  //       ),
+  //     ],),
+  // ),
+  //   );
+  // }
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
@@ -106,14 +206,14 @@ class _PostListViewState extends State<PostListView> with AutomaticKeepAliveClie
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           // return const Center(child: Text('No data found.'));
           return  const Center(
             child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: LogOutButton(),
-                    ),
+              padding: EdgeInsets.all(16.0),
+              child: LogOutButton(),
+            ),
           );
         }
 

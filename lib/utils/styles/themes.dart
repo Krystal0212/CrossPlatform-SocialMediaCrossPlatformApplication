@@ -50,29 +50,29 @@ class AppTheme {
           Color.fromRGBO(82, 82, 199, 0.5),
           Color.fromRGBO(82, 82, 199, 0.1),
         ],
-      )
-  );
+      ));
 
   static BoxDecoration get profileBackgroundBoxDecoration => BoxDecoration(
       image: const DecorationImage(
-        image: AssetImage(AppImages
-            .editProfileAppbarBackground),
+        image: AssetImage(AppImages.editProfileAppbarBackground),
         fit: BoxFit.cover,
       ),
       borderRadius: AppTheme.smallBorderRadius);
 
   static BoxDecoration get addCollectionBoxDecoration => const BoxDecoration(
-  borderRadius: BorderRadius.only(
-  topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-  color: Colors.white);
+      borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+      color: Colors.white);
 
   //ToDo: Border Radius
-  static BorderRadius get smallBorderRadius=> const BorderRadius.all(
-  Radius.circular(12));
+  static BorderRadius get smallBorderRadius =>
+      const BorderRadius.all(Radius.circular(12));
 
   //ToDo:
   static EdgeInsets get paddingBottom => const EdgeInsets.only(bottom: 20);
-  static EdgeInsets get addCollectionPadding => const EdgeInsets.fromLTRB(24, 32, 24, 0);
+
+  static EdgeInsets get addCollectionPadding =>
+      const EdgeInsets.fromLTRB(24, 32, 24, 0);
 
   //ToDo: Style
   static TextStyle get appLabelStyle => GoogleFonts.plusJakartaSans(
@@ -165,7 +165,7 @@ class AppTheme {
         letterSpacing: -0.1,
       );
 
-  static TextStyle get categoryBottomTitle => GoogleFonts.plusJakartaSans(
+  static TextStyle get topicBottomTitle => GoogleFonts.plusJakartaSans(
       fontWeight: FontWeight.w400,
       fontSize: 14,
       color: AppColors.white,
@@ -200,6 +200,60 @@ class AppTheme {
         color: Colors.white,
         fontSize: 14,
       );
+
+  //ToDo: PaddingEdgeInsetsStyle
+  static EdgeInsets get preferredTopicMobilePaddingEdgeInsets =>
+      const EdgeInsets.only(top: 160, left: 20, right: 20, bottom: 20);
+
+  static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(
+      double deviceWidth,
+      double deviceHeight,
+      double paddingRatioWidth,
+      double paddingRatioHeight) {
+    double horizontalPadding = deviceWidth * paddingRatioWidth;
+    double verticalPadding = deviceHeight * paddingRatioHeight;
+    return EdgeInsets.only(
+      top: verticalPadding,
+      left: horizontalPadding,
+      right: horizontalPadding,
+      bottom: verticalPadding,
+    );
+  }
+
+  //ToDo: BoxContainerShadow
+  static List<BoxShadow> get topicOptionBoxShadow => [
+        // const BoxShadow(
+        //   color: AppColors.carbon,
+        //   blurRadius: 30,
+        //   spreadRadius: 50,
+        //   offset: Offset(0, 50),
+        // ),
+        // BoxShadow(
+        //   color: Colors.white.withValues(alpha: 0.0),
+        //   blurRadius: 8,
+        //   spreadRadius: -25,
+        // ),
+    // const BoxShadow(
+    //   color: AppColors.carbon,
+    //   offset: Offset(-12, 0), // Shadow on the left
+    //   blurRadius: 16, // Increased blur for more visible shadow
+    //   spreadRadius: -4, // Reduced spread for a tighter shadow
+    // ),
+    // // Shadow on the right
+    // const BoxShadow(
+    //   color: AppColors.carbon,
+    //   offset: Offset(12, 0), // Shadow on the right
+    //   blurRadius: 16, // Increased blur for more visible shadow
+    //   spreadRadius: -4, // Reduced spread for a tighter shadow
+    // ),
+    // // Shadow at the bottom
+    // const BoxShadow(
+    //   color: AppColors.carbon,
+    //   offset: Offset(0, 12), // Shadow at the bottom
+    //   blurRadius: 16, // Increased blur for more visible shadow
+    //   spreadRadius: -4, // Reduced spread for a tighter shadow
+    // ),
+      ];
 
   //ToDo: ButtonStyle
   static ButtonStyle get navigationTextButtonStyle => ElevatedButton.styleFrom(

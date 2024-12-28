@@ -1,5 +1,5 @@
-import 'package:socialapp/presentation/screens/module_1/forgot_password/forgot_password_screen.dart';
-import 'package:socialapp/presentation/screens/module_2/home/home_screen.dart';
+
+import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/preferred_topic_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AppRoutes {
@@ -31,7 +31,7 @@ class AppRoutes {
       ),
       GoRoute(
           path: '/verify',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             String params = "";
             bool? stateOption;
             String? mode;
@@ -41,14 +41,20 @@ class AppRoutes {
               stateOption = extraData["state"] as bool?;
               mode = extraData["pass-type"] as String?;
             }
-            return BlocProvider(
-                create: (context) => VerificationCubit(),
-                child: VerificationScreen(
-                  hashParameters: params,
-                  isFromSignIn: stateOption,
-                  mode: mode,
-                ));
+            return _buildPageRoute( BlocProvider(
+                  create: (context) => VerificationCubit(),
+                  child: VerificationScreen(
+                    hashParameters: params,
+                    isFromSignIn: stateOption,
+                    mode: mode,
+                  )),
+            );
           }),
+      GoRoute(path: '/preferred-topic',
+      // pageBuilder: (context, state) => _buildPageRoute(const PreferredTopicsScreen())),
+      pageBuilder: (context, state) => _buildPageRoute(BlocProvider(
+          create: (_) => PreferredTopicCubit(),
+          child: const PreferredTopicsScreen()))),
       GoRoute(
           path: '/home',
           pageBuilder: (context, state) => _buildPageRoute(const HomeScreen())),

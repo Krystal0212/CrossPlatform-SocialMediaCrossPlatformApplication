@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:socialapp/data/sources/firestore/firestore_service.dart';
+import 'package:socialapp/data/sources/firestore/post_service_impl.dart';
 import 'package:socialapp/service_locator.dart';
+import 'package:socialapp/utils/import.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 
 import '../cubit/post_cubit.dart';
@@ -28,19 +30,21 @@ class _HeaderNewPostState extends State<HeaderNewPost> {
   Future _uploadPost() async {
     PostState state = _postCubit.state;
     File? image;
-    String? content;
+    String content = "";
 
     if (state is PostWithData) {
       // print('image: ${state.getImage}');
       image = state.getImage;
-      content = state.getContent;
-      content ??= '';
+      content = state.getContent ?? "";
     }
 
-    if (image != null) {
-      print('image: $image');
-      print('content: $content');
-      await serviceLocator<FirestoreService>().createPost(content!, image);
+    if (image != null && content.isNotEmpty) {
+      if (kDebugMode) {
+        print('image: $image');
+        print('content: $content');
+      }
+
+      await serviceLocator<PostService>().createPost(content, image);
     }
 
     _postCubit.closeNewPost();

@@ -1,11 +1,13 @@
 import 'package:socialapp/domain/entities/topic.dart';
 
 abstract class TopicRepository {
-  Future<TopicModel?>? getTopicData(String topicID);
+  // Future<TopicModel?>? getTopicData(String topicID);
 
-  Future<List<TopicModel>?>? getTopicsData();
+  Future<List<TopicModel>> fetchTopicsData();
 
-  // Future<void> addTopicData(AddTopicReq addTopicReq);
+  Future<List<Map<TopicModel, bool>>> fetchPreferredTopicsData();
 
-  // Future<void> updateTopicData(UpdateTopicReq updateTopicReq);
+// Future<void> addTopicData(AddTopicReq addTopicReq);
+
+// Future<void> updateTopicData(UpdateTopicReq updateTopicReq);
 }

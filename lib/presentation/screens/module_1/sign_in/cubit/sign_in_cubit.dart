@@ -25,6 +25,7 @@ class SignInCubit extends Cubit<SignInState> {
     } catch (e) {
       if (e is CustomFirestoreException) {
         if (e.code == 'new-user') {
+          context.go('/');
           emit(SignInSuccess());
         }
       }else if (e is FirebaseAuthException) {

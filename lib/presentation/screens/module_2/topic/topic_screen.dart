@@ -39,7 +39,7 @@ class TopicScreen extends StatelessWidget {
                                   color: AppColors.carbon.withOpacity(0.5),
                                   borderRadius: BorderRadius.circular(8),
                                   image: DecorationImage(image: 
-                                    NetworkImage(topics![index].thumbnail), fit: BoxFit.cover
+                                    NetworkImage(topics![index].thumbnailUrl), fit: BoxFit.cover
                                   )
                                 ),
                               ),

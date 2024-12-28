@@ -4,7 +4,7 @@ class TopicHorizontalImage extends StatelessWidget {
   const TopicHorizontalImage(
       {super.key, required this.topic, required this.topicIndex});
 
-  final TopicModel topic;
+  final CollectionModel topic;
   final int topicIndex;
 
   @override

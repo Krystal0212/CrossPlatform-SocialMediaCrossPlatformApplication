@@ -77,7 +77,7 @@ class TopicImageCustom extends StatelessWidget {
                 // image: AssetImage(
                 //   'assets/images/appscyclone.png'
                 // ),
-                image: NetworkImage(topic.thumbnail),
+                image: NetworkImage(topic.thumbnailUrl),
                 fit: BoxFit.cover,
               )
             ),
