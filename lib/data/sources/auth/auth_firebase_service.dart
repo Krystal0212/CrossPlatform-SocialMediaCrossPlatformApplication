@@ -234,31 +234,6 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
-    // Create Cloud functions first before parsing URLs
-    // final url = Uri.parse(...);
-
-    try {
-      // final response = await get(url.replace(queryParameters: {
-      //   'encryptedLink': encryptedLink.trim(),
-      // }));
-
-      // if (response.statusCode == 200) {
-      //   if (kDebugMode) {
-      //     print(response.body);
-      //   }
-      // } else {
-      //   throw response.body;
-      // }
-    } catch (error) {
-      // if (kDebugMode) {
-      //   print('Verification failed: $error');
-      // }
-      // rethrow;
-    }
-  }
-
-  @override
   Future<void> verifyAccountByOTPCode(String otpCode) async {
     final url = Uri.parse(
         'https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByCode');
@@ -311,11 +286,6 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }
 
       User? user = googleUserCredential.user;
-      // String? token = await user?.getIdToken();
-
-      // if(!(_auth.currentUser?.emailVerified ?? true) ) {
-      //   sendVerificationEmail(user?.email ?? '', token ?? '');
-      // }
 
       if (user == null) {
         throw FirebaseAuthException(
@@ -339,6 +309,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   Future<void> sendPasswordResetEmail(String email) async {
     try {
        // use a post function from url of send reset email deployed on cloud functions
+      // final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//sendEmailResetPassword');
 
     } catch (error) {
       if (kDebugMode) {
@@ -346,6 +317,31 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }
 
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
+    // Create Cloud functions first before parsing URLs
+    // final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyResetPasswordLink');
+
+    try {
+      // final response = await get(url.replace(queryParameters: {
+      //   'encryptedLink': encryptedLink.trim(),
+      // }));
+
+      // if (response.statusCode == 200) {
+      //   if (kDebugMode) {
+      //     print(response.body);
+      //   }
+      // } else {
+      //   throw response.body;
+      // }
+    } catch (error) {
+      // if (kDebugMode) {
+      //   print('Verification failed: $error');
+      // }
+      // rethrow;
     }
   }
 

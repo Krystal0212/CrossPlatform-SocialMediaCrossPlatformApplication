@@ -11,6 +11,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> with AppDialogs {
         emit(ForgotPasswordLoading());
         await serviceLocator<AuthFirebaseService>()
             .sendPasswordResetEmail(email);
+
         emit(ForgotPasswordSuccess());
 
         if (context.mounted) {
