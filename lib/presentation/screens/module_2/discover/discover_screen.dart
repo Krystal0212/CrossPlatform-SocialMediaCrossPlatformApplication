@@ -42,40 +42,40 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FutureBuilder<List<TopicModel>?>(
-                future: serviceLocator<TopicRepository>().getTopicsData(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text('No topics available');
-                  } else {
-                    // topics = snapshot.data;
-                    return TopicList(topics: snapshot.data);
-                  }
-                }
-              ),
+              // FutureBuilder<List<TopicModel>?>(
+              //   future: serviceLocator<TopicRepository>().getTopicsData(),
+              //   builder: (context, snapshot) {
+              //     if (snapshot.connectionState == ConnectionState.waiting) {
+              //       return const CircularProgressIndicator();
+              //     } else if (snapshot.hasError) {
+              //       return Text('Error: ${snapshot.error}');
+              //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              //       return const Text('No topics available');
+              //     } else {
+              //       // topics = snapshot.data;
+              //       return TopicList(topics: snapshot.data);
+              //     }
+              //   }
+              // ),
 
               const SizedBox(height: 24,),
               // TopicList(topics: topics),
               // CollectionList(),
-              FutureBuilder<List<CollectionModel>?>(
-                future: serviceLocator<CollectionRepository>().getCollections(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text('No collections available');
-                  } else {
-                    // topics = snapshot.data;
-                    return CollectionList(collections: snapshot.data);
-                  }
-                }
-              ),
+              // FutureBuilder<List<TopicModel>?>(
+              //   future: serviceLocator<CollectionRepository>().getCollections(),
+              //   builder: (context, snapshot) {
+              //     if (snapshot.connectionState == ConnectionState.waiting) {
+              //       return const CircularProgressIndicator();
+              //     } else if (snapshot.hasError) {
+              //       return Text('Error: ${snapshot.error}');
+              //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              //       return const Text('No collections available');
+              //     } else {
+              //       // topics = snapshot.data;
+              //       return CollectionList(collections: snapshot.data);
+              //     }
+              //   }
+              // ),
           ],),
         ), 
       ),

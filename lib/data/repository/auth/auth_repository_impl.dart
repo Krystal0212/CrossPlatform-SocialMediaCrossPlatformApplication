@@ -14,6 +14,11 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
+  bool isUserVerified() {
+    return serviceLocator<AuthFirebaseService>().isUserVerified();
+  }
+
+  @override
   Future<void> signUp(SignUpUserReq signUpUserReq) async {
     return await serviceLocator<AuthFirebaseService>().signUp(signUpUserReq);
   }
@@ -52,13 +57,18 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  Future<void> verifyOTPByLink(String encryptedLink) async {
-    return await serviceLocator<AuthFirebaseService>().verifyOTPByLink(encryptedLink);
+  Future<void> verifyAccountByOTPLink(String encryptedLink) async {
+    return await serviceLocator<AuthFirebaseService>().verifyAccountByOTPLink(encryptedLink);
   }
 
   @override
-  Future<void> verifyOTPByCode(String otpCode) async {
-    return await serviceLocator<AuthFirebaseService>().verifyOTPByCode(otpCode);
+  Future<void> verifyAccountByOTPCode(String otpCode) async {
+    return await serviceLocator<AuthFirebaseService>().verifyAccountByOTPCode(otpCode);
+  }
+
+  @override
+  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
+    return await verifyResetPasswordRequestByOTPLink(encryptedLink);
   }
 
   @override

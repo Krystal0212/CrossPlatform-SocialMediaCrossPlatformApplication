@@ -9,13 +9,14 @@ class AuthElevatedButton extends StatelessWidget {
       required this.height,
       required this.inputText,
       this.onPressed,
-      required this.isLoading});
+      required this.isLoading, this.isDisable});
 
   final double width;
   final double height;
   final String inputText;
   final VoidCallback? onPressed;
   final bool isLoading;
+  final bool? isDisable;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,7 @@ class AuthElevatedButton extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        gradient: AppTheme.mainGradient,
+        gradient: (isDisable??false) ? AppTheme.disableGradient : AppTheme.mainGradient,
         borderRadius: BorderRadius.circular(30),
       ),
       child: ElevatedButton(
@@ -34,7 +35,7 @@ class AuthElevatedButton extends StatelessWidget {
                 height: 24,
                 width: 24,
                 child: CircularProgressIndicator(
-                  color: AppColors.blueDeFrance,
+                  color: AppColors.iris,
                   strokeWidth: 2,
                 ),
               )

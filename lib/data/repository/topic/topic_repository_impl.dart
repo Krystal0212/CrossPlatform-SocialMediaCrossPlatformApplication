@@ -4,15 +4,18 @@ import 'package:socialapp/domain/repository/topic/topic_repository.dart';
 import 'package:socialapp/service_locator.dart';
 
 class TopicRepositoryImpl extends TopicRepository {
+  // @override
+  // Future<TopicModel?>? getTopicData(String topicID) async{
+  //   return await serviceLocator<FirestoreService>.;
+  // }
+
   @override
-  Future<TopicModel?>? getTopicData(String topicID) {
-    return null;
+  Future<List<TopicModel>> fetchTopicsData() {
+    return serviceLocator<FirestoreService>().fetchTopicsData();
   }
 
   @override
-  Future<List<TopicModel>?>? getTopicsData() {
-    // return null;
-    return serviceLocator<FirestoreService>().getTopicsData();
+  Future<List<Map<TopicModel, bool>>> fetchPreferredTopicsData() {
+    return serviceLocator<FirestoreService>().fetchPreferredTopicsData();
   }
 }
-

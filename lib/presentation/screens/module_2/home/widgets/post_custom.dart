@@ -5,13 +5,16 @@ import 'package:socialapp/presentation/screens/module_2/post_detail/post_detail_
 
 
 class PostCustom extends StatelessWidget {
-  const PostCustom({super.key, required this.post});
 
   final PostModel post;
 
+  const PostCustom({super.key, required this.post});
+
+
   @override
   Widget build(BuildContext context) {
-
+    double deviceHeight = MediaQuery.of(context).size.height;
+    double deviceWidth = MediaQuery.of(context).size.width;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Container(
@@ -32,7 +35,7 @@ class PostCustom extends StatelessWidget {
               },
               child: Image.network(
                 post.image,
-                width: double.infinity,
+                width: deviceWidth,
                 height: 220,
                 fit: BoxFit.cover,
               ),

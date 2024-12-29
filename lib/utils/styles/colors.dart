@@ -3,7 +3,7 @@ import 'dart:ui';
 class AppColors {
   static const Color lightIris = Color(0x005151C6);
 
-  static const Color erieBlack = Color(0xFF1A1A1A);
+  static const Color dynamicBlack = Color(0xFF1E1E1E);
 
   static const Color carbon = Color(0xFF1A1A1A); // 100% Greyscale
 

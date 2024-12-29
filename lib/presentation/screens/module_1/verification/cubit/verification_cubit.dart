@@ -4,11 +4,26 @@ import 'verification_state.dart';
 class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
   VerificationCubit() : super(VerificationInitial());
 
-  void verifyByLink(BuildContext context, String encryptedLink) async {
+  bool checkNecessaryConditionToUseScreen(
+      BuildContext context, bool isFromSignIn) {
+    try {
+      if (isFromSignIn == false) {
+        return false;
+      } else if (serviceLocator<AuthRepository>().isUserVerified()) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  void verifyAccountByLink(BuildContext context, String encryptedLink) async {
     try {
       if (encryptedLink.isNotEmpty) {
         emit(VerificationLoading());
-        await serviceLocator<AuthRepository>().verifyOTPByLink(encryptedLink);
+        await serviceLocator<AuthRepository>()
+            .verifyAccountByOTPLink(encryptedLink);
         emit(VerificationSuccess());
 
         if (context.mounted) {
@@ -30,7 +45,10 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
     try {
       if (otpCode.isNotEmpty) {
         emit(VerificationLoading());
-        await serviceLocator<AuthRepository>().verifyOTPByCode(otpCode);
+        await serviceLocator<AuthRepository>().verifyAccountByOTPCode(otpCode);
+
+        if(!context.mounted) return;
+        context.go('/home');
         emit(VerificationSuccess());
       }
     } catch (error) {
@@ -51,7 +69,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
 
       if (user != null) {
         // For sign in page in case email is not verified
-        if (isFromSignIn != true) {
+        if (isFromSignIn == true) {
           verifyMessageChangeNotifier.value = AppStrings.messageNotVerifiedYet;
           emit(VerificationLoadingFromSignIn());
         } else {
@@ -95,6 +113,30 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
       }
 
       VerificationFailure(errorMessage: 'An error occurred: $e');
+    }
+  }
+
+  void verifyResetPasswordRequestByLink(
+      BuildContext context, String encryptedLink) async {
+    try {
+      if (encryptedLink.isNotEmpty) {
+        emit(VerificationLoading());
+        await serviceLocator<AuthRepository>()
+            .verifyAccountByOTPLink(encryptedLink);
+        emit(VerificationSuccess());
+
+        if (context.mounted) {
+          context.go('/home');
+        }
+      }
+    } catch (error) {
+      emit(VerificationFailure(errorMessage: error.toString()));
+
+      if (!context.mounted) return;
+      showSimpleAlertDialog(
+          context: context,
+          title: AppStrings.error,
+          message: 'The link is invalid or expired');
     }
   }
 }

@@ -1,35 +1,34 @@
-
 import 'package:socialapp/utils/import.dart';
 import 'profile_state.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
-  AuthRepository authRepository = AuthRepositoryImpl();
-  UserRepository userRepository = UserRepositoryImpl();
-  CollectionRepository collectionRepository = CollectionRepositoryImpl();
-  PostRepository postRepository = PostRepositoryImpl();
-
   ProfileCubit() : super(ProfileLoading());
 
   Future<void> fetchProfile() async {
     emit(ProfileLoading());
     try {
-      final User? currentUser = await authRepository.getCurrentUser();
-      final UserModel? userModel = await userRepository.getCurrentUserData();
+      final User? currentUser =
+          await serviceLocator<AuthRepository>().getCurrentUser();
+      final UserModel? userModel =
+          await serviceLocator<UserRepository>().getCurrentUserData();
 
-      final userFollowers =
-          await userRepository.getUserFollowers(currentUser!.uid);
-      final userFollowings =
-          await userRepository.getUserFollowings(currentUser.uid);
-      final userCollectionIDs =
-          await userRepository.getUserCollectionIDs(currentUser.uid);
-      final List<CollectionModel> collections =
-          await collectionRepository.getCollectionsData(userCollectionIDs);
+      if (currentUser != null) {
+        final userFollowers = await serviceLocator<UserRepository>()
+            .getUserRelatedData(currentUser.uid, 'followers');
+        final userFollowings = await serviceLocator<UserRepository>()
+            .getUserRelatedData(currentUser.uid, 'followings');
+        final userCollectionIDs = await serviceLocator<UserRepository>()
+            .getUserRelatedData(currentUser.uid, 'collections');
+        final List<CollectionModel> collections =
+            await serviceLocator<CollectionRepository>()
+                .getCollectionsData(userCollectionIDs);
 
-      if (userModel != null) {
-        emit(ProfileLoaded(
-            userModel, userFollowers, userFollowings, collections));
-      } else {
-        emit(ProfileError("User data not found"));
+        if (userModel != null) {
+          emit(ProfileLoaded(
+              userModel, userFollowers, userFollowings, collections));
+        } else {
+          emit(ProfileError("User data not found"));
+        }
       }
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -39,7 +38,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> updateProfile(UserModel updatedUser) async {
     emit(ProfileLoading());
     try {
-      await userRepository.updateCurrentUserData(updatedUser);
+      await serviceLocator<UserRepository>().updateCurrentUserData(updatedUser);
       fetchProfile();
     } catch (e) {
       emit(ProfileError(e.toString()));
@@ -50,7 +49,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     emit(ProfileLoading());
     try {
       updatedUser.resetState();
-      await userRepository.updateCurrentUserData(updatedUser);
+      await serviceLocator<UserRepository>().updateCurrentUserData(updatedUser);
 
       emit(ProfileEmailChanged());
     } catch (e) {
@@ -66,7 +65,7 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> signOut() async {
     try {
-      await authRepository.signOut();
+      await serviceLocator<AuthRepository>().signOut();
       emit(ProfileLoggedOut());
     } catch (e) {
       emit(ProfileError('Logout failed: $e'));

@@ -23,7 +23,7 @@ class SingleTopic extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
-                image: NetworkImage(topic.thumbnail),
+                image: NetworkImage(topic.thumbnailUrl),
                 fit: BoxFit.cover
               )
             ),

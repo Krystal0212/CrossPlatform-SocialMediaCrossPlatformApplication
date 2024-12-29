@@ -1,49 +1,28 @@
-import 'package:socialapp/domain/entities/user.dart';
-
-import '../../../domain/repository/user/user_repository.dart';
-import '../../../service_locator.dart';
-import '../../sources/firestore/firestore_service.dart';
+import 'package:socialapp/utils/import.dart';
 
 class UserRepositoryImpl extends UserRepository {
   @override
   Future<void> addCurrentUserData(UserModel addUserReq) {
-    return serviceLocator<FirestoreService>().addCurrentUserData(addUserReq);
+    return serviceLocator<UserService>().addCurrentUserData(addUserReq);
   }
 
   @override
   Future<UserModel?>? getCurrentUserData() {
-    return serviceLocator<FirestoreService>().getCurrentUserData();
+    return serviceLocator<UserService>().getCurrentUserData();
   }
 
   @override
   Future<UserModel?>? getUserData(String userID) {
-    return serviceLocator<FirestoreService>().getUserData(userID);
+    return serviceLocator<UserService>().getUserData(userID);
   }
 
   @override
   Future<void> updateCurrentUserData(UserModel updateUserReq) {
-    return serviceLocator<FirestoreService>()
-        .updateCurrentUserData(updateUserReq);
+    return serviceLocator<UserService>().updateCurrentUserData(updateUserReq);
   }
 
   @override
-  Future<List<Map<String, String>>> fetchCategoriesData() {
-    return serviceLocator<FirestoreService>().fetchCategoriesData();
+  Future<List<String>> getUserRelatedData(String uid, String datatype) {
+    return serviceLocator<UserService>().getUserRelatedData(uid, datatype);
   }
-
-  @override
-  Future<List<String>> getUserFollowers(String uid) {
-    return serviceLocator<FirestoreService>().getUserFollowers(uid);
-  }
-
-  @override
-  Future<List<String>> getUserFollowings(String uid) {
-    return serviceLocator<FirestoreService>().getUserFollowings(uid);
-  }
-
-  @override
-  Future<List<String>> getUserCollectionIDs(String uid){
-    return serviceLocator<FirestoreService>().getUserCollectionIDs(uid);
-  }
-
 }

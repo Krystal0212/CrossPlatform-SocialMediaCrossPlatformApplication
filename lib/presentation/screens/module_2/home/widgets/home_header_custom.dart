@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:socialapp/utils/import.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 
 class HomeHeaderCustom extends StatefulWidget {
@@ -43,15 +44,21 @@ class _HomeHeaderCustomState extends State<HomeHeaderCustom> {
   }
 
   void popularTabPress() {
-    print('popular');
+    if (kDebugMode) {
+      print('popular');
+    }
   }
 
   void trendingTabPress() {
-    print('trending');
+    if (kDebugMode) {
+      print('trending');
+    }
   }
 
   void followingTabPress() {
-    print('following');
+    if (kDebugMode) {
+      print('following');
+    }
   }
 }
 

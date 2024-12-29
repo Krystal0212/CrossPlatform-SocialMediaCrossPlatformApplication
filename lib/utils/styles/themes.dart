@@ -14,12 +14,16 @@ class AppTheme {
   static Color get labelTextColor =>
       AppColors.verifiedBlack; // Label text color
   static Color get white => AppColors.white; // White color
-  static Color get black => AppColors.erieBlack; // Black
+  static Color get black => AppColors.dynamicBlack; // Black
 
   //ToDo: Gradient
   static Gradient get mainGradient => const LinearGradient(
         colors: [AppColors.iris, AppColors.lavenderBlueShadow],
       );
+
+  static Gradient get disableGradient => const LinearGradient(
+    colors: [AppColors.blackOak, AppColors.kettleman],
+  );
 
   static dynamic get mainGradientShader =>
       AppTheme.mainGradient.createShader(const Rect.fromLTWH(0, 0, 100, 50));
@@ -50,29 +54,29 @@ class AppTheme {
           Color.fromRGBO(82, 82, 199, 0.5),
           Color.fromRGBO(82, 82, 199, 0.1),
         ],
-      )
-  );
+      ));
 
   static BoxDecoration get profileBackgroundBoxDecoration => BoxDecoration(
       image: const DecorationImage(
-        image: AssetImage(AppImages
-            .editProfileAppbarBackground),
+        image: AssetImage(AppImages.editProfileAppbarBackground),
         fit: BoxFit.cover,
       ),
       borderRadius: AppTheme.smallBorderRadius);
 
   static BoxDecoration get addCollectionBoxDecoration => const BoxDecoration(
-  borderRadius: BorderRadius.only(
-  topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-  color: Colors.white);
+      borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+      color: Colors.white);
 
   //ToDo: Border Radius
-  static BorderRadius get smallBorderRadius=> const BorderRadius.all(
-  Radius.circular(12));
+  static BorderRadius get smallBorderRadius =>
+      const BorderRadius.all(Radius.circular(12));
 
   //ToDo:
   static EdgeInsets get paddingBottom => const EdgeInsets.only(bottom: 20);
-  static EdgeInsets get addCollectionPadding => const EdgeInsets.fromLTRB(24, 32, 24, 0);
+
+  static EdgeInsets get addCollectionPadding =>
+      const EdgeInsets.fromLTRB(24, 32, 24, 0);
 
   //ToDo: Style
   static TextStyle get appLabelStyle => GoogleFonts.plusJakartaSans(
@@ -118,11 +122,12 @@ class AppTheme {
         color: black,
       );
 
-  static TextStyle get categoryLabelStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: black,
-      );
+  static TextStyle get topicLabelStyle => GoogleFonts.plusJakartaSans(
+    color: white,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.1,
+  );
 
   static TextStyle get buttonGradientStyle => GoogleFonts.plusJakartaSans(
         fontWeight: FontWeight.w700,
@@ -151,6 +156,12 @@ class AppTheme {
         letterSpacing: -0.1,
       );
 
+  static TextStyle get gridItemTitleStyle => GoogleFonts.plusJakartaSans(
+        color: white,
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      );
+
   static TextStyle get forgotPasswordLabelStyle => GoogleFonts.plusJakartaSans(
         color: white,
         fontSize: 16,
@@ -165,7 +176,7 @@ class AppTheme {
         letterSpacing: -0.1,
       );
 
-  static TextStyle get categoryBottomTitle => GoogleFonts.plusJakartaSans(
+  static TextStyle get topicBottomTitle => GoogleFonts.plusJakartaSans(
       fontWeight: FontWeight.w400,
       fontSize: 14,
       color: AppColors.white,
@@ -200,6 +211,52 @@ class AppTheme {
         color: Colors.white,
         fontSize: 14,
       );
+
+  //ToDo: PaddingEdgeInsetsStyle
+  static EdgeInsets get preferredTopicMobilePaddingEdgeInsets =>
+      const EdgeInsets.only(top: 160, left: 20, right: 20, bottom: 20);
+
+  static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(
+      double deviceWidth,
+      double deviceHeight,
+      double paddingRatioWidth,
+      double paddingRatioHeight) {
+    double horizontalPadding = deviceWidth * paddingRatioWidth;
+    double verticalPadding = deviceHeight * paddingRatioHeight;
+    return EdgeInsets.only(
+      top: verticalPadding,
+      left: horizontalPadding,
+      right: horizontalPadding,
+      bottom: verticalPadding,
+    );
+  }
+
+  //ToDo: BoxContainerShadow
+  static List<BoxShadow> get topicNotChosenOptionBoxShadow => const [
+        BoxShadow(
+          color: AppColors.dynamicBlack,
+          blurRadius: 65,
+          spreadRadius: 8,
+          offset: Offset(0, 120),
+        ),
+        BoxShadow(
+          color: AppColors.dynamicBlack,
+          blurRadius: 65,
+          spreadRadius: 8,
+          offset: Offset(-170, 00),
+        ),
+        BoxShadow(
+          color: AppColors.dynamicBlack,
+          blurRadius: 65,
+          spreadRadius: 8,
+          offset: Offset(170, 00),
+        ),
+      ];
+  static List<BoxShadow> get topicChosenOptionBoxShadow =>  [
+    BoxShadow(
+      color: AppColors.dynamicBlack.withOpacity(0.65),
+    ),
+  ];
 
   //ToDo: ButtonStyle
   static ButtonStyle get navigationTextButtonStyle => ElevatedButton.styleFrom(

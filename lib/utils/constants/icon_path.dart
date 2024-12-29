@@ -26,6 +26,7 @@ class AppIcons {
   static const String plus = '${iconPath}plus$svgFormat';
   static const String x = '${iconPath}x$svgFormat';
   static const String gradientDot = '${iconPath}gradient-dot$svgFormat';
+  static const String checked = '${iconPath}checked$svgFormat';
 
   // Specific Icons in the Bold Folder
   static const String categoryCopy = '${boldPath}category-copy$svgFormat';
