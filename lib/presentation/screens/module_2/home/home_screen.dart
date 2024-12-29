@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
                     ),
                     labelColor: AppColors.iric,
-                    unselectedLabelColor: AppColors.erieBlack.withOpacity(0.5),
+                    unselectedLabelColor: AppColors.dynamicBlack.withOpacity(0.5),
                     tabs: const [
                       TabItem(title: 'Popular',),
                       TabItem(title: 'Trending'),

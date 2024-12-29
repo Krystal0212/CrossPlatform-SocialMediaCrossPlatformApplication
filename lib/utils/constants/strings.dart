@@ -17,6 +17,9 @@ class AppStrings {
   static const String exitDialogNo = "No";
   static const String exitDialogYes = "Yes";
 
+  // For boarding section
+  static const String slogan = "SHARE - INSPIRE - CONNECT";
+
   // For sign up section
   static const String alreadyHaveAccount = "Already have account?";
 
@@ -38,9 +41,15 @@ class AppStrings {
   // For reset password section
   static const String defaultResetPasswordMessage =
       "We will send you instruction on how to reset your password";
+  static const String setNewPassword = "SET NEW PASSWORD";
+  static const String typeNewPassword = "Type your new password";
+  static const String send= "Send";
 
   // For preferred topic
-  static const String titlePreferredTopicMessage ="PICK YOUR PREFERRED TOPICs";
+  static const String titlePreferredTopicMessage = "WHAT  ARE YOU CONCERNED ABOUT ?";
+  static const String titleBannerMessage ="PICK YOUR PREFERRED TOPICS";
+  static const String pick5ToContinue = "PICK 5 TOPICS TO CONTINUES";
+  static const String exploreNow = "EXPLORE NOW";
 
   // For collection section
   static const String createCollection = "Create collection";

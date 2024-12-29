@@ -3,6 +3,8 @@ import 'package:socialapp/data/models/auth/create_user_req.dart';
 import 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 
 abstract class AuthRepository {
+  bool isUserVerified();
+
   Future<void> signUp(SignUpUserReq signUpUserReq);
 
   Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq);
@@ -17,9 +19,11 @@ abstract class AuthRepository {
 
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl);
 
-  Future<void> verifyOTPByLink(String encryptedLink);
+  Future<void> verifyAccountByOTPLink(String encryptedLink);
 
-  Future<void> verifyOTPByCode(String otpCode);
+  Future <void>verifyResetPasswordRequestByOTPLink(String encryptedLink);
+
+  Future<void> verifyAccountByOTPCode(String otpCode);
 
   Future<void> sendForCurrentUserVerificationEmail();
 }

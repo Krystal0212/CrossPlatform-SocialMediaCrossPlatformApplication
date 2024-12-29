@@ -4,11 +4,13 @@ import 'cubit/verification_state.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String? hashParameters;
-  final String? mode;
   final bool? isFromSignIn;
 
-  const VerificationScreen(
-      {super.key, this.hashParameters, this.isFromSignIn, this.mode});
+  const VerificationScreen({
+    super.key,
+    this.hashParameters,
+    this.isFromSignIn,
+  });
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -17,11 +19,9 @@ class VerificationScreen extends StatefulWidget {
 class _VerificationScreenState extends State<VerificationScreen> {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _codeController;
-  late ValueNotifier<bool> _isLoading;
   late ValueNotifier<String> _verifyMessageChangeNotifier;
   late double deviceWidth, deviceHeight;
   late bool _isWeb;
-  late String? _mode;
 
   @override
   void initState() {
@@ -29,18 +29,26 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     _formKey = GlobalKey<FormState>();
     _codeController = TextEditingController();
-    _isLoading = ValueNotifier<bool>(false);
     _verifyMessageChangeNotifier = ValueNotifier<String>("");
-    _mode = widget.mode;
 
-    String hash = widget.hashParameters ?? "";
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      String hash = widget.hashParameters ?? "";
 
-    if (hash.isNotEmpty) {
-      context.read<VerificationCubit>().verifyByLink(context, hash);
-    }
-    else if (_mode == null) {
-      context.go('/home');
-    }
+      if (hash.isNotEmpty) {
+        // if (widget.isResetPassword == true) {
+        //   context
+        //       .read<VerificationCubit>()
+        //       .verifyResetPasswordRequestByLink(context, hash);
+        // } else {
+        context.read<VerificationCubit>().verifyAccountByLink(context, hash);
+        // }
+      } else if (!context
+          .read<VerificationCubit>()
+          .checkNecessaryConditionToUseScreen(
+              context, widget.isFromSignIn ?? false)) {
+        context.go('/home');
+      }
+    });
 
     super.initState();
   }
@@ -59,7 +67,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   void dispose() {
     _codeController.dispose();
-    _isLoading.dispose();
     _verifyMessageChangeNotifier.dispose();
     super.dispose();
   }

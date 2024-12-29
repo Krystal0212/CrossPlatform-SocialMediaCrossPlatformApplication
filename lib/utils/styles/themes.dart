@@ -14,12 +14,16 @@ class AppTheme {
   static Color get labelTextColor =>
       AppColors.verifiedBlack; // Label text color
   static Color get white => AppColors.white; // White color
-  static Color get black => AppColors.erieBlack; // Black
+  static Color get black => AppColors.dynamicBlack; // Black
 
   //ToDo: Gradient
   static Gradient get mainGradient => const LinearGradient(
         colors: [AppColors.iris, AppColors.lavenderBlueShadow],
       );
+
+  static Gradient get disableGradient => const LinearGradient(
+    colors: [AppColors.blackOak, AppColors.kettleman],
+  );
 
   static dynamic get mainGradientShader =>
       AppTheme.mainGradient.createShader(const Rect.fromLTWH(0, 0, 100, 50));
@@ -118,11 +122,12 @@ class AppTheme {
         color: black,
       );
 
-  static TextStyle get categoryLabelStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: black,
-      );
+  static TextStyle get topicLabelStyle => GoogleFonts.plusJakartaSans(
+    color: white,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.1,
+  );
 
   static TextStyle get buttonGradientStyle => GoogleFonts.plusJakartaSans(
         fontWeight: FontWeight.w700,
@@ -149,6 +154,12 @@ class AppTheme {
         fontSize: 12,
         fontWeight: FontWeight.bold,
         letterSpacing: -0.1,
+      );
+
+  static TextStyle get gridItemTitleStyle => GoogleFonts.plusJakartaSans(
+        color: white,
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
       );
 
   static TextStyle get forgotPasswordLabelStyle => GoogleFonts.plusJakartaSans(
@@ -221,39 +232,31 @@ class AppTheme {
   }
 
   //ToDo: BoxContainerShadow
-  static List<BoxShadow> get topicOptionBoxShadow => [
-        // const BoxShadow(
-        //   color: AppColors.carbon,
-        //   blurRadius: 30,
-        //   spreadRadius: 50,
-        //   offset: Offset(0, 50),
-        // ),
-        // BoxShadow(
-        //   color: Colors.white.withValues(alpha: 0.0),
-        //   blurRadius: 8,
-        //   spreadRadius: -25,
-        // ),
-    // const BoxShadow(
-    //   color: AppColors.carbon,
-    //   offset: Offset(-12, 0), // Shadow on the left
-    //   blurRadius: 16, // Increased blur for more visible shadow
-    //   spreadRadius: -4, // Reduced spread for a tighter shadow
-    // ),
-    // // Shadow on the right
-    // const BoxShadow(
-    //   color: AppColors.carbon,
-    //   offset: Offset(12, 0), // Shadow on the right
-    //   blurRadius: 16, // Increased blur for more visible shadow
-    //   spreadRadius: -4, // Reduced spread for a tighter shadow
-    // ),
-    // // Shadow at the bottom
-    // const BoxShadow(
-    //   color: AppColors.carbon,
-    //   offset: Offset(0, 12), // Shadow at the bottom
-    //   blurRadius: 16, // Increased blur for more visible shadow
-    //   spreadRadius: -4, // Reduced spread for a tighter shadow
-    // ),
+  static List<BoxShadow> get topicNotChosenOptionBoxShadow => const [
+        BoxShadow(
+          color: AppColors.dynamicBlack,
+          blurRadius: 65,
+          spreadRadius: 8,
+          offset: Offset(0, 120),
+        ),
+        BoxShadow(
+          color: AppColors.dynamicBlack,
+          blurRadius: 65,
+          spreadRadius: 8,
+          offset: Offset(-170, 00),
+        ),
+        BoxShadow(
+          color: AppColors.dynamicBlack,
+          blurRadius: 65,
+          spreadRadius: 8,
+          offset: Offset(170, 00),
+        ),
       ];
+  static List<BoxShadow> get topicChosenOptionBoxShadow =>  [
+    BoxShadow(
+      color: AppColors.dynamicBlack.withOpacity(0.65),
+    ),
+  ];
 
   //ToDo: ButtonStyle
   static ButtonStyle get navigationTextButtonStyle => ElevatedButton.styleFrom(

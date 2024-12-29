@@ -16,7 +16,7 @@ class BoardingScreen extends StatelessWidget {
             height: 20,
           ),
           const Text(
-            "SHARE - INSPIRE - CONNECT",
+            AppStrings.slogan,
             style: TextStyle(
               color: AppColors.white,
               fontSize: 14,
@@ -30,7 +30,7 @@ class BoardingScreen extends StatelessWidget {
                     AppColors.ancestralWater.withOpacity(0.3)),
               ),
               onPressed: () {
-                // context.go('/verify');
+                context.go('/sign-in');
               },
               child: const Text(
                 "GET STARTED",

@@ -50,7 +50,7 @@ class UserModel {
   }
 
   Map<String, String> toPreferredTopic(Map<String, bool> chosenTopics) {
-    int number = 1;
+    int number = 0;
     Map<String, String> results = chosenTopics.map((key, _) {
       number += 1;
       return MapEntry(number.toString(), key.toString());
@@ -83,6 +83,11 @@ class UserModel {
       socialAccounts: socialAccounts,
       email: email,
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserModel{name: $name, email: $email, lastName: $lastName, location: $location, avatar: $avatar, emailChanged: $emailChanged, avatarChanged: $avatarChanged, preferredTopics: $preferredTopics, socialAccounts: $socialAccounts}';
   }
 
   UserModel copyWith({

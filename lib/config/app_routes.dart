@@ -1,5 +1,5 @@
-
 import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/preferred_topic_cubit.dart';
+import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/reset_password_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AppRoutes {
@@ -33,28 +33,45 @@ class AppRoutes {
           path: '/verify',
           pageBuilder: (context, state) {
             String params = "";
-            bool? stateOption;
-            String? mode;
+            bool? isFromSignIn;
+
             if (state.extra != null && state.extra is Map<String, dynamic>) {
               final extraData = state.extra as Map<String, dynamic>;
               params = extraData["code"]?.toString() ?? "";
-              stateOption = extraData["state"] as bool?;
-              mode = extraData["pass-type"] as String?;
+              isFromSignIn = extraData["isFromSignIn"] as bool?;
             }
-            return _buildPageRoute( BlocProvider(
+
+            return _buildPageRoute(
+              BlocProvider(
                   create: (context) => VerificationCubit(),
                   child: VerificationScreen(
                     hashParameters: params,
-                    isFromSignIn: stateOption,
-                    mode: mode,
+                    isFromSignIn: isFromSignIn,
                   )),
             );
           }),
-      GoRoute(path: '/preferred-topic',
-      // pageBuilder: (context, state) => _buildPageRoute(const PreferredTopicsScreen())),
-      pageBuilder: (context, state) => _buildPageRoute(BlocProvider(
-          create: (_) => PreferredTopicCubit(),
-          child: const PreferredTopicsScreen()))),
+      GoRoute(
+          path: '/preferred-topic',
+          // pageBuilder: (context, state) => _buildPageRoute(const PreferredTopicsScreen())),
+          pageBuilder: (context, state) => _buildPageRoute(BlocProvider(
+              create: (_) => PreferredTopicCubit(),
+              child: const PreferredTopicsScreen()))),
+      GoRoute(
+          path: '/reset-password',
+          pageBuilder: (context, state) {
+            String params = "";
+
+            if (state.extra != null && state.extra is Map<String, dynamic>) {
+              final extraData = state.extra as Map<String, dynamic>;
+              params = extraData["code"]?.toString() ?? "";
+            }
+
+            return _buildPageRoute(BlocProvider(
+                create: (context) => ResetPasswordCubit(),
+                child: VerificationScreen(
+                  hashParameters: params,
+                )));
+          }),
       GoRoute(
           path: '/home',
           pageBuilder: (context, state) => _buildPageRoute(const HomeScreen())),

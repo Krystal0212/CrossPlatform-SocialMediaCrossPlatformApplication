@@ -25,7 +25,8 @@ class SignInCubit extends Cubit<SignInState> {
     } catch (e) {
       if (e is CustomFirestoreException) {
         if (e.code == 'new-user') {
-          context.go('/');
+          if(!context.mounted) return;
+          context.go('/preferred-topic');
           emit(SignInSuccess());
         }
       }else if (e is FirebaseAuthException) {
@@ -52,18 +53,9 @@ class SignInCubit extends Cubit<SignInState> {
     } catch (e) {
       if (e is CustomFirestoreException) {
         if (e.code == 'new-user') {
-
           emit(SignInSuccess());
-          if(context.mounted){
-            context.go('/home');
-          }
-        }
-      } else if (e is FirebaseAuthException) {
-        if (e.code == 'email-not-verified') {
-          emit(SignInFailure());
-          if (context.mounted) {
-            context.go('/verify', extra: {"isFromSignIn": true});
-          }
+          if(!context.mounted) return;
+          context.go('/preferred-topic');
         }
       } else {
         emit(SignInFailure());

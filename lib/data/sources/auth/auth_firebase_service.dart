@@ -7,11 +7,15 @@ abstract class AuthFirebaseService {
 
   Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq);
 
+  bool isUserVerified();
+
   Future<void> signInWithGoogle();
 
-  Future<void> verifyOTPByLink(String encryptedLink);
+  Future<void> verifyAccountByOTPLink(String encryptedLink);
 
-  Future<void> verifyOTPByCode(String otpCode);
+  Future<void> verifyAccountByOTPCode(String otpCode);
+
+  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink);
 
   Future<void> sendForCurrentUserVerificationEmail();
 
@@ -77,6 +81,26 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         print("${AppStrings.authenticationUnknownError}: ${error.toString()}");
       }
       rethrow;
+    }
+  }
+
+  @override
+  bool isUserVerified(){
+    try{
+      User? user = getCurrentUser();
+
+      if (user == null) {
+        return false;
+      }else if (!user.emailVerified) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      if (kDebugMode) {
+        print("${AppStrings.authenticationUnknownError}: ${error.toString()}");
+      }
+      return false;
     }
   }
 
@@ -184,7 +208,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> verifyOTPByLink(String encryptedLink) async {
+  Future<void> verifyAccountByOTPLink(String encryptedLink) async {
     final url = Uri.parse(
         'https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByLink');
 
@@ -210,7 +234,32 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> verifyOTPByCode(String otpCode) async {
+  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
+    // Create Cloud functions first before parsing URLs
+    // final url = Uri.parse(...);
+
+    try {
+      // final response = await get(url.replace(queryParameters: {
+      //   'encryptedLink': encryptedLink.trim(),
+      // }));
+
+      // if (response.statusCode == 200) {
+      //   if (kDebugMode) {
+      //     print(response.body);
+      //   }
+      // } else {
+      //   throw response.body;
+      // }
+    } catch (error) {
+      // if (kDebugMode) {
+      //   print('Verification failed: $error');
+      // }
+      // rethrow;
+    }
+  }
+
+  @override
+  Future<void> verifyAccountByOTPCode(String otpCode) async {
     final url = Uri.parse(
         'https://api-m2ogw2ba2a-uc.a.run.app//verifyOTPByCode');
 
