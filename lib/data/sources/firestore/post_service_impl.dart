@@ -7,24 +7,26 @@ abstract class PostService {
 
   Future<String?> getPostImageById(String postId);
 
-  Future<List<PostModel>?>? getPostsData();
+  Future<List<PostModel>> getPostsData();
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
 }
 
-class PostServiceImpl extends PostService{
+class PostServiceImpl extends PostService {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final StorageService _storage = StorageServiceImpl();
 
   // ToDo : Reference Define
   User? get currentUser => _auth.currentUser;
+
   CollectionReference get _usersRef => _firestoreDB.collection('User');
+
   CollectionReference get _postRef => _firestoreDB.collection('Post');
 
   // ToDo: Service Functions
   @override
-  Future<List<PostModel>?>? getPostsData() async {
+  Future<List<PostModel>> getPostsData() async {
     List<PostModel> posts = [];
     DocumentReference userRef;
     Future<DocumentSnapshot<Object?>> userData;
@@ -32,24 +34,26 @@ class PostServiceImpl extends PostService{
     String userAvatar = '';
 
     try {
-      // QuerySnapshot postsSnapshot = await _postRef.get();
-      // Future<Map<String, dynamic>> userData = userRef.get().then((value) => value.data() as Map<String, dynamic>);
 
-      QuerySnapshot postsSnapshot =
-      await _postRef.orderBy('timestamp', descending: true).get();
-      if (postsSnapshot.docs.isEmpty) {
+      Query<Object?> postsQuery =
+          _postRef.orderBy('timestamp', descending: true);
+
+      AggregateQuerySnapshot aggregateSnapshot = await postsQuery.count().get();
+      int? count = aggregateSnapshot.count ?? 0;
+
+      if (count == 0) {
         throw CustomFirestoreException(
           code: 'no-posts',
           message: 'No posts exist in Firestore',
         );
       }
+      QuerySnapshot postsSnapshot = await postsQuery.get();
 
       for (var doc in postsSnapshot.docs) {
         userRef = doc['userRef'];
         userData = userRef.get();
 
         await userData.then((value) {
-          // userInfo = value;
           username = value['name'];
           userAvatar = value['avatar'];
         });
@@ -62,20 +66,15 @@ class PostServiceImpl extends PostService{
           likeAmount: doc['likeAmount'],
           commentAmount: doc['commentAmount'],
           viewAmount: doc['viewAmount'],
-          image: doc['image'],
+          image: doc['imageUrl'],
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
           comments: null,
           likes: null,
           views: null,
         );
-        // print('post: $post');
         posts.add(post);
-        // topics.add(TopicModel.fromMap(doc.data() as Map<String, dynamic>));
       }
-
-      // print('posts: $posts');
       return posts;
-      // return postsSnapshot.docs.map((doc) => PostModel.fromMap(doc.data() as Map<String, dynamic>)).toList();
     } catch (e) {
       rethrow;
     }
@@ -96,7 +95,7 @@ class PostServiceImpl extends PostService{
       DocumentReference tempUserRef = _usersRef.doc(userId);
 
       QuerySnapshot postsSnapshot =
-      await _postRef.where('userRef', isEqualTo: tempUserRef).get();
+          await _postRef.where('userRef', isEqualTo: tempUserRef).get();
 
       if (postsSnapshot.docs.isEmpty) {
         throw CustomFirestoreException(
@@ -121,7 +120,7 @@ class PostServiceImpl extends PostService{
           likeAmount: doc['likeAmount'],
           commentAmount: doc['commentAmount'],
           viewAmount: doc['viewAmount'],
-          image: doc['image'],
+          image: doc['imageUrl'],
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
           comments: null,
           likes: null,
@@ -160,7 +159,7 @@ class PostServiceImpl extends PostService{
       DocumentSnapshot documentSnapshot = await getPostDataById(postId);
 
       Map<String, dynamic>? postData =
-      documentSnapshot.data() as Map<String, dynamic>?;
+          documentSnapshot.data() as Map<String, dynamic>?;
 
       return postData?["image"] as String?;
     } catch (e) {
@@ -312,4 +311,3 @@ class PostServiceImpl extends PostService{
     }
   }
 }
-

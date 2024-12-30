@@ -27,6 +27,8 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         QuerySnapshot,
         DocumentReference,
         Timestamp,
+        Query,
+        AggregateQuerySnapshot,
         FieldValue;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 

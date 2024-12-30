@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:socialapp/utils/import.dart';
-import 'package:socialapp/utils/styles/colors.dart';
+
+import 'search_bar.dart';
 
 class HomeHeaderCustom extends StatefulWidget {
   const HomeHeaderCustom({super.key});
@@ -13,33 +13,8 @@ class _HomeHeaderCustomState extends State<HomeHeaderCustom> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: 112,
       color: AppColors.white,
-      child: const Column(
-        children: [
-          SearchBar(),
-          // Padding(
-          //   padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-          //   child: Row(
-          //     // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //     children: [
-          //       Expanded(
-          //         flex: 1,
-          //         child: SwitchTabButton(tabText: 'Popular', switchTab: popularTabPress),
-          //       ),
-          //       Expanded(
-          //         flex: 1,
-          //         child: SwitchTabButton(tabText: 'Trending', switchTab: trendingTabPress),
-          //       ),
-          //       Expanded(
-          //         flex: 1,
-          //         child: SwitchTabButton(tabText: 'Following', switchTab: followingTabPress),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-        ],
-      ),
+      child: const CustomSearchBar(),
     );
   }
 
@@ -62,54 +37,11 @@ class _HomeHeaderCustomState extends State<HomeHeaderCustom> {
   }
 }
 
-class SearchBar extends StatefulWidget {
-  const SearchBar({super.key});
-
-  @override
-  State<SearchBar> createState() => _SearchBarState();
-}
-
-class _SearchBarState extends State<SearchBar> {
-  late TextEditingController searchController;
-
-  @override
-  void initState() {
-    super.initState();
-    searchController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
-      child: SizedBox(
-        height: 36,
-        child: TextField(
-          controller: searchController,
-          decoration: InputDecoration(
-            // hintText: 'Search',
-            labelText: 'Search',
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          )
-        )
-      ),
-    );
-  }
-}
 
 class SwitchTabButton extends StatelessWidget {
-  SwitchTabButton({super.key, required this.tabText, required this.switchTab});
+  const SwitchTabButton({super.key, required this.tabText, required this.switchTab});
 
-  String tabText;
+  final String tabText;
   final VoidCallback switchTab;
 
   @override

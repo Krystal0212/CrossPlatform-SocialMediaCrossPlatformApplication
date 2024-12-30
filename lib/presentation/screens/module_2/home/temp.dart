@@ -1,7 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 
 import 'widgets/home_header_custom.dart';
-import 'widgets/post_custom.dart';
+import 'widgets/custom_post.dart';
 import 'widgets/tab_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -224,7 +224,7 @@ class _PostListViewState extends State<PostListView> with AutomaticKeepAliveClie
             child: ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
-                return PostCustom(post: snapshot.data![index]);
+                return CustomPost(post: snapshot.data![index], bodyWidth: 899,);
               },
             ),
 

@@ -19,7 +19,6 @@ class _NewPostScreenState extends State<NewPostScreen> {
 
   @override
   void initState() {
-    print('initState cubit post');
     super.initState();
     _postCubit = PostCubit();
   }
