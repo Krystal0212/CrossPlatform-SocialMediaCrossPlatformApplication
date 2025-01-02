@@ -2,7 +2,7 @@
 
 import 'package:socialapp/utils/import.dart';
 
-enum ViewMode { popular, trending, fol }
+enum ViewMode { explore, trending, following }
 
 
 class HomeLoading extends HomeState{}

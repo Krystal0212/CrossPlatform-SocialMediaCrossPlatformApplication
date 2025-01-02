@@ -1,14 +1,14 @@
-
 class PostModel {
   final String postId;
   final String username;
   final String userAvatar;
   final String content;
-  final String image;
+  final List<Map<String, String>> media; // Updated to support multiple media types
   final DateTime timestamp;
   final int likeAmount;
   final int commentAmount;
   final int viewAmount;
+  final List<String> topicRefs;
   final Map<String, dynamic>? comments;
   final Map<String, dynamic>? likes;
   final Map<String, dynamic>? views;
@@ -21,11 +21,12 @@ class PostModel {
     required this.likeAmount,
     required this.commentAmount,
     required this.viewAmount,
-    required this.image,
+    required this.media,
     required this.timestamp,
     required this.comments,
     required this.likes,
     required this.views,
+    required this.topicRefs,
   });
 
   factory PostModel.newPost({
@@ -33,15 +34,16 @@ class PostModel {
     required String username,
     required String userAvatar,
     required String content,
-    required String image,
+    required List<Map<String, String>> media,
     required DateTime timestamp,
+    required List<String> topicRefs,
   }) {
     return PostModel(
       postId: postId,
       username: username,
       userAvatar: userAvatar,
       content: content,
-      image: image,
+      media: media,
       timestamp: timestamp,
       likeAmount: 0,
       commentAmount: 0,
@@ -49,35 +51,43 @@ class PostModel {
       comments: {},
       likes: {},
       views: {},
+      topicRefs: topicRefs,
     );
   }
 
-  // factory PostModel.fromMap(String postId, Map<String, dynamic> data) {
-  //   return PostModel(
-  //     postId: postId,
-  //     username: data['username'] ?? '', // Ensure fields are non-null
-  //     userAvatar: data['userAvatar'] ?? '',
-  //     content: data['content'] ?? '',
-  //     likeAmount: data['likeAmount'] ?? 0,
-  //     commentAmount: data['commentAmount'] ?? 0,
-  //     viewAmount: data['viewAmount'] ?? 0,
-  //     image: data['image'] ?? '',
-  //     timestamp: (data['timestamp'] as Timestamp).toDate(), // Convert Firestore timestamp
-  //     comments: data['comments'] as Map<String, dynamic>?, // Cast nullable maps
-  //     likes: data['likes'] as Map<String, dynamic>?,
-  //     views: data['views'] as Map<String, dynamic>?,
-  //   );
-  // }
+  Map<String, dynamic> toMap() {
+    return {
+      'postId': postId,
+      'username': username,
+      'userAvatar': userAvatar,
+      'content': content,
+      'media': media,
+      'timestamp': timestamp.toIso8601String(),
+      'likeAmount': likeAmount,
+      'commentAmount': commentAmount,
+      'viewAmount': viewAmount,
+      'topicRefs': topicRefs,
+      'comments': comments,
+      'likes': likes,
+      'views': views,
+    };
+  }
 
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'userId': userId,
-  //     'content': content,
-  //     'imageUrl': image,
-  //     'timestamp': timestamp,
-  //     'comments': comments,
-  //     'likes': likes,
-  //     'views': views,
-  //   };
-  // }
+  factory PostModel.fromMap(Map<String, dynamic> map) {
+    return PostModel(
+      postId: map['postId'],
+      username: map['username'],
+      userAvatar: map['userAvatar'],
+      content: map['content'],
+      media: List<Map<String, String>>.from(map['media'] ?? []),
+      timestamp: DateTime.parse(map['timestamp']),
+      likeAmount: map['likeAmount'] ?? 0,
+      commentAmount: map['commentAmount'] ?? 0,
+      viewAmount: map['viewAmount'] ?? 0,
+      topicRefs: List<String>.from(map['topicRefs'] ?? []),
+      comments: map['comments'],
+      likes: map['likes'],
+      views: map['views'],
+    );
+  }
 }

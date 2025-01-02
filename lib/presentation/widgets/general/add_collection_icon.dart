@@ -123,7 +123,7 @@ class NewCollectionModal extends StatelessWidget {
       decoration: AppTheme.addCollectionBoxDecoration,
       child: Center(
         child: Padding(
-          padding: AppTheme.addCollectionPadding,
+          padding: AppTheme.addCollectionPaddingEdgeInsets,
           child: Column(
             // mainAxisAlignment: MainAxisAlignment.center,
             // mainAxisSize: MainAxisSize.min,

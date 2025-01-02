@@ -7,12 +7,23 @@ import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   ViewMode _currentViewMode;
+  List<PostModel> explorePosts = [];
+  List<PostModel> trendingPosts =[];
+  List<PostModel> followingPosts =[];
+  bool isFetched = false;
 
   HomeCubit()
-      : _currentViewMode = ViewMode.popular,
-        super(HomeViewModeInitial(ViewMode.popular)) {
-    // Trigger initial data loading for the default view mode
-    _loadData(ViewMode.popular);
+      : _currentViewMode = ViewMode.explore,
+        super(HomeViewModeInitial(ViewMode.explore)) {
+
+
+    _loadData(ViewMode.explore);
+  }
+
+  Future<void> fetchPosts() async {
+    explorePosts = await serviceLocator<PostRepository>().getPostsData();
+    trendingPosts = await serviceLocator<PostRepository>().getPostsData();
+    followingPosts = await serviceLocator<PostRepository>().getPostsData();
   }
 
   void reset(ViewMode viewMode) {
@@ -21,62 +32,42 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void setViewMode(ViewMode mode) {
-    // Only load data if the view mode is different from the current one
     if (_currentViewMode != mode) {
       emit(HomeViewModeChanged(mode));
       _loadData(mode);
     }
   }
 
-  void _loadFetchedData(ViewMode viewMode) async {
-    // Set the current view mode
-    _currentViewMode = viewMode;
-
-    try {
-      List<String> posts;
-      switch (viewMode) {
-        case ViewMode.popular:
-          posts = List.generate(10, (index) => 'Popular Post $index');
-          break;
-        case ViewMode.trending:
-          posts = List.generate(10, (index) => 'Trending Post $index');
-          break;
-        case ViewMode.fol:
-          posts = List.generate(10, (index) => 'Following Post $index');
-          break;
-      }
-
-      // emit(HomeLoadedPostsSuccess(posts));
-    } catch (e) {
-      emit(HomeFailure('Failed to load data'));
-    }
-  }
-
-  // Simulate data loading based on the selected view mode
   void _loadData(ViewMode viewMode) async {
-    // Set the current view mode
     _currentViewMode = viewMode;
 
     emit(HomeLoading());
 
+    if(!isFetched){
+      await fetchPosts();
+      isFetched = true;
+    }
+
     try {
-      List<PostModel> posts = await serviceLocator<PostRepository>().getPostsData();
+      List<PostModel> posts;
 
       switch (viewMode) {
-        case ViewMode.popular:
-          posts = posts;
+        case ViewMode.explore:
+          posts = explorePosts;
           break;
         case ViewMode.trending:
-          posts = posts;
+          posts = trendingPosts;
           break;
-        case ViewMode.fol:
-          posts = posts;
+        case ViewMode.following:
+          posts = followingPosts;
+          break;
+        default:
+          posts = explorePosts;
           break;
       }
 
       emit(HomeLoadedPostsSuccess(posts));
     } catch (e) {
-      print(e);
       emit(HomeFailure('Failed to load data'));
     }
   }

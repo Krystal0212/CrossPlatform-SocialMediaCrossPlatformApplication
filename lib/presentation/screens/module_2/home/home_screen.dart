@@ -3,7 +3,7 @@ import 'package:socialapp/utils/import.dart';
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
 import 'widgets/home_header_custom.dart';
-import 'widgets/custom_post.dart';
+import 'widgets/app_post.dart';
 import 'widgets/tab_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,10 +16,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late List<dynamic> posts;
   late CollectionReference<Map<String, dynamic>> postCollection;
+  late double deviceWidth, deviceHeight;
 
-  // late CollectionReference<Map<String, dynamic>> commentPostCollection;
-  late double deviceWidth, deviceHeight, bodyWidth;
-  late dynamic userInfo;
+  final double listBodyWidth = 750;
 
   @override
   void initState() {
@@ -32,8 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didChangeDependencies();
     deviceWidth = MediaQuery.of(context).size.width;
     deviceHeight = MediaQuery.of(context).size.height;
-
-    bodyWidth = deviceWidth * 0.45;
   }
 
   @override
@@ -78,22 +75,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           ViewMode selectedMode;
                           switch (index) {
                             case 0:
-                              selectedMode = ViewMode.popular;
+                              selectedMode = ViewMode.explore;
                               break;
                             case 1:
                               selectedMode = ViewMode.trending;
                               break;
                             case 2:
-                              selectedMode = ViewMode.fol;
+                              selectedMode = ViewMode.following;
                               break;
                             default:
-                              selectedMode = ViewMode.popular;
+                              selectedMode = ViewMode.explore;
                           }
                           context.read<HomeCubit>().setViewMode(selectedMode);
                         },
                         tabs: const [
                           TabItem(
-                            title: 'Popular',
+                            title: 'Explore',
                           ),
                           TabItem(title: 'Trending'),
                           TabItem(title: 'Following'),
@@ -115,23 +112,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                       child: Container(
                         padding: const EdgeInsets.only(top: 20),
-                    width: bodyWidth,
+                    width: listBodyWidth,
                     child: TabBarView(
                       children: [
                         PostListView(
                           posts: state.posts,
-                          viewMode: ViewMode.popular,
-                          bodyWidth: bodyWidth,
+                          viewMode: ViewMode.explore,
+                          listBodyWidth: listBodyWidth,
                         ),
                         PostListView(
                           posts: state.posts,
                           viewMode: ViewMode.trending,
-                          bodyWidth: bodyWidth,
+                          listBodyWidth: listBodyWidth,
                         ),
                         PostListView(
                           posts: state.posts,
-                          viewMode: ViewMode.fol,
-                          bodyWidth: bodyWidth,
+                          viewMode: ViewMode.following,
+                          listBodyWidth: listBodyWidth,
                         ),
                       ],
                     ),
@@ -146,39 +143,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class PostListView extends StatelessWidget {
-  final List<PostModel> posts;
-  final ViewMode viewMode;
-  final double bodyWidth;
-
-  const PostListView(
-      {super.key,
-      required this.posts,
-      required this.viewMode,
-      required this.bodyWidth});
-
-  @override
-  Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
-
-    if (kDebugMode) {
-      print(deviceWidth * 0.35);
-      print(deviceWidth);
-    }
-
-    return ListView.builder(
-      itemCount: posts.length,
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        return CustomPost(
-          post: posts[index],
-          bodyWidth: bodyWidth,
-        );
-      },
     );
   }
 }

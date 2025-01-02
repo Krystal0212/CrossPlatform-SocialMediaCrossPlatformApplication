@@ -72,11 +72,6 @@ class AppTheme {
   static BorderRadius get smallBorderRadius =>
       const BorderRadius.all(Radius.circular(12));
 
-  //ToDo:
-  static EdgeInsets get paddingBottom => const EdgeInsets.only(bottom: 20);
-
-  static EdgeInsets get addCollectionPadding =>
-      const EdgeInsets.fromLTRB(24, 32, 24, 0);
 
   //ToDo: Style
   static TextStyle get appLabelStyle => GoogleFonts.plusJakartaSans(
@@ -111,10 +106,34 @@ class AppTheme {
       );
 
   static TextStyle get blackHeaderStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
         color: black,
       );
+
+  static TextStyle get showMoreTextStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: AppColors.iris,
+  );
+
+  static TextStyle get blackUsernameStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: black,
+  );
+
+  static TextStyle get highlightedHashtagStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: AppColors.blueDeFrance,
+  );
+
+  static TextStyle get gradientShowMoreContentTextStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: black,
+  );
 
   static TextStyle get logOutButtonStyle => GoogleFonts.plusJakartaSans(
         fontSize: 12,
@@ -212,9 +231,13 @@ class AppTheme {
         fontSize: 14,
       );
 
+
+
   //ToDo: PaddingEdgeInsetsStyle
   static EdgeInsets get preferredTopicMobilePaddingEdgeInsets =>
       const EdgeInsets.only(top: 160, left: 20, right: 20, bottom: 20);
+
+  static EdgeInsets get postHorizontalPaddingEdgeInsets=> const EdgeInsets.symmetric(horizontal: 14.45, vertical: 10);
 
   static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(
       double deviceWidth,
@@ -229,6 +252,19 @@ class AppTheme {
       right: horizontalPadding,
       bottom: verticalPadding,
     );
+  }
+
+  static EdgeInsets get bottomPaddingEdgeInsets => const EdgeInsets.only(bottom: 20);
+
+  static EdgeInsets horizontalPostContentPaddingEdgeInsets(double horizontalPadding) {
+    return EdgeInsets.symmetric(horizontal: horizontalPadding);
+  }
+
+  static EdgeInsets get addCollectionPaddingEdgeInsets =>
+      const EdgeInsets.fromLTRB(24, 32, 24, 0);
+
+  static EdgeInsets homeListPostPaddingEdgeInsets(double horizontalPadding) {
+    return EdgeInsets.symmetric(horizontal: horizontalPadding);
   }
 
   //ToDo: BoxContainerShadow

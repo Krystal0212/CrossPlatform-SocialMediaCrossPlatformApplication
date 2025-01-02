@@ -6,6 +6,7 @@ export 'package:flutter/material.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:firebase_core/firebase_core.dart';
+export 'package:flutter/gestures.dart';
 export 'package:flutter_native_splash/flutter_native_splash.dart';
 export 'package:hydrated_bloc/hydrated_bloc.dart';
 export 'package:path_provider/path_provider.dart';
@@ -19,6 +20,7 @@ export 'package:firebase_auth/firebase_auth.dart';
 export 'package:google_sign_in/google_sign_in.dart';
 export 'package:go_router/go_router.dart';
 export 'package:cached_network_image/cached_network_image.dart';
+export 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 export 'package:cloud_firestore/cloud_firestore.dart'
     show
         FirebaseFirestore,
@@ -89,13 +91,13 @@ export 'package:socialapp/presentation/screens/module_4/module_4_exports.dart';
 export 'package:socialapp/presentation/widgets/general/custom_scroll_view.dart';
 export 'package:socialapp/presentation/widgets/general/custom_container.dart';
 export 'package:socialapp/presentation/widgets/general/custom_sized_box.dart';
-export 'package:socialapp/presentation/widgets/general/placeholder.dart';
+export 'package:socialapp/presentation/widgets/general/custom_placeholder.dart';
 export 'package:socialapp/presentation/widgets/general/custom_alert_dialog.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_body.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_elevated_button.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_header_image.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_text_form_field.dart';
-export 'package:socialapp/presentation/widgets/forgot_password/linear_gradient_title.dart';
+export 'package:socialapp/presentation/widgets/general/linear_gradient_title.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/message_content.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/stacks_bottom.dart';
 export 'package:socialapp/presentation/widgets/edit_profile/app_text_form_field.dart';

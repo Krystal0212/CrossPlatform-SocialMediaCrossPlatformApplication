@@ -37,8 +37,6 @@ class FirestoreServiceImpl extends FirestoreService {
           .map((doc) => TopicModel.fromMap(doc.data() as Map<String, dynamic>, doc.id.toString()))
           .toList();
 
-
-
       return categories;
     } catch (e) {
       if (kDebugMode) {

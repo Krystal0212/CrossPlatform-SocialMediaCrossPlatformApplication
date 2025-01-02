@@ -116,10 +116,11 @@ class PostImage extends StatelessWidget {
       ),
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
-        child: Image.network(
-          post.image,
-          fit: BoxFit.cover,
-        ),
+        // child: 
+        // Image.network(
+        //   post.assets,
+        //   fit: BoxFit.cover,
+        // ),
       ),
     );
   }

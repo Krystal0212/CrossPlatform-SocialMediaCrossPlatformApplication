@@ -34,7 +34,6 @@ class PostServiceImpl extends PostService {
     String userAvatar = '';
 
     try {
-
       Query<Object?> postsQuery =
           _postRef.orderBy('timestamp', descending: true);
 
@@ -66,12 +65,17 @@ class PostServiceImpl extends PostService {
           likeAmount: doc['likeAmount'],
           commentAmount: doc['commentAmount'],
           viewAmount: doc['viewAmount'],
-          image: doc['imageUrl'],
+          media: List<Map<String, String>>.from(
+            (doc['media'] as List<dynamic>)
+                .map((item) => Map<String, String>.from(item)),
+          ),
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
           comments: null,
           likes: null,
           views: null,
+          topicRefs: [],
         );
+
         posts.add(post);
       }
       return posts;
@@ -120,11 +124,12 @@ class PostServiceImpl extends PostService {
           likeAmount: doc['likeAmount'],
           commentAmount: doc['commentAmount'],
           viewAmount: doc['viewAmount'],
-          image: doc['imageUrl'],
+          media: List<Map<String, String>>.from(doc['media'] as List),
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
           comments: null,
           likes: null,
           views: null,
+          topicRefs: doc['topicRef'],
         );
 
         posts.add(post);
