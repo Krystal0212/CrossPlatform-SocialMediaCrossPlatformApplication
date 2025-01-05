@@ -2,22 +2,68 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:socialapp/utils/import.dart';
 
-class PostAsset extends StatelessWidget {
+class PostAsset extends StatefulWidget {
   final PostModel post;
   final double postWidth;
 
   const PostAsset({super.key, required this.post, required this.postWidth});
 
   @override
+  State<PostAsset> createState() => _PostAssetState();
+}
+
+class _PostAssetState extends State<PostAsset> {
+  late GlobalKey _gridKey;
+  late ValueNotifier<double> gridHeightNotifier;
+  double gridHeight = 280.0;
+  late int mediaLength;
+  late bool isWeb, isCachedData;
+
+  late List<Map<String, String>>? media;
+
+  @override
+  void initState() {
+    super.initState();
+
+    mediaLength = widget.post.media!.length;
+    media = widget.post.media;
+
+    if (widget.post.media != null && widget.post.media!.isNotEmpty) {
+      mediaLength = widget.post.media?.length ?? 0;
+      media = widget.post.media;
+      isCachedData = widget.post.mediaOffline == null;
+    } else if (widget.post.mediaOffline != null && widget.post.mediaOffline!.isNotEmpty && !isWeb) {
+      mediaLength = widget.post.media?.length ?? 0;
+      media = widget.post.mediaOffline;
+      isCachedData = true;
+    } else {
+      mediaLength = 0;
+      media = null;
+      isCachedData = false;
+    }
+
+    _gridKey = GlobalKey();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    isWeb = PlatformConfig.of(context)?.isWeb ?? false;
+    gridHeight = isWeb ? gridHeight : 178;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    switch (post.media.length) {
+    switch (mediaLength) {
       case 0:
         return const ImageErrorPlaceholder();
       case 1:
-        return PostSimpleImage(image: post.media[0], postWidth: postWidth,);
+        return PostSimpleImage(
+            image: media?[0] ?? {}, postWidth: widget.postWidth, isCachedData: isCachedData,);
       case 2:
         return GridView.builder(
-            itemCount: post.media.length,
+            itemCount: mediaLength,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 4,
@@ -25,12 +71,13 @@ class PostAsset extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               return PostSimpleImage(
-                image: post.media[index], postWidth: postWidth,
+                image: media?[index] ?? {},
+                postWidth: widget.postWidth, isCachedData: isCachedData,
               );
             });
       case 3:
         return GridView.builder(
-            itemCount: post.media.length,
+            itemCount: mediaLength,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 4,
@@ -38,16 +85,18 @@ class PostAsset extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               return PostSimpleImage(
-                image: post.media[index], postWidth: postWidth,
+                image: media?[index] ?? {},
+                postWidth: widget.postWidth, isCachedData: isCachedData,
               );
             });
       default:
-        List<Map<String, String>> allAssets = post.media;
+        List<Map<String, String>> allAssets = media ?? [];
         List<Map<String, String>> collapsedAssets =
-            allAssets.getRange(0, min(4, post.media.length)).toList();
+            allAssets.getRange(0, min(4, mediaLength)).toList();
         return ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 280.0, maxWidth: 580.0),
+          constraints: BoxConstraints(maxHeight: gridHeight, maxWidth: 580.0),
           child: GridView.custom(
+            key: _gridKey,
             semanticChildCount: 4,
             gridDelegate: SliverQuiltedGridDelegate(
               crossAxisCount: 4,
@@ -65,12 +114,12 @@ class PostAsset extends StatelessWidget {
               (context, index) {
                 int? otherAssets;
                 if (index == collapsedAssets.length - 1 &&
-                    index != post.media.length - 1) {
+                    index != mediaLength - 1) {
                   otherAssets = allAssets.length - collapsedAssets.length;
                 }
                 return PostMultipleImage(
                   image: collapsedAssets[index],
-                  otherAssets: otherAssets ?? 0,
+                  otherAssets: otherAssets ?? 0, isCachedData: isCachedData,
                 );
               },
               childCount: collapsedAssets.length,
@@ -84,13 +133,19 @@ class PostAsset extends StatelessWidget {
 class PostMultipleImage extends StatelessWidget {
   final Map<String, String> image;
   final int? otherAssets;
+  final bool isCachedData;
 
-  const PostMultipleImage({super.key, this.otherAssets, required this.image});
+  const PostMultipleImage({
+    super.key,
+    this.otherAssets,
+    required this.image, required this.isCachedData,
+  });
 
   @override
   Widget build(BuildContext context) {
     final Color dominantColor = Color(
-      int.parse((image['dominantColor'] ?? '#FFCDD2').replaceFirst('#', '0xFF')),
+      int.parse(
+          (image['dominantColor'] ?? '#FFCDD2').replaceFirst('#', '0xFF')),
     );
 
     return InkWell(
@@ -98,13 +153,10 @@ class PostMultipleImage extends StatelessWidget {
       child: Stack(
         children: [
           Container(
-            color: dominantColor,
-            width: double.infinity,
-            child: CachedNetworkImage(
-              fit: BoxFit.fitWidth,
-              imageUrl: image['url'] ?? '',
-            ),
-          ),
+              color: dominantColor,
+              width: double.infinity,
+              child: isCachedData ? Image.file(File(image['uri'] ?? '')):
+          CachedNetworkImage(imageUrl: image['url']?? '')),
           if (otherAssets != null && otherAssets! > 0)
             Container(
               color: Colors.black.withOpacity(0.5),
@@ -120,55 +172,72 @@ class PostMultipleImage extends StatelessWidget {
   }
 }
 
-
 class PostSimpleImage extends StatelessWidget {
   final Map<String, String> image;
-  late double mediaWidth;
   final double postWidth;
+  final bool isCachedData;
 
   final ValueNotifier<double> containerHeight = ValueNotifier<double>(400);
-  final double maxHeight = 400;
+  final double maxHeight = 370;
   final double horizontalPadding = 10;
 
-  PostSimpleImage({super.key, required this.image, required this.postWidth});
+  PostSimpleImage(
+      {super.key,
+      required this.image,
+      required this.postWidth,
+      required this.isCachedData});
 
-  Future<ui.Image> _getImageInfo(String imageUrl) async {
-    final image = NetworkImage(imageUrl);
-    final imageStream = image.resolve(const ImageConfiguration());
+  Future<ui.Image> _getImageInfo(ImageProvider imageProvider) async {
+    final imageStream = imageProvider.resolve(const ImageConfiguration());
     final completer = Completer<ui.Image>();
     imageStream.addListener(
       ImageStreamListener((ImageInfo info, bool _) {
         completer.complete(info.image);
+      }, onError: (exception, stackTrace) {
+        completer.completeError(exception);
       }),
     );
     return completer.future;
   }
 
-  void _updateHeight(String imageUrl) async {
-    final ui.Image image = await _getImageInfo(imageUrl);
-    final double aspectRatio = image.width / image.height;
+  void _updateHeight(ImageProvider imageProvider, double mediaWidth) async {
+    try {
+      final ui.Image image = await _getImageInfo(imageProvider);
+      final double aspectRatio = image.width / image.height;
 
-    if (aspectRatio > 1) {
-      containerHeight.value = image.height.toDouble() * (mediaWidth / image.width) ;
-    } else {
-      containerHeight.value = maxHeight;
+      if (aspectRatio > 1) {
+        containerHeight.value =
+            image.height.toDouble() * (mediaWidth / image.width);
+      } else {
+        containerHeight.value = maxHeight;
+      }
+    } catch (error) {
+      containerHeight.value =
+          maxHeight; // Fallback to max height if error occurs
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String imageUrl = image['url'] ?? '';
-    mediaWidth = postWidth - horizontalPadding*2;
+    final double mediaWidth = postWidth - horizontalPadding * 2;
+    final String imageUrl = isCachedData? (image['uri'] ?? '') : (image['url'] ?? '') ;
+
     final Color dominantColor = Color(
-      int.parse((image['dominantColor'] ?? '#FFCDD2').replaceFirst('#', '0xFF')),
+      int.parse(
+          (image['dominantColor'] ?? '#FFCDD2').replaceFirst('#', '0xFF')),
     );
 
+    final ImageProvider imageProvider = isCachedData
+        ? FileImage(File(imageUrl))
+        : CachedNetworkImageProvider(imageUrl);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateHeight(imageUrl);
+      _updateHeight(imageProvider, mediaWidth);
     });
 
     return Padding(
-      padding: AppTheme.horizontalPostContentPaddingEdgeInsets(horizontalPadding),
+      padding:
+          AppTheme.horizontalPostContentPaddingEdgeInsets(horizontalPadding),
       child: InkWell(
         onTap: () {},
         child: ValueListenableBuilder<double>(
@@ -178,44 +247,11 @@ class PostSimpleImage extends StatelessWidget {
               color: dominantColor,
               height: height,
               width: double.infinity,
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.contain,
-                errorWidget: (context, url, error) => const Icon(Icons.error),
-                imageBuilder: (context, imageProvider) {
-                  return FutureBuilder<ui.Image>(
-                    future: _getImageInfo(imageUrl), // Fetch image dimensions
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        return const Icon(Icons.error);
-                      } else {
-                        final ui.Image image = snapshot.data!;
-                        final double aspectRatio = image.width / image.height;
-
-                        if (aspectRatio > 1) {
-                          return AspectRatio(
-                            aspectRatio: aspectRatio,
-                            child: Image(
-                              image: imageProvider,
-                              fit: BoxFit.fitWidth,
-                            ),
-                          );
-                        } else {
-                          return Container(
-                            constraints: BoxConstraints(maxHeight: maxHeight),
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: imageProvider,
-                                  fit: BoxFit.fitWidth,
-                                )),
-                          );
-                        }
-                      }
-                    },
-                  );
-                },
+              child: Image(
+                image: imageProvider,
+                fit: BoxFit.fitWidth,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.error),
               ),
             );
           },

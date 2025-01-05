@@ -64,6 +64,7 @@ dependencies:
   msal_js: ^2.14.0
   process_run: ^1.2.2+1
   http: ^1.2.2
+  connectivity_plus: ^6.1.1
 #  uni_links: ^0.5.1
 
 dev_dependencies:

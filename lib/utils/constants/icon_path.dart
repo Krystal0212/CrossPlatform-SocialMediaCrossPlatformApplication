@@ -1,6 +1,7 @@
 class AppIcons {
   static const String iconPath = 'assets/icons/';
   static const String svgFormat = '.svg';
+  static const String pngFormat = '.png';
 
   // Not in any specific folder
   static const String backButton = '${iconPath}back-button$svgFormat';
@@ -42,9 +43,13 @@ class AppIcons {
   static const String send = '${iconPath}send$svgFormat';
   static const String setting = '${iconPath}setting$svgFormat';
   static const String show = '${iconPath}show$svgFormat';
+  static const String threeDots = '${iconPath}three-dot$svgFormat';
 
   // Specific Icons in the Light Outline Icons
   static const String upload = '${iconPath}upload$svgFormat';
   static const String search = '${iconPath}search$svgFormat';
-
+  static const String signIn = '${iconPath}sign-in$pngFormat';
+  static const String signUp = '${iconPath}sign-up$pngFormat';
+  static const String userSignIn = '${iconPath}user-sign-in$pngFormat';
+  static const String createNewPost = '${iconPath}plus$svgFormat';
 }

@@ -2,9 +2,8 @@ import 'package:socialapp/utils/import.dart';
 
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
-import 'widgets/home_header_custom.dart';
+import 'widgets/custom_appbar.dart';
 import 'widgets/app_post.dart';
-import 'widgets/tab_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,136 +12,105 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late List<dynamic> posts;
-  late CollectionReference<Map<String, dynamic>> postCollection;
-  late double deviceWidth, deviceHeight;
+  late double deviceWidth, deviceHeight, listBodyWidth;
+  late bool isCompactView;
+  late TabController _tabController;
 
-  final double listBodyWidth = 750;
+  final ValueNotifier<bool> isLoading = ValueNotifier(true);
+  final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     FlutterNativeSplash.remove();
   }
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
+
     deviceWidth = MediaQuery.of(context).size.width;
     deviceHeight = MediaQuery.of(context).size.height;
+    isCompactView = (deviceWidth < 530);
+    listBodyWidth = isCompactView ? 490 : 750;
+
+    if (isLoading.value) {
+      try {
+        final isUserSignedIn = await context.read<HomeCubit>().checkCurrentUser();
+        if (isUserSignedIn) {
+          if(!context.mounted) return;
+          final currentUser = context.read<HomeCubit>().getCurrentUser();
+          currentUserNotifier.value = currentUser;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("Error fetching user: $e");
+        }
+      } finally {
+        isLoading.value = false; // Notify listeners that loading is complete
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    isLoading.dispose();
+    currentUserNotifier.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HomeCubit(),
-      child: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            title: const HomeHeaderCustom(),
-            centerTitle: true,
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(40),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                child: Container(
-                  height: 40,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    color: AppColors.white,
-                    // color: Colors.green.shade100,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: BlocBuilder<HomeCubit, HomeState>(
-                        builder: (context, state) {
-                      return TabBar(
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        dividerColor: Colors.transparent,
-                        indicator: BoxDecoration(
-                          color: AppColors.iric.withOpacity(0.1),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
-                        ),
-                        labelColor: AppColors.iric,
-                        unselectedLabelColor:
-                            AppColors.dynamicBlack.withOpacity(0.5),
-                        onTap: (index) {
-                          ViewMode selectedMode;
-                          switch (index) {
-                            case 0:
-                              selectedMode = ViewMode.explore;
-                              break;
-                            case 1:
-                              selectedMode = ViewMode.trending;
-                              break;
-                            case 2:
-                              selectedMode = ViewMode.following;
-                              break;
-                            default:
-                              selectedMode = ViewMode.explore;
-                          }
-                          context.read<HomeCubit>().setViewMode(selectedMode);
-                        },
-                        tabs: const [
-                          TabItem(
-                            title: 'Explore',
-                          ),
-                          TabItem(title: 'Trending'),
-                          TabItem(title: 'Following'),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
-              ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoading,
+      builder: (context, isLoadingValue, child) {
+        if (isLoadingValue) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
             ),
-          ),
-          body: BlocBuilder<HomeCubit, HomeState>(
-            builder: (context, state) {
-              if (state is HomeLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is HomeLoadedPostsSuccess) {
-                return Container(
-                  color: AppColors.lynxWhite,
-                  child: Center(
+          );
+        }
+        return DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            appBar:  HomeScreenAppBar(
+                  deviceWidth: deviceWidth,
+              currentUserNotifier: currentUserNotifier,
+            ),
+            body: BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, state) {
+                if (state is HomeLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is HomeLoadedPostsSuccess) {
+                  return Container(
+                    color: AppColors.lynxWhite,
+                    child: Center(
                       child: Container(
                         padding: const EdgeInsets.only(top: 20),
-                    width: listBodyWidth,
-                    child: TabBarView(
-                      children: [
-                        PostListView(
-                          posts: state.posts,
-                          viewMode: ViewMode.explore,
-                          listBodyWidth: listBodyWidth,
+                        width: listBodyWidth,
+                        child: TabBarView(
+                          children: [
+                          ],
                         ),
-                        PostListView(
-                          posts: state.posts,
-                          viewMode: ViewMode.trending,
-                          listBodyWidth: listBodyWidth,
-                        ),
-                        PostListView(
-                          posts: state.posts,
-                          viewMode: ViewMode.following,
-                          listBodyWidth: listBodyWidth,
-                        ),
-                      ],
+                      ),
                     ),
-                  )),
-                );
-              } else if (state is HomeFailure) {
-                return Center(child: Text(state.errorMessage));
-              } else {
-                return const Center(child: Text('Select a view mode'));
-              }
-            },
+                  );
+                } else if (state is HomeFailure) {
+                  return Center(child: Text(state.errorMessage));
+                } else {
+                  return const Center(child: Text('Select a view mode'));
+                }
+              },
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
