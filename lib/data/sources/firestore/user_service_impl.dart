@@ -79,6 +79,7 @@ class UserServiceImpl extends UserService{
 
       return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
     } catch (e) {
+      print(e);
       rethrow;
     }
   }

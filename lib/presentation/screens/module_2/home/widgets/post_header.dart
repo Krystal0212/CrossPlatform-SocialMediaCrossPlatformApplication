@@ -67,7 +67,7 @@ class _PostHeaderState extends State<PostHeader> with Methods {
                 child: CircleAvatar(
                   radius: 19,
                   backgroundImage:
-                      CachedNetworkImageProvider(widget.post.userAvatar),
+                      CachedNetworkImageProvider(widget.post.userAvatarUrl),
                 ),
               ),
               const SizedBox(width: 8),

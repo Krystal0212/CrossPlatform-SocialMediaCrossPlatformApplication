@@ -1,21 +1,21 @@
 // import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 
 import 'package:socialapp/presentation/screens/module_2/discover/discover_screen.dart';
-import 'package:socialapp/presentation/screens/module_2/home/home_screen.dart';
+import 'package:socialapp/presentation/screens/module_2/home/mobile_home_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
-class NavigatorBarCustom extends StatefulWidget {
-  const NavigatorBarCustom({super.key});
+class CustomNavigatorBar extends StatefulWidget {
+  const CustomNavigatorBar({super.key});
 
   @override
-  State<NavigatorBarCustom> createState() => _NavigatorBarCustomState();
+  State<CustomNavigatorBar> createState() => _CustomNavigatorBarState();
 }
 
-class _NavigatorBarCustomState extends State<NavigatorBarCustom> {
+class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
   int _screenIndex = 0;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
+    const MobileHomeScreen(),
     const DiscoverScreen(),
     const NotificationScreen(),
     const ProfileScreen(),
@@ -28,7 +28,6 @@ class _NavigatorBarCustomState extends State<NavigatorBarCustom> {
       backgroundColor: Colors.transparent,
       extendBody: true,
       resizeToAvoidBottomInset: false,
-      // body: _screens[_screenIndex],
       body: IndexedStack(
         index: _screenIndex,
         children: _screens,
@@ -66,7 +65,7 @@ class _NavigatorBarCustomState extends State<NavigatorBarCustom> {
                 size: 20,
                 color: _screenIndex == 0 ?
                   AppColors.lavenderBlueShadow :
-                  AppColors.carbon.withOpacity(0.4)),
+                  AppColors.erieBlack.withOpacity(0.4)),
                 onPressed: () {
                   setState(() {
                   _screenIndex = 0;
@@ -81,7 +80,7 @@ class _NavigatorBarCustomState extends State<NavigatorBarCustom> {
                 size: 20,
                 color: _screenIndex == 1 ?
                   AppColors.lavenderBlueShadow :
-                  AppColors.carbon.withOpacity(0.4)
+                  AppColors.erieBlack.withOpacity(0.4)
               ),
               onPressed: () {
                 setState(() {
@@ -98,7 +97,7 @@ class _NavigatorBarCustomState extends State<NavigatorBarCustom> {
                 size: 20,
                 color: _screenIndex == 2 ?
                   AppColors.lavenderBlueShadow :
-                  AppColors.carbon.withOpacity(0.4)
+                  AppColors.erieBlack.withOpacity(0.4)
 
               ),
               onPressed: () {
@@ -115,7 +114,7 @@ class _NavigatorBarCustomState extends State<NavigatorBarCustom> {
                 size: 20,
                 color: _screenIndex == 3 ?
                   AppColors.lavenderBlueShadow :
-                  AppColors.carbon.withOpacity(0.4)
+                  AppColors.erieBlack.withOpacity(0.4)
               ),
               onPressed: () {
                 setState(() {

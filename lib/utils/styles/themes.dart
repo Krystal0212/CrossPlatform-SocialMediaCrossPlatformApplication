@@ -22,8 +22,8 @@ class AppTheme {
       );
 
   static Gradient get disableGradient => const LinearGradient(
-    colors: [AppColors.blackOak, AppColors.kettleman],
-  );
+        colors: [AppColors.blackOak, AppColors.kettleman],
+      );
 
   static dynamic get mainGradientShader =>
       AppTheme.mainGradient.createShader(const Rect.fromLTWH(0, 0, 100, 50));
@@ -72,7 +72,6 @@ class AppTheme {
   static BorderRadius get smallBorderRadius =>
       const BorderRadius.all(Radius.circular(12));
 
-
   //ToDo: Style
   static TextStyle get appLabelStyle => GoogleFonts.plusJakartaSans(
       fontSize: 16,
@@ -112,28 +111,29 @@ class AppTheme {
       );
 
   static TextStyle get showMoreTextStyle => GoogleFonts.plusJakartaSans(
-    fontSize: 15,
-    fontWeight: FontWeight.w500,
-    color: AppColors.iris,
-  );
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: AppColors.iris,
+      );
 
   static TextStyle get blackUsernameStyle => GoogleFonts.plusJakartaSans(
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    color: black,
-  );
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: black,
+      );
 
   static TextStyle get highlightedHashtagStyle => GoogleFonts.plusJakartaSans(
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    color: AppColors.blueDeFrance,
-  );
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: AppColors.blueDeFrance,
+      );
 
-  static TextStyle get gradientShowMoreContentTextStyle => GoogleFonts.plusJakartaSans(
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    color: black,
-  );
+  static TextStyle get gradientShowMoreContentTextStyle =>
+      GoogleFonts.plusJakartaSans(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: black,
+      );
 
   static TextStyle get logOutButtonStyle => GoogleFonts.plusJakartaSans(
         fontSize: 12,
@@ -142,11 +142,11 @@ class AppTheme {
       );
 
   static TextStyle get topicLabelStyle => GoogleFonts.plusJakartaSans(
-    color: white,
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.1,
-  );
+        color: white,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.1,
+      );
 
   static TextStyle get buttonGradientStyle => GoogleFonts.plusJakartaSans(
         fontWeight: FontWeight.w700,
@@ -218,26 +218,37 @@ class AppTheme {
       );
 
   static TextStyle get authForgotStyle => GoogleFonts.plusJakartaSans(
-      color: AppColors.iric,
+      color: AppColors.iris,
       fontWeight: FontWeight.w400,
       letterSpacing: 2,
       fontSize: 14);
 
   static TextStyle get authSignUpStyle => GoogleFonts.plusJakartaSans(
-      color: AppColors.iric, fontSize: 16, fontWeight: FontWeight.w500);
+      color: AppColors.iris, fontSize: 16, fontWeight: FontWeight.w500);
 
-  static TextStyle get authWhiteText => const TextStyle(
+  static TextStyle get authWhiteText => GoogleFonts.plusJakartaSans(
         color: Colors.white,
         fontSize: 14,
       );
 
+  static TextStyle get signInWhiteText => GoogleFonts.plusJakartaSans(
+      color: Colors.white, fontSize: 15, fontWeight: FontWeight.normal);
 
+  static TextStyle get signUpBlackText => GoogleFonts.plusJakartaSans(
+      color: Colors.black, fontSize: 15, fontWeight: FontWeight.normal);
+
+  static TextStyle get boldTextStyle => GoogleFonts.plusJakartaSans(
+       fontSize: 15, fontWeight: FontWeight.bold);
 
   //ToDo: PaddingEdgeInsetsStyle
   static EdgeInsets get preferredTopicMobilePaddingEdgeInsets =>
       const EdgeInsets.only(top: 160, left: 20, right: 20, bottom: 20);
 
-  static EdgeInsets get postHorizontalPaddingEdgeInsets=> const EdgeInsets.symmetric(horizontal: 14.45, vertical: 10);
+  static EdgeInsets get postHorizontalPaddingEdgeInsets =>
+      const EdgeInsets.symmetric(horizontal: 14.45, vertical: 10);
+
+  static EdgeInsets get iconHorizontalPaddingEdgeInsets =>
+      const EdgeInsets.only(right: 3);
 
   static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(
       double deviceWidth,
@@ -254,9 +265,11 @@ class AppTheme {
     );
   }
 
-  static EdgeInsets get bottomPaddingEdgeInsets => const EdgeInsets.only(bottom: 20);
+  static EdgeInsets get bottomPaddingEdgeInsets =>
+      const EdgeInsets.only(bottom: 20);
 
-  static EdgeInsets horizontalPostContentPaddingEdgeInsets(double horizontalPadding) {
+  static EdgeInsets horizontalPostContentPaddingEdgeInsets(
+      double horizontalPadding) {
     return EdgeInsets.symmetric(horizontal: horizontalPadding);
   }
 
@@ -288,11 +301,12 @@ class AppTheme {
           offset: Offset(170, 00),
         ),
       ];
-  static List<BoxShadow> get topicChosenOptionBoxShadow =>  [
-    BoxShadow(
-      color: AppColors.dynamicBlack.withOpacity(0.65),
-    ),
-  ];
+
+  static List<BoxShadow> get topicChosenOptionBoxShadow => [
+        BoxShadow(
+          color: AppColors.dynamicBlack.withOpacity(0.65),
+        ),
+      ];
 
   //ToDo: ButtonStyle
   static ButtonStyle get navigationTextButtonStyle => ElevatedButton.styleFrom(
@@ -303,6 +317,59 @@ class AppTheme {
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       overlayColor: Colors.transparent);
+
+  static ButtonStyle get navigationLogoButtonStyle => ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        splashFactory: NoSplash.splashFactory,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+      ).copyWith(
+        overlayColor:
+            const WidgetStatePropertyAll(Colors.transparent), // No hover effect
+      );
+
+  static ButtonStyle get actionSignInButtonStyle => TextButton.styleFrom(
+        backgroundColor: AppColors.systemShockBlue,
+        foregroundColor: AppTheme.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        minimumSize: const Size(50, 45),
+      );
+
+  static ButtonStyle get actionSignUpButtonStyle => TextButton.styleFrom(
+        backgroundColor: AppColors.pinkSpyro,
+        foregroundColor: AppTheme.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        minimumSize: const Size(50, 45),
+      );
+
+  static ButtonStyle get navigationIconButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    foregroundColor: AppTheme.white,
+    splashFactory: NoSplash.splashFactory,
+    shadowColor: Colors.transparent,
+    surfaceTintColor: Colors.transparent,
+  ).copyWith(
+    overlayColor:
+    const WidgetStatePropertyAll(Colors.transparent), // No hover effect
+  );
+
+  static ButtonStyle get actionNoEffectCircleButtonStyle =>
+      ElevatedButton.styleFrom(
+        padding: EdgeInsets.zero,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        shape: const CircleBorder(),
+        splashFactory: NoSplash.splashFactory,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        overlayColor: Colors.transparent,
+      );
 
   //ToDo: ColorFilter
   static ColorFilter get iconColorFilter => const ColorFilter.mode(

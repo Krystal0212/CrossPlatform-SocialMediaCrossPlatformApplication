@@ -1,5 +1,6 @@
 
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:socialapp/utils/import.dart';
 
 enum ViewMode { explore, trending, following }
@@ -32,4 +33,10 @@ class HomeFailure extends HomeState{
   final String errorMessage;
 
   HomeFailure(this.errorMessage);
+}
+
+class HomeConnectivityChanged extends HomeState {
+  final ConnectivityResult connectivityResult;
+
+  HomeConnectivityChanged(this.connectivityResult);
 }

@@ -1,5 +1,7 @@
 class AppImages {
   static const String imagePath = 'assets/images/';
+  static const String imageLogoPath = 'assets/images/logos/';
+
   static const String imageFormat = '.png';
 
   static const String svgPath = 'assets/icons/';
@@ -24,6 +26,8 @@ class AppImages {
   static const String splashMask = '${imagePath}splash_mask$imageFormat';
   static const String editProfileAppbarBackground = '${imagePath}edit_profile_appbar$imageFormat';
   static const String settingBackground = '${imagePath}setting_background$imageFormat';
+
+  static const String logo = '${imageLogoPath}default_logo_title_less$imageFormat';
 
   static const String empty = '${svgPath}empty$svgFormat';
 }

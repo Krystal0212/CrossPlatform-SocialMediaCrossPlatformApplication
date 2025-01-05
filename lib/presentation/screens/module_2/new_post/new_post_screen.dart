@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:socialapp/config/app_routes.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 
 import 'cubit/post_cubit.dart';
@@ -25,8 +26,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
 
   @override
   void dispose() {
-
-    _postCubit.close();
+    // context.read<PostCubit>().cancelConnectivityListener();
     super.dispose();
   }
 
