@@ -11,6 +11,9 @@ export 'preferred-topics/preferred_topics_screen.dart';
 // check if the otp is expired to choose state for verify screen after go from sign in
 // add all pop scope cases for module 1
 // reset password is not deployed
+// pass the reference of topic in UserModel instead of ID of the topic
+// User nhap otp dung ko dua toi trang prefer topic
+// resetPassword bi goi thang tu service
 
 // boarding (first time installed by mobile) -> sign in -> sign up -> verify OTP (success) -> pick topics -> home
 // sign in (new user & verified) -> pick topics -> home

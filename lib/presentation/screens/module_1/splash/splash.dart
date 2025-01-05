@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
         context.go('/boarding');
       } else {
         if (!mounted) return;
-        context.go('/sign-in');
+        context.go('/home');
       }
     } catch (e) {
       if (kDebugMode) {

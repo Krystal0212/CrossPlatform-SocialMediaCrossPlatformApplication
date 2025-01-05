@@ -2,8 +2,8 @@ import 'package:socialapp/utils/import.dart';
 
 class PostRepositoryImpl extends PostRepository {
   @override
-  Future<List<PostModel>?>? getPostsData() {
-    return serviceLocator.get<PostService>().getPostsData();
+  Future<List<PostModel>> getPostsData(bool isOffline) {
+    return serviceLocator.get<PostService>().getPostsData(isOffline);
   }
 
   @override

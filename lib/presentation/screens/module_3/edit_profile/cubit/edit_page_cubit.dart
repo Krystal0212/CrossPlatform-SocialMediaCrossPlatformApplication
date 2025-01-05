@@ -16,7 +16,7 @@ class EditPageCubit extends Cubit<EditPageState> {
   Future<void> loadCurrentUserData() async {
     // emit(EditPageLoading());
     try {
-      final userModel = await userRepository.getCurrentUserData();
+      final UserModel? userModel = await serviceLocator<UserRepository>().getCurrentUserData();
       if (userModel != null) {
         emit(EditPageLoaded(userModel));
       } else {

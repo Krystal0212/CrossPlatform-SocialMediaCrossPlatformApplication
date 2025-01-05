@@ -1,12 +1,7 @@
 class AppIcons {
   static const String iconPath = 'assets/icons/';
   static const String svgFormat = '.svg';
-
-  // Folder Paths
-  static const String iconlyPath = '${iconPath}iconly/';
-  static const String boldPath = '${iconlyPath}bold/';
-  static const String lightPath = '${iconlyPath}light/';
-  static const String lightOutlinePath = '${iconlyPath}light-outline/';
+  static const String pngFormat = '.png';
 
   // Not in any specific folder
   static const String backButton = '${iconPath}back-button$svgFormat';
@@ -27,29 +22,35 @@ class AppIcons {
   static const String x = '${iconPath}x$svgFormat';
   static const String gradientDot = '${iconPath}gradient-dot$svgFormat';
   static const String checked = '${iconPath}checked$svgFormat';
+  static const String addToCollection = '${iconPath}add-to-collection$svgFormat';
 
-  // Specific Icons in the Bold Folder
-  static const String categoryCopy = '${boldPath}category-copy$svgFormat';
-  static const String category = '${boldPath}category$svgFormat';
+  // Specific Icons in the Bold Icon
+  static const String categoryCopy = '${iconPath}category-copy$svgFormat';
+  static const String category = '${iconPath}category$svgFormat';
 
   // Specific Icons in the Light Folder
-  static const String chat = '${lightPath}chat$svgFormat';
-  static const String delete = '${lightPath}delete$svgFormat';
-  static const String editSquare = '${lightPath}edit-square$svgFormat';
-  static const String filter = '${lightPath}filter$svgFormat';
-  static const String hide = '${lightPath}hide$svgFormat';
-  static const String homeCopy = '${lightPath}home-copy$svgFormat';
-  static const String home = '${lightPath}home$svgFormat';
-  static const String image = '${lightPath}image$svgFormat';
-  static const String notificationCopy = '${lightPath}notification-copy$svgFormat';
-  static const String profile = '${lightPath}profile$svgFormat';
-  static const String sendCopy = '${lightPath}send-copy$svgFormat';
-  static const String send = '${lightPath}send$svgFormat';
-  static const String setting = '${lightPath}setting$svgFormat';
-  static const String show = '${lightPath}show$svgFormat';
+  static const String chat = '${iconPath}chat$svgFormat';
+  static const String delete = '${iconPath}delete$svgFormat';
+  static const String editSquare = '${iconPath}edit-square$svgFormat';
+  static const String filter = '${iconPath}filter$svgFormat';
+  static const String hide = '${iconPath}hide$svgFormat';
+  static const String homeCopy = '${iconPath}home-copy$svgFormat';
+  static const String home = '${iconPath}home$svgFormat';
+  static const String image = '${iconPath}image$svgFormat';
+  static const String notificationCopy = '${iconPath}notification-copy$svgFormat';
+  static const String profile = '${iconPath}profile$svgFormat';
+  static const String sendCopy = '${iconPath}send-copy$svgFormat';
+  static const String send = '${iconPath}send$svgFormat';
+  static const String setting = '${iconPath}setting$svgFormat';
+  static const String show = '${iconPath}show$svgFormat';
+  static const String threeDots = '${iconPath}three-dot$svgFormat';
 
-  // Specific Icons in the Light Outline Folder
-  static const String upload = '${lightOutlinePath}upload$svgFormat';
-  static const String search = '${lightOutlinePath}search$svgFormat';
-
+  // Specific Icons in the Light Outline Icons
+  static const String upload = '${iconPath}upload$svgFormat';
+  static const String search = '${iconPath}search$svgFormat';
+  static const String signIn = '${iconPath}sign-in$pngFormat';
+  static const String signUp = '${iconPath}sign-up$pngFormat';
+  static const String userSignIn = '${iconPath}user-sign-in$pngFormat';
+  static const String createNewPost = '${iconPath}plus$svgFormat';
+  static const String cross = '${iconPath}cross$svgFormat';
 }

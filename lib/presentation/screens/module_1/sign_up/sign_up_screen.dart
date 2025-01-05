@@ -160,7 +160,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
                           builder: (context, state) => AuthElevatedButton(
                             width: deviceWidth,
                             height: 45,
-                            inputText: AppStrings.signUp,
+                            inputText: AppStrings.signUpUppercase,
                             onPressed: () => context
                                 .read<SignUpCubit>()
                                 .signup(
@@ -190,7 +190,7 @@ class _SignUpScreenState extends State<SignUpScreen> with Validator {
                               style: AppTheme.navigationTextButtonStyle,
                               onPressed: () => context.go('/sign-in'),
                               child: Text(
-                                AppStrings.signIn,
+                                AppStrings.signInUppercase,
                                 style: AppTheme.authSignUpStyle,
                               ),
                             )

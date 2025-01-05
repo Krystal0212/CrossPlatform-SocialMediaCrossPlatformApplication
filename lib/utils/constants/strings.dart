@@ -9,8 +9,8 @@ class AppStrings {
   static const String logIn = "LOG IN";
   static const String orLogInBy = "OR LOG IN BY";
   static const String noAccount = "Don't have an account?";
-  static const String signIn = "SIGN IN";
-  static const String signUp = "SIGN UP";
+  static const String signInUppercase = "SIGN IN";
+  static const String signUpUppercase = "SIGN UP";
   static const String exitDialogTitle = "Are you sure?";
   static const String exitDialogContent =
       "Do you want to exit this application?";
@@ -50,6 +50,14 @@ class AppStrings {
   static const String titleBannerMessage ="PICK YOUR PREFERRED TOPICS";
   static const String pick5ToContinue = "PICK 5 TOPICS TO CONTINUES";
   static const String exploreNow = "EXPLORE NOW";
+
+  // For home
+  static const String signIn = "Sign In";
+  static const String createNewPost = "Upload New Post";
+  static const String signUp = "Sign Up";
+  static const String about = "About Zineround";
+  static const String term = "Terms & Privacy";
+  static const String signOut = "Sign Out";
 
   // For collection section
   static const String createCollection = "Create collection";

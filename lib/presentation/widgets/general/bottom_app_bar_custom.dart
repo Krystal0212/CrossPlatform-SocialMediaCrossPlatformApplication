@@ -23,19 +23,19 @@ class BottomNavBarCustom extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           IconButton(
-            icon: const Icon(Icons.home, size: 20, color: AppColors.carbon),
+            icon: const Icon(Icons.home, size: 20, color: AppColors.erieBlack),
             onPressed: () => onTap(0), // Navigate to Home
           ),
           IconButton(
-            icon: const Icon(Icons.category_sharp, size: 20, color: AppColors.carbon),
+            icon: const Icon(Icons.category_sharp, size: 20, color: AppColors.erieBlack),
             onPressed: () => onTap(1), // Navigate to Categories
           ),
           IconButton(
-            icon: const Icon(Icons.notifications, size: 20, color: AppColors.carbon),
+            icon: const Icon(Icons.notifications, size: 20, color: AppColors.erieBlack),
             onPressed: () => onTap(2), // Navigate to Notifications
           ),
           IconButton(
-            icon: const Icon(Icons.person, size: 20, color: AppColors.carbon),
+            icon: const Icon(Icons.person, size: 20, color: AppColors.erieBlack),
             onPressed: () => onTap(3), // Navigate to Profile
           ),
         ],

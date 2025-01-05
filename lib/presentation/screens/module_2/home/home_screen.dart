@@ -1,8 +1,9 @@
 import 'package:socialapp/utils/import.dart';
 
-import 'widgets/home_header_custom.dart';
-import 'widgets/post_custom.dart';
-import 'widgets/tab_item.dart';
+import 'cubit/home_cubit.dart';
+import 'cubit/home_state.dart';
+import 'widgets/custom_appbar.dart';
+import 'widgets/app_post.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,123 +12,117 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late List<dynamic> posts;
-  late CollectionReference<Map<String, dynamic>> postCollection;
-  // late CollectionReference<Map<String, dynamic>> commentPostCollection;
-  late dynamic userInfo;
-  
+  late double deviceWidth, deviceHeight, listBodyWidth;
+  late bool isCompactView;
+  late TabController _tabController;
+
+  final ValueNotifier<bool> isLoading = ValueNotifier(true);
+  final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     FlutterNativeSplash.remove();
-    // postCollection = FirebaseFirestore.instance.collection("Post").where(field, isEqualTo: value);
-
   }
 
   @override
-  void didChangeDependencies() async{
+  void didChangeDependencies() async {
     super.didChangeDependencies();
-    // posts = Provider.of<PostRepository>(context).getPostsData();
-  }
 
-   @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const HomeHeaderCustom(),
-          centerTitle: true,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(40),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              child: Container(
-                height: 40,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: AppColors.white,
-                  // color: Colors.green.shade100,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: TabBar(
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    dividerColor: Colors.transparent,
-                    indicator: BoxDecoration(
-                      color: AppColors.iric.withOpacity(0.1),
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    ),
-                    labelColor: AppColors.iric,
-                    unselectedLabelColor: AppColors.dynamicBlack.withOpacity(0.5),
-                    tabs: const [
-                      TabItem(title: 'Popular',),
-                      TabItem(title: 'Trending'),
-                      TabItem(title: 'Following'),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            PostListView(),
-            PostListView(),
-            PostListView(),
-          ],
-        ),
-      ),
-    );
-  }
-}
+    deviceWidth = MediaQuery.of(context).size.width;
+    deviceHeight = MediaQuery.of(context).size.height;
+    isCompactView = (deviceWidth < 530);
+    listBodyWidth = isCompactView ? 490 : 800;
 
-class PostListView extends StatefulWidget {
-  const PostListView({super.key});
-
-  @override
-  State<PostListView> createState() => _PostListViewState();
-}
-
-class _PostListViewState extends State<PostListView> with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return FutureBuilder(
-      future: serviceLocator.get<PostRepository>().getPostsData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+    if (isLoading.value) {
+      try {
+        final isUserSignedIn = await context.read<HomeCubit>().checkCurrentUser();
+        if (isUserSignedIn) {
+          if(!context.mounted) return;
+          final currentUser = context.read<HomeCubit>().getCurrentUser();
+          currentUserNotifier.value = currentUser;
         }
-        
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          // return const Center(child: Text('No data found.'));
-          return  const Center(
-            child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: LogOutButton(),
-                    ),
+      } catch (e) {
+        if (kDebugMode) {
+          print("Error fetching user: $e");
+        }
+      } finally {
+        isLoading.value = false; // Notify listeners that loading is complete
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    isLoading.dispose();
+    currentUserNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoading,
+      builder: (context, isLoadingValue, child) {
+        if (isLoadingValue) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
           );
         }
-
-        return Container(
-          color: AppColors.orochimaru,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 60),
-            child: ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                return PostCustom(post: snapshot.data![index]);
+        return DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            appBar:  HomeScreenAppBar(
+                  deviceWidth: deviceWidth,
+              currentUserNotifier: currentUserNotifier,
+            ),
+            body: BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, state) {
+                if (state is HomeLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is HomeLoadedPostsSuccess) {
+                  return Container(
+                    color: AppColors.lynxWhite,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 20),
+                        width: listBodyWidth,
+                        child: TabBarView(
+                          children: [
+                            PostListView(
+                              posts: state.posts,
+                              viewMode: ViewMode.explore,
+                              listBodyWidth: listBodyWidth,
+                            ),
+                            PostListView(
+                              posts: state.posts,
+                              viewMode: ViewMode.trending,
+                              listBodyWidth: listBodyWidth,
+                            ),
+                            PostListView(
+                              posts: state.posts,
+                              viewMode: ViewMode.following,
+                              listBodyWidth: listBodyWidth,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                } else if (state is HomeFailure) {
+                  return Center(child: Text(state.errorMessage));
+                } else {
+                  return const Center(child: Text('Select a view mode'));
+                }
               },
             ),
-
           ),
         );
       },

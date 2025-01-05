@@ -1,5 +1,7 @@
 import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/preferred_topic_cubit.dart';
 import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/reset_password_cubit.dart';
+import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
+import 'package:socialapp/presentation/screens/module_2/mobile_navigator/navigator_bar.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AppRoutes {
@@ -74,7 +76,16 @@ class AppRoutes {
           }),
       GoRoute(
           path: '/home',
-          pageBuilder: (context, state) => _buildPageRoute(const HomeScreen())),
+          pageBuilder: (context, state) {
+            final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
+
+            if(isWeb) {
+              return _buildPageRoute(BlocProvider(
+                create: (context) => HomeCubit(), child: const HomeScreen()));
+            }else{
+              return _buildPageRoute(const CustomNavigatorBar());
+            }
+          })
     ],
     errorBuilder: (context, state) => const AppPlaceHolder(),
   );
@@ -92,33 +103,4 @@ class AppRoutes {
       },
     );
   }
-
-// static Map<String, WidgetBuilder> getRoutes() {
-//   return {
-//     '/': (context) => const SplashScreen(),
-//     '/boarding': (context) => const BoardingScreen(),
-//     '/sign-in': (context) => const SignInScreen(),
-//     '/sign-up': (context) => const SignUpScreen(),
-//     // Add more routes here as needed
-//   };
-// }
-
-// static Route<dynamic> generateRoute(RouteSettings settings) {
-//   switch (settings.name) {
-//     case '/':
-//       return _buildPageRoute(const SplashScreen());
-//     case '/boarding':
-//       return _buildPageRoute(const BoardingScreen());
-//     case '/sign-in':
-//       return _buildPageRoute(const SignInScreen());
-//     case '/sign-up':
-//       return _buildPageRoute(const SignUpScreen());
-//     case '/verify':
-//       return _buildPageRoute(const VerificationScreen());
-//     // Add more cases for other routes
-//     default:
-//       return _buildPageRoute(
-//           const AppPlaceHolder()); // Define a default 404 page
-//   }
-// }
 }

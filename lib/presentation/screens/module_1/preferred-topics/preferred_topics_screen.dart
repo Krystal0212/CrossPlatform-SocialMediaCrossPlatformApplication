@@ -198,7 +198,7 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> {
                             ),
                           );
                         } else {
-                          return const AppPlaceHolder();
+                          return const ImageErrorPlaceholder();
                         }
                       },
                     ),

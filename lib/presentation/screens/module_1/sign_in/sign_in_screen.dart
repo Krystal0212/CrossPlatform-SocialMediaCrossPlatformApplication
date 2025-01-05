@@ -210,7 +210,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                               style: AppTheme.navigationTextButtonStyle,
                               onPressed: () => context.go('/sign-up'),
                               child: Text(
-                                AppStrings.signUp,
+                                AppStrings.signUpUppercase,
                                 style: AppTheme.authSignUpStyle,
                               ),
                             )

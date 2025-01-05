@@ -30,7 +30,7 @@ class AddCollectionIcon extends StatelessWidget {
         },
         icon: const Icon(
           Icons.add_circle_outline,
-          color: AppColors.carbon,
+          color: AppColors.erieBlack,
         ));
   }
 }
@@ -123,7 +123,7 @@ class NewCollectionModal extends StatelessWidget {
       decoration: AppTheme.addCollectionBoxDecoration,
       child: Center(
         child: Padding(
-          padding: AppTheme.addCollectionPadding,
+          padding: AppTheme.addCollectionPaddingEdgeInsets,
           child: Column(
             // mainAxisAlignment: MainAxisAlignment.center,
             // mainAxisSize: MainAxisSize.min,
