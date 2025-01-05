@@ -7,9 +7,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
   bool checkNecessaryConditionToUseScreen(
       BuildContext context, bool isFromSignIn) {
     try {
-      if (isFromSignIn == false) {
-        return false;
-      } else if (serviceLocator<AuthRepository>().isUserVerified()) {
+      if (serviceLocator<AuthRepository>().isUserVerified()) {
         return false;
       }
       return true;

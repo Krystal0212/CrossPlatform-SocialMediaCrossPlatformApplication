@@ -29,19 +29,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     _formKey = GlobalKey<FormState>();
     _codeController = TextEditingController();
-    _verifyMessageChangeNotifier = ValueNotifier<String>("");
+    _verifyMessageChangeNotifier = ValueNotifier<String>(AppStrings.messageDefault);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       String hash = widget.hashParameters ?? "";
 
       if (hash.isNotEmpty) {
-        // if (widget.isResetPassword == true) {
-        //   context
-        //       .read<VerificationCubit>()
-        //       .verifyResetPasswordRequestByLink(context, hash);
-        // } else {
         context.read<VerificationCubit>().verifyAccountByLink(context, hash);
-        // }
       } else if (!context
           .read<VerificationCubit>()
           .checkNecessaryConditionToUseScreen(
