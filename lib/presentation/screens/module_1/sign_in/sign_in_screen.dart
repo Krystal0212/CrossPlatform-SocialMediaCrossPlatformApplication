@@ -213,6 +213,26 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                                 AppStrings.signUpUppercase,
                                 style: AppTheme.authSignUpStyle,
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppStrings.maybeLater,
+                              style: AppTheme.authSignUpStyle
+                                  .copyWith(color: AppColors.kettleman),
+                            ),
+                            const SizedBox(width: 5),
+                            TextButton(
+                              style: AppTheme.navigationTextButtonStyle,
+                              onPressed: () => context.go('/home'),
+                              child: Text(
+                                AppStrings.goToHome,
+                                style: AppTheme.authSignUpStyle,
+                              ),
                             )
                           ],
                         ),

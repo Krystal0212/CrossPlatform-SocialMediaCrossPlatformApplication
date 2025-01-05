@@ -54,7 +54,6 @@ class AppRoutes {
           }),
       GoRoute(
           path: '/preferred-topic',
-          // pageBuilder: (context, state) => _buildPageRoute(const PreferredTopicsScreen())),
           pageBuilder: (context, state) => _buildPageRoute(BlocProvider(
               create: (_) => PreferredTopicCubit(),
               child: const PreferredTopicsScreen()))),

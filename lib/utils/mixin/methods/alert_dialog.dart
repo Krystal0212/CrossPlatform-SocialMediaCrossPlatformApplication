@@ -51,7 +51,7 @@ mixin AppDialogs {
               TextButton(
                 onPressed: () {
                   Navigator.of(builderContext).pop();
-                  navigateFunction;
+                  navigateFunction();
                 },
                 child: const Text("Okay"),
               )

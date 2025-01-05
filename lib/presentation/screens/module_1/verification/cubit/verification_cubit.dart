@@ -46,7 +46,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
         await serviceLocator<AuthRepository>().verifyAccountByOTPCode(otpCode);
 
         if(!context.mounted) return;
-        context.go('/home');
+        context.go('/preferred-topic');
         emit(VerificationSuccess());
       }
     } catch (error) {

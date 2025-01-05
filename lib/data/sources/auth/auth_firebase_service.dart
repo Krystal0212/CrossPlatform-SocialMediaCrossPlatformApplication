@@ -90,7 +90,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       User? user = getCurrentUser();
 
       if (user == null) {
-        return false;
+        throw (AppStrings.userNotFoundError);
       }else if (!user.emailVerified) {
         return false;
       }

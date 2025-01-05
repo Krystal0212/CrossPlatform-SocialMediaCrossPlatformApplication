@@ -11,6 +11,8 @@ class AppStrings {
   static const String noAccount = "Don't have an account?";
   static const String signInUppercase = "SIGN IN";
   static const String signUpUppercase = "SIGN UP";
+  static const String maybeLater = "May be later";
+  static const String goToHome = "GO TO HOME";
   static const String exitDialogTitle = "Are you sure?";
   static const String exitDialogContent =
       "Do you want to exit this application?";

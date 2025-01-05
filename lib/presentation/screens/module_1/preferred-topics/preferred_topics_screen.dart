@@ -230,10 +230,6 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> {
                   ],
                 ),
               ),
-              if (isSmallScreen)
-                const BottomRoundedAppBar(
-                  bannerPath: AppImages.editProfileAppbarBackground,
-                ),
             ],
           ),
         ),
