@@ -3,6 +3,7 @@ export 'dart:io';
 export 'dart:math';
 export 'dart:convert';
 export 'package:flutter/material.dart';
+export 'package:flutter/physics.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:firebase_core/firebase_core.dart';
@@ -79,7 +80,6 @@ export 'package:socialapp/domain/entities/collection.dart';
 export 'package:socialapp/domain/entities/topic.dart';
 export 'package:socialapp/domain/entities/post.dart';
 export 'package:socialapp/domain/entities/comment.dart';
-
 
 // Presentation Screens and Self Widgets
 export 'package:socialapp/presentation/screens/module_1/module_1_exports.dart';

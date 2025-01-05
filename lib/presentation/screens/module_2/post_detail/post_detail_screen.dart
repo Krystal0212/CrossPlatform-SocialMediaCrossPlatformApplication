@@ -22,12 +22,12 @@ class PostDetailScreen extends StatelessWidget {
               children: [
                 Row(children: [
                   const BackButton(
-                    color: AppColors.carbon,
+                    color: AppColors.erieBlack,
                   ),
                   const Spacer(),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border, color: AppColors.carbon,)),
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border, color: AppColors.erieBlack,)),
                   // const AddCollectionIcon(),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share, color: AppColors.carbon,))
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share, color: AppColors.erieBlack,))
                 ],),
                 
                 PostUserInfo(post: post),

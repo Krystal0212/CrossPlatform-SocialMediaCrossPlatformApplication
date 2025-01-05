@@ -1,3 +1,5 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:socialapp/utils/import.dart';
 
 abstract class PostService {
@@ -7,7 +9,7 @@ abstract class PostService {
 
   Future<String?> getPostImageById(String postId);
 
-  Future<List<PostModel>> getPostsData();
+  Future<List<PostModel>> getPostsData(bool isOffline);
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
 }
@@ -16,6 +18,8 @@ class PostServiceImpl extends PostService {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final StorageService _storage = StorageServiceImpl();
+  final CacheManager cacheManager = DefaultCacheManager();
+  Connectivity connectivity = Connectivity();
 
   // ToDo : Reference Define
   User? get currentUser => _auth.currentUser;
@@ -24,64 +28,146 @@ class PostServiceImpl extends PostService {
 
   CollectionReference get _postRef => _firestoreDB.collection('Post');
 
+  // ToDo: Offline Service Functions
+
+  Future<List<PostModel>> _getLocalPostsData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? postStrings = prefs.getStringList('offline_posts');
+
+    if (postStrings == null) {
+      return [];
+    }
+
+    List<PostModel> posts = postStrings.map((postString) {
+      // Deserialize the string back into a map
+      Map<String, dynamic> postMap = jsonDecode(postString);
+      return PostModel.fromMap(postMap);
+    }).toList();
+
+    return posts;
+  }
+
   // ToDo: Service Functions
   @override
-  Future<List<PostModel>> getPostsData() async {
+  Future<List<PostModel>> getPostsData(bool isOffline) async {
     List<PostModel> posts = [];
-    DocumentReference userRef;
-    Future<DocumentSnapshot<Object?>> userData;
-    String username = '';
-    String userAvatar = '';
 
     try {
-      Query<Object?> postsQuery =
-          _postRef.orderBy('timestamp', descending: true);
+      if (isOffline) {
+        // Fetch from local storage when offline
+        posts = await _getLocalPostsData();
+      } else {
+        // Fetch from Firestore when online
+        DocumentReference userRef;
+        Future<DocumentSnapshot<Object?>> userData;
+        String username = '';
+        String userAvatar = '';
 
-      AggregateQuerySnapshot aggregateSnapshot = await postsQuery.count().get();
-      int? count = aggregateSnapshot.count ?? 0;
+        SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      if (count == 0) {
-        throw CustomFirestoreException(
-          code: 'no-posts',
-          message: 'No posts exist in Firestore',
-        );
-      }
-      QuerySnapshot postsSnapshot = await postsQuery.get();
+        Query<Object?> postsQuery =
+            _postRef.orderBy('timestamp', descending: true);
 
-      for (var doc in postsSnapshot.docs) {
-        userRef = doc['userRef'];
-        userData = userRef.get();
+        AggregateQuerySnapshot aggregateSnapshot =
+            await postsQuery.count().get();
+        int? count = aggregateSnapshot.count ?? 0;
 
-        await userData.then((value) {
-          username = value['name'];
-          userAvatar = value['avatar'];
-        });
+        if (count == 0) {
+          throw CustomFirestoreException(
+            code: 'no-posts',
+            message: 'No posts exist in Firestore',
+          );
+        }
+        QuerySnapshot postsSnapshot = await postsQuery.get();
 
-        PostModel post = PostModel(
-          postId: doc.id,
-          username: username,
-          userAvatar: userAvatar,
-          content: doc['content'],
-          likeAmount: doc['likeAmount'],
-          commentAmount: doc['commentAmount'],
-          viewAmount: doc['viewAmount'],
-          media: List<Map<String, String>>.from(
-            (doc['media'] as List<dynamic>)
-                .map((item) => Map<String, String>.from(item)),
-          ),
-          timestamp: (doc['timestamp'] as Timestamp).toDate(),
-          comments: null,
-          likes: null,
-          views: null,
-          topicRefs: [],
-        );
+        for (var doc in postsSnapshot.docs) {
+          userRef = doc['userRef'];
+          userData = userRef.get();
 
-        posts.add(post);
+          await userData.then((value) {
+            username = value['name'];
+            userAvatar = value['avatar'];
+          });
+
+          List<Map<String, String>> mediaOffline = [];
+
+          if (!kIsWeb){
+          for (var item in doc['media']) {
+            String mediaUrl = item['url'];
+
+            String? cachedFilePath = prefs.getString(mediaUrl);
+
+            if (cachedFilePath == null || !File(cachedFilePath).existsSync()) {
+              // If not cached or file doesn't exist, download and save the image
+              File cachedFile = await _downloadAndSaveImage(mediaUrl);
+
+              // Save the file path in SharedPreferences
+              await prefs.setString(mediaUrl, cachedFile.path);
+
+              cachedFilePath = cachedFile.path;
+            }
+
+            // Add the media data to the list
+            mediaOffline.add({
+              'uri': cachedFilePath,
+              'dominantColor': item['dominantColor'],
+              'type': item['type'],
+            });
+          }}
+
+          PostModel post = PostModel(
+            postId: doc.id,
+            username: username,
+            userAvatarUrl: userAvatar,
+            content: doc['content'],
+            likeAmount: doc['likeAmount'],
+            commentAmount: doc['commentAmount'],
+            viewAmount: doc['viewAmount'],
+            media: (doc['media'] as List<dynamic>).map((item) {
+              final mapItem = item as Map<String, dynamic>;
+              return mapItem.map(
+                (key, value) => MapEntry(key, value.toString()),
+              );
+            }).toList(),
+            mediaOffline: mediaOffline,
+            timestamp: (doc['timestamp'] as Timestamp).toDate(),
+            comments: null,
+            likes: null,
+            views: null,
+            topicRefs: [],
+          );
+
+          posts.add(post);
+        }
+        List<String> postStrings =
+            posts.map((post) => jsonEncode(post.toMap())).toList();
+        await prefs.setStringList('offline_posts', postStrings);
       }
       return posts;
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<File> _downloadAndSaveImage(String url) async {
+    // Get the temporary directory where files can be stored
+    // Parse the URL to remove the query parameters
+    Uri uri = Uri.parse(url);
+    String cleanedUrl = uri.origin + uri.path;
+
+    // Get the temporary directory where files can be stored
+    final Directory dir = await getTemporaryDirectory();
+
+    // Extract the file name from the cleaned URL
+    final File file = File('${dir.path}/${cleanedUrl.split('/').last}');
+
+    // Download the file
+    final downloadFile = await cacheManager.getSingleFile(url);
+
+    // Save the downloaded file to a local file
+    await downloadFile.copy(file.path);
+
+    return file; // Return the local file
   }
 
   @override
@@ -119,17 +205,24 @@ class PostServiceImpl extends PostService {
         PostModel post = PostModel(
           postId: doc.id,
           username: username,
-          userAvatar: userAvatar,
+          userAvatarUrl: userAvatar,
           content: doc['content'],
           likeAmount: doc['likeAmount'],
           commentAmount: doc['commentAmount'],
           viewAmount: doc['viewAmount'],
-          media: List<Map<String, String>>.from(doc['media'] as List),
+          media: (doc['media'] as List<dynamic>).map((item) {
+            final mapItem = item as Map<String, dynamic>;
+            return mapItem.map(
+              (key, value) => MapEntry(key, value.toString()),
+            );
+          }).toList(),
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
           comments: null,
           likes: null,
           views: null,
-          topicRefs: doc['topicRef'],
+          topicRefs: (doc['topicRef'] as List<dynamic>)
+              .map((item) => item.toString())
+              .toList(),
         );
 
         posts.add(post);

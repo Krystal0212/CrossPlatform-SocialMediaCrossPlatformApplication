@@ -4,7 +4,7 @@ import 'package:socialapp/domain/entities/comment.dart';
 import 'package:socialapp/domain/entities/post.dart';
 
 abstract class PostRepository {
-  Future<List<PostModel>> getPostsData();
+  Future<List<PostModel>> getPostsData(bool isOffline);
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
 

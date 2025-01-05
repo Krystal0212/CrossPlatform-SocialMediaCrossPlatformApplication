@@ -30,7 +30,7 @@ class AddCollectionIcon extends StatelessWidget {
         },
         icon: const Icon(
           Icons.add_circle_outline,
-          color: AppColors.carbon,
+          color: AppColors.erieBlack,
         ));
   }
 }

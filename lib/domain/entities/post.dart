@@ -1,9 +1,10 @@
 class PostModel {
   final String postId;
   final String username;
-  final String userAvatar;
+  final String userAvatarUrl;
   final String content;
-  final List<Map<String, String>> media; // Updated to support multiple media types
+  final List<Map<String, String>>? media; // Optional media
+  final List<Map<String, String>>? mediaOffline; // Optional mediaOffline
   final DateTime timestamp;
   final int likeAmount;
   final int commentAmount;
@@ -16,34 +17,42 @@ class PostModel {
   PostModel({
     required this.postId,
     required this.username,
-    required this.userAvatar,
+    required this.userAvatarUrl,
     required this.content,
+    this.media,
+    this.mediaOffline,
+    required this.timestamp,
     required this.likeAmount,
     required this.commentAmount,
     required this.viewAmount,
-    required this.media,
-    required this.timestamp,
+    required this.topicRefs,
     required this.comments,
     required this.likes,
     required this.views,
-    required this.topicRefs,
-  });
+  })  : assert(
+  (media != null || mediaOffline != null),
+  'Either media or mediaOffline must be provided');
 
   factory PostModel.newPost({
     required String postId,
     required String username,
     required String userAvatar,
     required String content,
-    required List<Map<String, String>> media,
+    List<Map<String, String>>? media,
+    List<Map<String, String>>? mediaOffline,
     required DateTime timestamp,
     required List<String> topicRefs,
   }) {
+    assert(
+    (media != null || mediaOffline != null),
+    'Either media or mediaOffline must be provided');
     return PostModel(
       postId: postId,
       username: username,
-      userAvatar: userAvatar,
+      userAvatarUrl: userAvatar,
       content: content,
       media: media,
+      mediaOffline: mediaOffline,
       timestamp: timestamp,
       likeAmount: 0,
       commentAmount: 0,
@@ -59,9 +68,10 @@ class PostModel {
     return {
       'postId': postId,
       'username': username,
-      'userAvatar': userAvatar,
+      'userAvatar': userAvatarUrl,
       'content': content,
       'media': media,
+      'mediaOffline': mediaOffline,
       'timestamp': timestamp.toIso8601String(),
       'likeAmount': likeAmount,
       'commentAmount': commentAmount,
@@ -77,9 +87,24 @@ class PostModel {
     return PostModel(
       postId: map['postId'],
       username: map['username'],
-      userAvatar: map['userAvatar'],
+      userAvatarUrl: map['userAvatar'],
       content: map['content'],
-      media: List<Map<String, String>>.from(map['media'] ?? []),
+      media: map['media'] != null
+          ? (map['media'] as List<dynamic>).map((item) {
+        final mapItem = item as Map<String, dynamic>;
+        return mapItem.map(
+              (key, value) => MapEntry(key, value.toString()),
+        );
+      }).toList()
+          : null,
+      mediaOffline: map['mediaOffline'] != null
+          ? (map['mediaOffline'] as List<dynamic>).map((item) {
+        final mapItem = item as Map<String, dynamic>;
+        return mapItem.map(
+              (key, value) => MapEntry(key, value.toString()),
+        );
+      }).toList()
+          : null,
       timestamp: DateTime.parse(map['timestamp']),
       likeAmount: map['likeAmount'] ?? 0,
       commentAmount: map['commentAmount'] ?? 0,

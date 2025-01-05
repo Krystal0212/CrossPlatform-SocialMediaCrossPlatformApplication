@@ -79,7 +79,7 @@ class _PostUserInfoState extends State<PostUserInfo> with Methods {
                 padding: const EdgeInsets.only(right: 8.0),
                 child: CircleAvatar(
                   radius: 16,
-                  backgroundImage: NetworkImage(widget.post.userAvatar),
+                  backgroundImage: NetworkImage(widget.post.userAvatarUrl),
                 ),
               ),
               Text(widget.post.username,
@@ -142,12 +142,12 @@ class PostStatsBar extends StatelessWidget {
             children: [
               Text(
                 post.viewAmount.toString(),
-                style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),
+                style: TextStyle(color: AppColors.erieBlack.withOpacity(0.5)),
               ),
               IconButton(
                 icon: Icon(
                   Icons.remove_red_eye_outlined,
-                  color: AppColors.iric.withOpacity(0.5),
+                  color: AppColors.iris.withOpacity(0.5),
                 ),
                 onPressed: () {},
               ),
@@ -157,12 +157,12 @@ class PostStatsBar extends StatelessWidget {
             children: [
               Text(
                 post.commentAmount.toString(),
-                style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),
+                style: TextStyle(color: AppColors.erieBlack.withOpacity(0.5)),
               ),
               IconButton(
                 icon: Icon(
                   Icons.insert_comment_outlined,
-                  color: AppColors.iric.withOpacity(0.5),
+                  color: AppColors.iris.withOpacity(0.5),
                 ),
                 onPressed: () {
                   // context.go('/signin/comment');
@@ -178,12 +178,12 @@ class PostStatsBar extends StatelessWidget {
             children: [
               Text(
                 post.likeAmount.toString(),
-                style: TextStyle(color: AppColors.carbon.withOpacity(0.5)),
+                style: TextStyle(color: AppColors.erieBlack.withOpacity(0.5)),
               ),
               IconButton(
                 icon: Icon(
                   Icons.favorite_border,
-                  color: AppColors.iric.withOpacity(0.5),
+                  color: AppColors.iris.withOpacity(0.5),
                 ),
                 onPressed: () {},
               ),

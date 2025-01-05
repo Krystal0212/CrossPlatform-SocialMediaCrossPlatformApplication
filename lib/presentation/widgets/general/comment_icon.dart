@@ -7,6 +7,6 @@ class CommentIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(onPressed: () {
-    }, icon: const Icon(Icons.comment_outlined, color: AppColors.carbon,));
+    }, icon: const Icon(Icons.comment_outlined, color: AppColors.erieBlack,));
   }
 }

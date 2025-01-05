@@ -1,3 +1,5 @@
+import 'package:socialapp/utils/import.dart';
+
 class UserModel {
   final String name;
   final String email;
@@ -43,7 +45,13 @@ class UserModel {
       email: map['email'] ?? '',
       lastName: map['lastname'] ?? '',
       location: map['location'] ?? '',
-      preferredTopics: Map<String, String>.from(map['preferred-topics'] ?? {}),
+      preferredTopics: Map<String, String>.from(
+        (map['preferred-topics'] ?? {}).map(
+              (key, value) {
+              return MapEntry(key, value.toString());  // Or any other field you need from the reference
+            },
+        ),
+      ),
       avatar: map['avatar'] ?? '',
       socialAccounts: Map<String, String>.from(map['socials'] ?? {}),
     );

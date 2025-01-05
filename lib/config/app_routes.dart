@@ -81,7 +81,7 @@ class AppRoutes {
 
             if(isWeb) {
               return _buildPageRoute(BlocProvider(
-                  create: (context) => HomeCubit(), child: const HomeScreen()));
+                create: (context) => HomeCubit(), child: const HomeScreen()));
             }else{
               return _buildPageRoute(const CustomNavigatorBar());
             }

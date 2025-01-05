@@ -22,7 +22,7 @@ class BackgroundContainer extends StatelessWidget {
           Opacity(
             opacity: opacity ?? 0.4,
             child: Container(
-              color: AppColors.iric,
+              color: AppColors.iris,
             ),
           ),
           center ?? Container(),

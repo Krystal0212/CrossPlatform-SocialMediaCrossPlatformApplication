@@ -18,7 +18,7 @@ class TopicScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const BackButton(
-              color: AppColors.carbon,  
+              color: AppColors.erieBlack,
             ),
 
             topics == null ?
@@ -36,7 +36,7 @@ class TopicScreen extends StatelessWidget {
                                 width: MediaQuery.of(context).size.width * 0.9,
                                 height: 140,
                                 decoration: BoxDecoration(
-                                  color: AppColors.carbon.withOpacity(0.5),
+                                  color: AppColors.erieBlack.withOpacity(0.5),
                                   borderRadius: BorderRadius.circular(8),
                                   image: DecorationImage(image: 
                                     NetworkImage(topics![index].thumbnailUrl), fit: BoxFit.cover
