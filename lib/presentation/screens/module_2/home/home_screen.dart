@@ -96,6 +96,21 @@ class _HomeScreenState extends State<HomeScreen>
                         width: listBodyWidth,
                         child: TabBarView(
                           children: [
+                            PostListView(
+                              posts: state.posts,
+                              viewMode: ViewMode.explore,
+                              listBodyWidth: listBodyWidth,
+                            ),
+                            PostListView(
+                              posts: state.posts,
+                              viewMode: ViewMode.trending,
+                              listBodyWidth: listBodyWidth,
+                            ),
+                            PostListView(
+                              posts: state.posts,
+                              viewMode: ViewMode.following,
+                              listBodyWidth: listBodyWidth,
+                            ),
                           ],
                         ),
                       ),
