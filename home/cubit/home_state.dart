@@ -1,0 +1,42 @@
+
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:socialapp/utils/import.dart';
+
+enum ViewMode { explore, trending, following }
+
+
+class HomeLoading extends HomeState{}
+
+class HomeLoadedPostsSuccess extends HomeState {
+  final List<PostModel> posts; // Example data, replace with your actual model
+
+  HomeLoadedPostsSuccess(this.posts);
+}
+
+
+abstract class HomeState {}
+
+class HomeViewModeInitial extends HomeState {
+  final ViewMode viewMode;
+
+  HomeViewModeInitial(this.viewMode);
+}
+
+class HomeViewModeChanged extends HomeState {
+  final ViewMode viewMode;
+
+  HomeViewModeChanged(this.viewMode);
+}
+
+class HomeFailure extends HomeState{
+  final String errorMessage;
+
+  HomeFailure(this.errorMessage);
+}
+
+class HomeConnectivityChanged extends HomeState {
+  final ConnectivityResult connectivityResult;
+
+  HomeConnectivityChanged(this.connectivityResult);
+}
