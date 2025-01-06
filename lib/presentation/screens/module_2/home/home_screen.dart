@@ -64,68 +64,93 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  Future<bool> _onWillPop() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      // On mobile, exit the app when back button is pressed
+      SystemNavigator.pop(); // Exit the app
+      return false;
+    } else {
+      // On web, prevent going back
+      return false;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isLoading,
-      builder: (context, isLoadingValue, child) {
-        if (isLoadingValue) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (!kIsWeb) {
+          // For mobile, confirm exit action
+          const bool shouldExit = true;
+          // final bool? shouldExit = await _showExitDialog();
+          if (shouldExit == true) {
+            SystemNavigator.pop();
+          }
         }
-        return DefaultTabController(
-          length: 3,
-          child: Scaffold(
-            appBar:  HomeScreenAppBar(
-                  deviceWidth: deviceWidth,
-              currentUserNotifier: currentUserNotifier,
-            ),
-            body: BlocBuilder<HomeCubit, HomeState>(
-              builder: (context, state) {
-                if (state is HomeLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is HomeLoadedPostsSuccess) {
-                  return Container(
-                    color: AppColors.lynxWhite,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.only(top: 20),
-                        width: listBodyWidth,
-                        child: TabBarView(
-                          children: [
-                            PostListView(
-                              posts: state.posts,
-                              viewMode: ViewMode.explore,
-                              listBodyWidth: listBodyWidth,
-                            ),
-                            PostListView(
-                              posts: state.posts,
-                              viewMode: ViewMode.trending,
-                              listBodyWidth: listBodyWidth,
-                            ),
-                            PostListView(
-                              posts: state.posts,
-                              viewMode: ViewMode.following,
-                              listBodyWidth: listBodyWidth,
-                            ),
-                          ],
+      },
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isLoading,
+        builder: (context, isLoadingValue, child) {
+          if (isLoadingValue) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          return DefaultTabController(
+            length: 3,
+            child: Scaffold(
+              appBar:  HomeScreenAppBar(
+                    deviceWidth: deviceWidth,
+                currentUserNotifier: currentUserNotifier,
+              ),
+              body: BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  if (state is HomeLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is HomeLoadedPostsSuccess) {
+                    return Container(
+                      color: AppColors.lynxWhite,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.only(top: 20),
+                          width: listBodyWidth,
+                          child: TabBarView(
+                            children: [
+                              PostListView(
+                                posts: state.posts,
+                                viewMode: ViewMode.explore,
+                                listBodyWidth: listBodyWidth,
+                              ),
+                              PostListView(
+                                posts: state.posts,
+                                viewMode: ViewMode.trending,
+                                listBodyWidth: listBodyWidth,
+                              ),
+                              PostListView(
+                                posts: state.posts,
+                                viewMode: ViewMode.following,
+                                listBodyWidth: listBodyWidth,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                } else if (state is HomeFailure) {
-                  return Center(child: Text(state.errorMessage));
-                } else {
-                  return const Center(child: Text('Select a view mode'));
-                }
-              },
+                    );
+                  } else if (state is HomeFailure) {
+                    return Center(child: Text(state.errorMessage));
+                  } else {
+                    return const Center(child: Text('Fetching data'));
+                  }
+                },
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

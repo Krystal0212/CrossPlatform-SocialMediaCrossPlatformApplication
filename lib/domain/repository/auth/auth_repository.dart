@@ -5,6 +5,8 @@ import 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 abstract class AuthRepository {
   bool isUserVerified();
 
+  bool isSignedIn();
+
   Future<void> signUp(SignUpUserReq signUpUserReq);
 
   Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq);

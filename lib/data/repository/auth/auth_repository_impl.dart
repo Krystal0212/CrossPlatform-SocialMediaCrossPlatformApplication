@@ -19,6 +19,11 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
+  bool isSignedIn(){
+    return serviceLocator<AuthFirebaseService>().isSignedIn();
+  }
+
+  @override
   Future<void> signUp(SignUpUserReq signUpUserReq) async {
     return await serviceLocator<AuthFirebaseService>().signUp(signUpUserReq);
   }

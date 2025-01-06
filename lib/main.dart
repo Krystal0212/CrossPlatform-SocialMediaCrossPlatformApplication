@@ -1,11 +1,12 @@
+import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/utils/import.dart';
+import 'background_tasks.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -16,7 +17,16 @@ void main() async {
         : await getApplicationDocumentsDirectory(),
   );
 
+
+
   await initializeDependencies();
+
+  if (!kIsWeb) {
+    Workmanager().initialize(
+      callbackDispatcher, // The top level function
+      isInDebugMode: kDebugMode,
+    );
+  }
 
   final dynamicLinkService = DeepLinkServiceImpl();
   dynamicLinkService.handleIncomingLinks(AppRoutes.router);

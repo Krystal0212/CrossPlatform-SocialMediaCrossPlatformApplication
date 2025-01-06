@@ -53,24 +53,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               } else if (state is ProfileLoggedOut) {
               }
               else if (state is ProfileError){
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Error During Changed',style: AppTheme.blackHeaderStyle, ),
-                      content: Text(state.message, style: AppTheme.appHintStyle,),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            context.read<ProfileCubit>().signOut();
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
+                // if (kDebugMode) {
+                //   print("Error during changed ${state.message}");
+                // }
+                // showDialog(
+                //   context: context,
+                //   builder: (BuildContext context) {
+                //     return AlertDialog(
+                //       title: Text('Error During Changed',style: AppTheme.blackHeaderStyle, ),
+                //       content: Text(state.message, style: AppTheme.appHintStyle,),
+                //       actions: <Widget>[
+                //         TextButton(
+                //           onPressed: () {
+                //             Navigator.of(context).pop();
+                //             context.read<ProfileCubit>().signOut();
+                //           },
+                //           child: const Text('OK'),
+                //         ),
+                //       ],
+                //     );
+                //   },
+                // );
               }
             },
           ),

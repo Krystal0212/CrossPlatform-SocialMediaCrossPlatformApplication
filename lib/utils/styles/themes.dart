@@ -237,8 +237,8 @@ class AppTheme {
   static TextStyle get signUpBlackText => GoogleFonts.plusJakartaSans(
       color: Colors.black, fontSize: 15, fontWeight: FontWeight.normal);
 
-  static TextStyle get boldTextStyle => GoogleFonts.plusJakartaSans(
-       fontSize: 15, fontWeight: FontWeight.bold);
+  static TextStyle get boldTextStyle =>
+      GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.bold);
 
   //ToDo: PaddingEdgeInsetsStyle
   static EdgeInsets get preferredTopicMobilePaddingEdgeInsets =>
@@ -348,16 +348,16 @@ class AppTheme {
       );
 
   static ButtonStyle get navigationIconButtonStyle => ElevatedButton.styleFrom(
-    backgroundColor: Colors.transparent,
-    elevation: 0,
-    foregroundColor: AppTheme.white,
-    splashFactory: NoSplash.splashFactory,
-    shadowColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
-  ).copyWith(
-    overlayColor:
-    const WidgetStatePropertyAll(Colors.transparent), // No hover effect
-  );
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: AppTheme.white,
+        splashFactory: NoSplash.splashFactory,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+      ).copyWith(
+        overlayColor:
+            const WidgetStatePropertyAll(Colors.transparent), // No hover effect
+      );
 
   static ButtonStyle get actionNoEffectCircleButtonStyle =>
       ElevatedButton.styleFrom(
@@ -376,6 +376,28 @@ class AppTheme {
         Color.fromARGB(255, 89, 28, 219),
 
         BlendMode.srcIn, // Choose the desired blend mode
+      );
+
+  //ToDo: InputDecoration
+  static InputDecoration get whiteInputDecoration => InputDecoration(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        fillColor: AppTheme.white,
+        filled: true,
+        hoverColor: AppTheme.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.white),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.white),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AppTheme.white),
+        ),
+        hintText: AppStrings.whatNew,
       );
 
   //ToDo: Theme

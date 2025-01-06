@@ -1,3 +1,5 @@
+import 'package:socialapp/utils/import.dart';
+
 class PostModel {
   final String postId;
   final String username;
@@ -10,9 +12,8 @@ class PostModel {
   final int commentAmount;
   final int viewAmount;
   final List<String> topicRefs;
-  final Map<String, dynamic>? comments;
-  final Map<String, dynamic>? likes;
-  final Map<String, dynamic>? views;
+  final List<String>? comments;
+  final List<String>? likes;
 
   PostModel({
     required this.postId,
@@ -28,7 +29,6 @@ class PostModel {
     required this.topicRefs,
     required this.comments,
     required this.likes,
-    required this.views,
   })  : assert(
   (media != null || mediaOffline != null),
   'Either media or mediaOffline must be provided');
@@ -57,9 +57,8 @@ class PostModel {
       likeAmount: 0,
       commentAmount: 0,
       viewAmount: 0,
-      comments: {},
-      likes: {},
-      views: {},
+      comments: [],
+      likes: [],
       topicRefs: topicRefs,
     );
   }
@@ -77,9 +76,9 @@ class PostModel {
       'commentAmount': commentAmount,
       'viewAmount': viewAmount,
       'topicRefs': topicRefs,
-      'comments': comments,
-      'likes': likes,
-      'views': views,
+      // 'comments': comments,
+      // 'likes': likes,
+      // 'views': views,
     };
   }
 
@@ -105,14 +104,13 @@ class PostModel {
         );
       }).toList()
           : null,
-      timestamp: DateTime.parse(map['timestamp']),
+      timestamp: (map['timestamp'] as Timestamp).toDate(),
       likeAmount: map['likeAmount'] ?? 0,
       commentAmount: map['commentAmount'] ?? 0,
       viewAmount: map['viewAmount'] ?? 0,
       topicRefs: List<String>.from(map['topicRefs'] ?? []),
       comments: map['comments'],
       likes: map['likes'],
-      views: map['views'],
     );
   }
 }

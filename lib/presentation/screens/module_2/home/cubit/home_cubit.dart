@@ -1,5 +1,4 @@
 import 'package:socialapp/utils/import.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'home_state.dart';
 import 'dart:async';
 
@@ -13,19 +12,21 @@ class HomeCubit extends Cubit<HomeState> {
   bool isFetched = false;
   UserModel? currentUser;
 
+  bool isBackgroundFetchComplete = false;
   StreamSubscription? _connectivitySubscription;
 
   HomeCubit()
       : _currentViewMode = ViewMode.explore,
         super(HomeViewModeInitial(ViewMode.explore)) {
     if (kIsWeb) {
-      loadData(_currentViewMode, false);
+      _loadData(_currentViewMode, false);
     } else {
-      listenToConnectivity();
+      _listenToConnectivity();
+      _setupBackgroundFetch();
     }
   }
 
-  void listenToConnectivity() {
+  void _listenToConnectivity() {
     _connectivitySubscription = connectivity.onConnectivityChanged.listen(
       (connectivityList) {
         final connectivityResult = connectivityList.isNotEmpty
@@ -35,16 +36,27 @@ class HomeCubit extends Cubit<HomeState> {
         // Trigger _loadData whenever connectivity changes
         if (connectivityResult != ConnectivityResult.none) {
           isFetched = false;
-          loadData(_currentViewMode, false); // Reload data when connected
+          _loadData(_currentViewMode, false);
         } else {
-          loadData(_currentViewMode, true); // Show failure state if no connection
+          _loadData(_currentViewMode, true);
         }
       },
     );
   }
 
-  Future<void> cancelConnectivityListener() {
+  void _setupBackgroundFetch() {
+    Workmanager().registerPeriodicTask(
+      "Firestore services",
+      "fetchFirestoreData",
+      frequency: const Duration(minutes: 15), // Adjust as needed
+      inputData: {'isOffline': false}, // Fetch online data
+    );
+  }
+
+  @override
+  Future<void> close() {
     _connectivitySubscription?.cancel();
+    setBackgroundFetchComplete(false);
     return super.close();
   }
 
@@ -66,6 +78,10 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
+  void setBackgroundFetchComplete(bool isComplete) {
+    isBackgroundFetchComplete = isComplete;
+  }
+
   UserModel? getCurrentUser() {
     return currentUser;
   }
@@ -75,18 +91,18 @@ class HomeCubit extends Cubit<HomeState> {
     // _loadData(viewMode);
   }
 
-  void loadData(ViewMode viewMode, bool isOffline) async {
+  void _loadData(ViewMode viewMode, bool isOffline) async {
     _currentViewMode = viewMode;
 
     emit(HomeLoading());
 
-    if (!isFetched) {
-      explorePosts =
-          await serviceLocator<PostRepository>().getPostsData(isOffline);
-      trendingPosts =
-          await serviceLocator<PostRepository>().getPostsData(isOffline);
-      followingPosts =
-          await serviceLocator<PostRepository>().getPostsData(isOffline);
+    if (!isBackgroundFetchComplete && !isFetched) {
+      explorePosts = await serviceLocator<PostRepository>()
+          .getPostsData(isOffline: isOffline);
+      trendingPosts = await serviceLocator<PostRepository>()
+          .getPostsData(isOffline: isOffline);
+      followingPosts = await serviceLocator<PostRepository>()
+          .getPostsData(isOffline: isOffline);
       isFetched = true;
     }
 

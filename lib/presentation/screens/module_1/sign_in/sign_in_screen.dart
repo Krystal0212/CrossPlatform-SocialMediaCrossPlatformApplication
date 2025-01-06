@@ -1,4 +1,6 @@
 import 'package:socialapp/presentation/screens/module_1/sign_in/widgets/custom_google_button.dart';
+import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
+import 'package:socialapp/presentation/screens/module_2/home/cubit/home_state.dart';
 import 'package:socialapp/utils/import.dart';
 
 import 'cubit/sign_in_cubit.dart';
@@ -161,41 +163,57 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                         const SizedBox(
                           height: 10,
                         ),
-                        BlocBuilder<SignInCubit, SignInState>(
-                          builder: (context, state) {
-                            return Column(
-                              children: [
-                                AuthElevatedButton(
-                                  width: deviceWidth,
-                                  height: 45,
-                                  inputText: AppStrings.logIn,
-                                  onPressed: () => context
-                                      .read<SignInCubit>()
-                                      .loginWithEmailAndPassword(
-                                        context,
-                                        _formKey,
-                                        SignInUserReq(
-                                            email: _emailController.text,
-                                            password: _passwordController.text),
-                                      ),
-                                  isLoading:
-                                      (state is SignInLoading ? true : false),
-                                ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                Text(
-                                  AppStrings.orLogInBy,
-                                  style: AppTheme.authNormalStyle,
-                                ),
-                                GoogleButton(
-                                  onPressed: () => context
-                                      .read<SignInCubit>()
-                                      .loginWithGoogle(context),
-                                )
-                              ],
-                            );
+                        BlocListener<SignInCubit, SignInState>(
+                          listener: (context, state) {
+                            if (state is SignInSuccessButNotVerified) {
+                              if (!context.mounted) return;
+                              context
+                                  .go('/verify', extra: {"isFromSignIn": true});
+                            } else if (state is SignInSuccessButNotPickTopics) {
+                              if (!context.mounted) return;
+                              context.go('/preferred-topic');
+                            } else if (state is SignInSuccessProcessCompleted) {
+                              if (!context.mounted) return;
+                              context.go('/home');
+                            }
                           },
+                          child: BlocBuilder<SignInCubit, SignInState>(
+                            builder: (context, state) {
+                              return Column(
+                                children: [
+                                  AuthElevatedButton(
+                                    width: deviceWidth,
+                                    height: 45,
+                                    inputText: AppStrings.logIn,
+                                    onPressed: () => context
+                                        .read<SignInCubit>()
+                                        .loginWithEmailAndPassword(
+                                          context,
+                                          _formKey,
+                                          SignInUserReq(
+                                              email: _emailController.text,
+                                              password:
+                                                  _passwordController.text),
+                                        ),
+                                    isLoading:
+                                        (state is SignInLoading ? true : false),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Text(
+                                    AppStrings.orLogInBy,
+                                    style: AppTheme.authNormalStyle,
+                                  ),
+                                  GoogleButton(
+                                    onPressed: () => context
+                                        .read<SignInCubit>()
+                                        .loginWithGoogle(context),
+                                  )
+                                ],
+                              );
+                            },
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

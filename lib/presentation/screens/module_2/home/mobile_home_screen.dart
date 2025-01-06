@@ -5,7 +5,6 @@ import 'cubit/home_state.dart';
 import 'widgets/app_post.dart';
 import 'widgets/search_bar.dart';
 import 'widgets/segmented_tab_controller.dart';
-import 'widgets/tab_item.dart';
 
 class MobileHomeScreen extends StatefulWidget {
   const MobileHomeScreen({super.key});
@@ -44,7 +43,7 @@ class _HomeScreenState extends State<MobileHomeScreen>
   void dispose() {
     super.dispose();
     _tabController.dispose();
-    context.read<HomeCubit>().cancelConnectivityListener();
+    context.read<HomeCubit>().close();
   }
 
   @override
@@ -179,7 +178,7 @@ class _HomeScreenState extends State<MobileHomeScreen>
               } else if (state is HomeFailure) {
                 return Center(child: Text(state.errorMessage));
               } else {
-                return const Center(child: Text('Select a view mode'));
+                return const Center(child: Text('Fetching data'));
               }
             },
           ),

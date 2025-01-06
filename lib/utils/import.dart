@@ -4,6 +4,8 @@ export 'dart:math';
 export 'dart:convert';
 export 'package:flutter/material.dart';
 export 'package:flutter/physics.dart';
+export 'package:workmanager/workmanager.dart';
+export 'package:connectivity_plus/connectivity_plus.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:firebase_core/firebase_core.dart';
@@ -32,7 +34,9 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         Timestamp,
         Query,
         AggregateQuerySnapshot,
-        FieldValue;
+        FieldValue,
+        QueryDocumentSnapshot
+;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 
 // App Configurations

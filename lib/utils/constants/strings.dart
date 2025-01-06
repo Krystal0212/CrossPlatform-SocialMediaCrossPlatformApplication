@@ -60,6 +60,7 @@ class AppStrings {
   static const String about = "About Zineround";
   static const String term = "Terms & Privacy";
   static const String signOut = "Sign Out";
+  static const String whatNew = 'What\'s new ?';
 
   // For collection section
   static const String createCollection = "Create collection";

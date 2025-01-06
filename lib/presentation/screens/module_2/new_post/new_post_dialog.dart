@@ -1,4 +1,9 @@
+import 'package:rich_field_controller/rich_field_controller.dart';
+import 'package:image_picker_web/image_picker_web.dart';
+
 import 'package:socialapp/utils/import.dart';
+
+import 'widgets/styleable_text_field_controller.dart';
 
 class CreateNewPostDialogContent extends StatefulWidget {
   final UserModel currentUser;
@@ -13,21 +18,89 @@ class CreateNewPostDialogContent extends StatefulWidget {
 class _CreateNewPostDialogContentState
     extends State<CreateNewPostDialogContent> {
   final double sideWidth = 25;
+  final ValueNotifier<int> maxLinesNotifier = ValueNotifier<int>(2);
+  final ValueNotifier<List<Uint8List>> imagePathNotifier =
+      ValueNotifier<List<Uint8List>>([]);
 
-  late double deviceWidth;
+  late double deviceWidth, deviceHeight;
   late bool isCompactView, isMediumView, isLargeView;
+  late final TextEditingController textEditingController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    textEditingController = StyleableTextFieldController(
+      styles: TextPartStyleDefinitions(
+        definitionList: <TextPartStyleDefinition>[
+          TextPartStyleDefinition(
+            style: AppTheme.highlightedHashtagStyle,
+            pattern: r'(#[a-zA-Z0-9_]+)',
+          ),
+        ],
+      ),
+    );
+
+    textEditingController.addListener(() {
+      updateMaxLines(deviceWidth * 0.23, textEditingController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    maxLinesNotifier.dispose();
+    imagePathNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     deviceWidth = MediaQuery.of(context).size.width;
+    deviceHeight = MediaQuery.of(context).size.height;
 
     isCompactView = deviceWidth < 680;
     isMediumView = deviceWidth >= 680 && deviceWidth < 1200;
     isLargeView = deviceWidth >= 1200;
   }
 
+  void updateMaxLines(double fieldWidth, String text) {
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: AppTheme.blackUsernameStyle, // Match TextField's font size
+      ),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
 
+    final int newMaxLines = (textPainter.size.width / fieldWidth).ceil();
+
+    if (text.contains('\n')) {
+      if (kDebugMode) {
+        print('T $text');
+      }
+    }
+
+    if (newMaxLines < 2) {
+      maxLinesNotifier.value = 2;
+    } else if (maxLinesNotifier.value != newMaxLines) {
+      maxLinesNotifier.value = newMaxLines;
+    }
+  }
+
+  Future pickImageFromGallery() async {
+    List<Uint8List>? bytesFromPicker = await ImagePickerWeb.getMultiImagesAsBytes();
+
+    if (bytesFromPicker != null) {
+
+      List<Uint8List> tempList = List.from(imagePathNotifier.value);
+      tempList.add(bytesFromPicker[0]);
+
+      imagePathNotifier.value = tempList;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,44 +179,62 @@ class _CreateNewPostDialogContentState
                             width: 0.1,
                           ),
                           Flexible(
-                            child: TextField(
-                              textAlign: TextAlign.start,
-                              decoration: InputDecoration(
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 0, vertical: 0),
-                                fillColor: AppTheme.white,
-                                filled: true,
-                                hoverColor: AppTheme.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.zero,
-                                  borderSide: BorderSide(color: AppTheme.white),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.zero,
-                                  borderSide: BorderSide(color: AppTheme.white),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.zero,
-                                  borderSide: BorderSide(color: AppTheme.white),
-                                ),
-                                hintText: 'What\'s new ?',
-                              ),
-                              maxLines: null, // Allow multiple lines
-                              keyboardType: TextInputType
-                                  .multiline, // Allow multiline input
-                            ),
+                            child: ValueListenableBuilder<int>(
+                                valueListenable: maxLinesNotifier,
+                                builder: (context, maxLines, child) {
+                                  return Container(
+                                    constraints: BoxConstraints(
+                                      maxHeight: deviceHeight * 0.3,
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: TextField(
+                                        autocorrect: false,
+                                        enableSuggestions: true,
+                                        maxLines: maxLines,
+                                        minLines: 2,
+                                        controller: textEditingController,
+                                        textAlign: TextAlign.start,
+                                        decoration:
+                                            AppTheme.whiteInputDecoration,
+                                        keyboardType: TextInputType.multiline,
+                                        textInputAction:
+                                            TextInputAction.newline,
+                                      ),
+                                    ),
+                                  );
+                                }),
                           ),
                         ],
                       ),
                     ),
+                    ValueListenableBuilder<List<Uint8List>>(
+                      valueListenable: imagePathNotifier,
+                      builder: (context, imagePathList, child) {
+                        print('check 1 ${imagePathNotifier.value.toString()}');
+                        print('check ${imagePathList.toString()}');
+                        if(imagePathList.isNotEmpty){
+                          print('images picked');
+                          return Column(
+                            children: [
+                              const SizedBox(height: 20),
+                               Image.memory(
+                                 imagePathList[0], // Display image from byte data
+                                fit: BoxFit.cover,
+                                height: 150, // Adjust height as needed
+                                width: 150, // Adjust width as needed
+                              ),
+                            ],
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    )
                   ],
                 ),
                 Column(
                   children: [
                     IconButton(
-                      onPressed: () {
-                      },
+                      onPressed: () => pickImageFromGallery(),
                       icon: ShaderMask(
                         shaderCallback: (Rect bounds) {
                           return AppTheme.mainGradient.createShader(bounds);
@@ -153,8 +244,7 @@ class _CreateNewPostDialogContentState
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                      },
+                      onPressed: () {},
                       icon: ShaderMask(
                         shaderCallback: (Rect bounds) {
                           return AppTheme.mainGradient.createShader(bounds);
@@ -164,8 +254,7 @@ class _CreateNewPostDialogContentState
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                      },
+                      onPressed: () {},
                       icon: ShaderMask(
                         shaderCallback: (Rect bounds) {
                           return AppTheme.mainGradient.createShader(bounds);
@@ -179,99 +268,6 @@ class _CreateNewPostDialogContentState
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class HashtagTextField extends StatefulWidget {
-  const HashtagTextField({super.key});
-
-  @override
-  State<HashtagTextField> createState() => HashtagTextFieldState();
-}
-
-class HashtagTextFieldState extends State<HashtagTextField> {
-  final TextEditingController _controller = TextEditingController();
-  String _text = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(() {
-      setState(() {
-        _text = _controller.text;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  TextSpan _buildTextSpan(String text) {
-    final RegExp hashtagRegex = RegExp(r'(#[a-zA-Z0-9_]+)');
-    final List<TextSpan> spans = [];
-    int start = 0;
-
-    hashtagRegex.allMatches(text).forEach((match) {
-      if (match.start > start) {
-        spans.add(
-          TextSpan(
-            text: text.substring(start, match.start),
-            style: AppTheme.blackHeaderStyle,
-          ),
-        );
-      }
-
-      spans.add(
-        TextSpan(
-          text: match.group(0),
-          style: AppTheme.highlightedHashtagStyle,
-        ),
-      );
-
-      start = match.end;
-    });
-
-    if (start < text.length) {
-      spans.add(
-        TextSpan(
-          text: text.substring(start),
-          style: AppTheme.blackHeaderStyle,
-        ),
-      );
-    }
-
-    return TextSpan(children: spans);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // The TextField
-            TextField(
-              controller: _controller,
-              maxLines: null,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Type something with #hashtags...',
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // The RichText
-            RichText(
-              text: _buildTextSpan(_text),
-            ),
-          ],
-        ),
       ),
     );
   }

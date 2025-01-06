@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:socialapp/utils/import.dart';
 
@@ -9,7 +8,7 @@ abstract class PostService {
 
   Future<String?> getPostImageById(String postId);
 
-  Future<List<PostModel>> getPostsData(bool isOffline);
+  Future<List<PostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false});
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
 }
@@ -48,23 +47,114 @@ class PostServiceImpl extends PostService {
   }
 
   // ToDo: Service Functions
-  @override
-  Future<List<PostModel>> getPostsData(bool isOffline) async {
+  Future<DocumentSnapshot> _getDocumentAtIndex(int index) async {
+    QuerySnapshot snapshot = await _postRef.limit(index + 1).get();
+    return snapshot.docs[index];
+  }
+
+
+  Future<List<String>> _fetchSubCollection(DocumentSnapshot postDoc, String subCollectionName) async {
+    try {
+      QuerySnapshot subCollectionSnapshot = await postDoc.reference.collection(subCollectionName).get();
+      return subCollectionSnapshot.docs.map((doc) => doc.id).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching $subCollectionName: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<List<PostModel>> _fetchPostWithSubCollections(int randomIndex) async {
     List<PostModel> posts = [];
 
     try {
-      if (isOffline) {
+      DocumentReference userRef;
+      Future<DocumentSnapshot<Object?>> userData;
+      String username = '';
+      String userAvatar = '';
+      List<String> comments, likes;
+
+      QuerySnapshot postsSnapshot = await _postRef
+          .startAtDocument(await _getDocumentAtIndex(randomIndex))
+          .limit(1)
+          .get();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      if (postsSnapshot.docs.isEmpty) {
+        throw CustomFirestoreException(code: 'no-post-found', message: 'No post found');
+      }
+
+      for (QueryDocumentSnapshot document in postsSnapshot.docs) {
+        comments = await _fetchSubCollection(document, 'comments');
+        likes = await _fetchSubCollection(document, 'likes');
+
+        userRef = document['userRef'];
+        userData = userRef.get();
+
+        await userData.then((value) {
+          username = value['name'];
+          userAvatar = value['avatar'];
+        });
+
+        List<Map<String, String>> mediaOffline = [];
+
+        if (!kIsWeb){
+          for (var item in document['media']) {
+            String mediaUrl = item['url'];
+
+            String? cachedFilePath = prefs.getString(mediaUrl);
+
+            if (cachedFilePath == null || !File(cachedFilePath).existsSync()) {
+              File cachedFile = await _downloadAndSaveLocalImage(mediaUrl);
+              await prefs.setString(mediaUrl, cachedFile.path);
+              cachedFilePath = cachedFile.path;
+            }
+
+            mediaOffline.add({
+              'uri': cachedFilePath,
+              'dominantColor': item['dominantColor'],
+              'type': item['type'],
+            });
+          }
+        }
+
+        Map<String, dynamic> documentMap = document.data() as Map<String, dynamic>;
+
+        documentMap['postId'] = document.id;
+        documentMap['username'] = username;
+        documentMap['userAvatar'] = userAvatar;
+        documentMap['mediaOffline']= mediaOffline;
+        documentMap['comments'] = comments;
+        documentMap['likes'] = likes;
+
+        PostModel post = PostModel.fromMap(documentMap);
+
+        posts.add(post);
+      }
+
+      List<String> postStrings = posts.map((post) => jsonEncode(post.toMap())).toList();
+      await prefs.setStringList('offline_posts', postStrings);
+
+      return posts;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching post with sub collections: $e');
+      }
+      return [];
+    }
+  }
+
+  @override
+  Future<List<PostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false}) async {
+    List<PostModel> posts = [];
+
+    try {
+      if (isOffline && !skipLocalFetch) {
         // Fetch from local storage when offline
         posts = await _getLocalPostsData();
       } else {
         // Fetch from Firestore when online
-        DocumentReference userRef;
-        Future<DocumentSnapshot<Object?>> userData;
-        String username = '';
-        String userAvatar = '';
-
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-
         Query<Object?> postsQuery =
             _postRef.orderBy('timestamp', descending: true);
 
@@ -78,70 +168,15 @@ class PostServiceImpl extends PostService {
             message: 'No posts exist in Firestore',
           );
         }
-        QuerySnapshot postsSnapshot = await postsQuery.get();
 
-        for (var doc in postsSnapshot.docs) {
-          userRef = doc['userRef'];
-          userData = userRef.get();
+        // Generate a random index
+        Random random = Random();
+        int randomIndex = random.nextInt(count);
 
-          await userData.then((value) {
-            username = value['name'];
-            userAvatar = value['avatar'];
-          });
+        posts = await _fetchPostWithSubCollections(randomIndex);
 
-          List<Map<String, String>> mediaOffline = [];
 
-          if (!kIsWeb){
-          for (var item in doc['media']) {
-            String mediaUrl = item['url'];
 
-            String? cachedFilePath = prefs.getString(mediaUrl);
-
-            if (cachedFilePath == null || !File(cachedFilePath).existsSync()) {
-              // If not cached or file doesn't exist, download and save the image
-              File cachedFile = await _downloadAndSaveImage(mediaUrl);
-
-              // Save the file path in SharedPreferences
-              await prefs.setString(mediaUrl, cachedFile.path);
-
-              cachedFilePath = cachedFile.path;
-            }
-
-            // Add the media data to the list
-            mediaOffline.add({
-              'uri': cachedFilePath,
-              'dominantColor': item['dominantColor'],
-              'type': item['type'],
-            });
-          }}
-
-          PostModel post = PostModel(
-            postId: doc.id,
-            username: username,
-            userAvatarUrl: userAvatar,
-            content: doc['content'],
-            likeAmount: doc['likeAmount'],
-            commentAmount: doc['commentAmount'],
-            viewAmount: doc['viewAmount'],
-            media: (doc['media'] as List<dynamic>).map((item) {
-              final mapItem = item as Map<String, dynamic>;
-              return mapItem.map(
-                (key, value) => MapEntry(key, value.toString()),
-              );
-            }).toList(),
-            mediaOffline: mediaOffline,
-            timestamp: (doc['timestamp'] as Timestamp).toDate(),
-            comments: null,
-            likes: null,
-            views: null,
-            topicRefs: [],
-          );
-
-          posts.add(post);
-        }
-        List<String> postStrings =
-            posts.map((post) => jsonEncode(post.toMap())).toList();
-        await prefs.setStringList('offline_posts', postStrings);
       }
       return posts;
     } catch (e) {
@@ -149,25 +184,19 @@ class PostServiceImpl extends PostService {
     }
   }
 
-  Future<File> _downloadAndSaveImage(String url) async {
-    // Get the temporary directory where files can be stored
-    // Parse the URL to remove the query parameters
+  Future<File> _downloadAndSaveLocalImage(String url) async {
     Uri uri = Uri.parse(url);
     String cleanedUrl = uri.origin + uri.path;
 
-    // Get the temporary directory where files can be stored
     final Directory dir = await getTemporaryDirectory();
-
-    // Extract the file name from the cleaned URL
     final File file = File('${dir.path}/${cleanedUrl.split('/').last}');
 
-    // Download the file
     final downloadFile = await cacheManager.getSingleFile(url);
 
     // Save the downloaded file to a local file
     await downloadFile.copy(file.path);
 
-    return file; // Return the local file
+    return file;
   }
 
   @override
@@ -180,8 +209,6 @@ class PostServiceImpl extends PostService {
     String userAvatar = '';
 
     try {
-      QuerySnapshot aPostsSnapshot = await _postRef.get();
-      String userRefString = "User/$userId";
       DocumentReference tempUserRef = _usersRef.doc(userId);
 
       QuerySnapshot postsSnapshot =
@@ -219,7 +246,6 @@ class PostServiceImpl extends PostService {
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
           comments: null,
           likes: null,
-          views: null,
           topicRefs: (doc['topicRef'] as List<dynamic>)
               .map((item) => item.toString())
               .toList(),

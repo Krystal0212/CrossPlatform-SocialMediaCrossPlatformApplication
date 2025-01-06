@@ -44,7 +44,7 @@ class _HeaderNewPostState extends State<HeaderNewPost> {
         print('content: $content');
       }
 
-      await serviceLocator<PostService>().createPost(content, image);
+      await serviceLocator<PostRepository>().createPost(content, image);
     }
 
     _postCubit.closeNewPost();

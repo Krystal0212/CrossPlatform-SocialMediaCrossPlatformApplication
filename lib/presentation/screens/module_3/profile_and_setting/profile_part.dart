@@ -48,7 +48,9 @@ class _ProfilePartState extends State<ProfilePart>
 
   void getShotsForUser() async {
     User? currentUser = await authRepository.getCurrentUser();
-    urls = await getImageUrlsForUserPosts(currentUser!.uid);
+    if(currentUser != null) {
+      urls = await getImageUrlsForUserPosts(currentUser.uid);
+    }
   }
 
   @override
@@ -65,7 +67,9 @@ class _ProfilePartState extends State<ProfilePart>
     super.didChangeDependencies();
     User? currentUser = await authRepository.getCurrentUser();
 
-    urls = await getImageUrlsForUserPosts(currentUser!.uid);
+    if(currentUser != null) {
+      urls = await getImageUrlsForUserPosts(currentUser.uid);
+    }
   }
 
   void _onTabChanged() {
