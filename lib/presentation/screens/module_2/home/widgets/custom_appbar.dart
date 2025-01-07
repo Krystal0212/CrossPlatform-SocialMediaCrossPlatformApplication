@@ -270,11 +270,7 @@ class HomeAppBarActionButtons extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child:  CreateNewPostDialogContent(currentUser: currentUser!,),
-                      );
+                      return CreateNewPostDialogContent(currentUser: currentUser!,);
                     },
                   );
                 },
@@ -322,6 +318,7 @@ class HomeAppBarActionButtons extends StatelessWidget {
           if (!isCompactView) const SizedBox(width: 10),
           if (isLargeView)
             PopupMenuButton<String>(
+              color: AppTheme.white,
               icon: SvgPicture.asset(AppIcons.threeDots, height: 30),
               offset: const Offset(0, kToolbarHeight),
               shape: RoundedRectangleBorder(

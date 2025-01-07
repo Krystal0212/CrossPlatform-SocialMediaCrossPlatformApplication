@@ -66,6 +66,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: MaterialApp.router(
+        scrollBehavior: const MaterialScrollBehavior().copyWith(
+          dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
+        ),
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         routerConfig: AppRoutes.getRoutes(),

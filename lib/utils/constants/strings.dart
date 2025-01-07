@@ -5,6 +5,7 @@ class AppStrings {
   static const String notDisplayImage = 'Unable to display image';
   static const String pleaseSignIn = 'Please sign in';
   static const String needSignIn = 'You need to sign in to browse this section';
+  static const String alertNSFW = 'This content may not be suitable for all audiences. Proceed with NSFW label.';
 
   // For flash message
   static const String blankSpace = '    ';

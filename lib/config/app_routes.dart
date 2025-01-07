@@ -1,5 +1,6 @@
 import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/preferred_topic_cubit.dart';
 import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/reset_password_cubit.dart';
+import 'package:socialapp/presentation/screens/module_1/reset_password/reset_password_screen.dart';
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/mobile_navigator/navigator_bar.dart';
 import 'package:socialapp/presentation/screens/module_2/new_post/new_post_screen.dart';
@@ -70,7 +71,7 @@ class AppRoutes {
 
             return _buildPageRoute(BlocProvider(
                 create: (context) => ResetPasswordCubit(),
-                child: VerificationScreen(
+                child: ResetPasswordScreen(
                   hashParameters: params,
                 )));
           }),

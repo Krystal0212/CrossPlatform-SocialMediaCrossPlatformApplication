@@ -1,6 +1,7 @@
 // Core Flutter and third-party dependencies
 export 'dart:io';
 export 'dart:math';
+export 'dart:async';
 export 'dart:convert';
 export 'package:flutter/material.dart';
 export 'package:flutter/physics.dart';
@@ -41,6 +42,7 @@ export 'package:cloud_firestore/cloud_firestore.dart'
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 export 'package:like_button/like_button.dart';
 export 'package:pulp_flash/pulp_flash.dart';
+export 'package:video_player/video_player.dart';
 
 // App Configurations
 export 'package:socialapp/config/platforms.dart';

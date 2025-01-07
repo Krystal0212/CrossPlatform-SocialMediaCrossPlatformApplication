@@ -68,6 +68,16 @@ class AppTheme {
           topLeft: Radius.circular(16), topRight: Radius.circular(16)),
       color: Colors.white);
 
+  static BoxDecoration get redDecoration => const BoxDecoration(
+  shape: BoxShape.circle,
+  color: AppColors.bethlehemRed,
+  );
+
+  static BoxDecoration get whiteDialogDecoration => BoxDecoration(
+  color: AppTheme.white,
+  borderRadius: const BorderRadius.all(Radius.circular(10)),
+  );
+
   //ToDo: Border Radius
   static BorderRadius get smallBorderRadius =>
       const BorderRadius.all(Radius.circular(12));
@@ -249,6 +259,10 @@ class AppTheme {
 
   static EdgeInsets get iconHorizontalPaddingEdgeInsets =>
       const EdgeInsets.only(right: 3);
+
+  static EdgeInsets bottomDialogPaddingEdgeInsets(double deviceHeight) {
+    return EdgeInsets.only(bottom: deviceHeight / 2 - 200);
+  }
 
   static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(
       double deviceWidth,
