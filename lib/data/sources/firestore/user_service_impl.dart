@@ -77,7 +77,10 @@ class UserServiceImpl extends UserService{
         );
       }
 
-      return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+      Map<String, dynamic> documentMap = userDoc.data() as Map<String, dynamic>;
+      documentMap['id'] = userDoc.id;
+
+      return UserModel.fromMap(documentMap);
     } catch (e) {
       print(e);
       rethrow;

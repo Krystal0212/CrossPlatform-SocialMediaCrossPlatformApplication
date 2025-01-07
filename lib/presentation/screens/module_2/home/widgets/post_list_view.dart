@@ -1,3 +1,4 @@
+import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 
 import '../cubit/home_state.dart';
@@ -23,17 +24,21 @@ class PostListView extends StatefulWidget {
 class _PostListViewState extends State<PostListView>
     with AutomaticKeepAliveClientMixin {
   late final List<PostModel> postList;
-  late  double postWidth;
+  late double postWidth;
+  late ViewMode viewMode;
+
   final double horizontalPadding = 125;
   final double smallHorizontalPadding = 10;
 
   late double deviceWidth, deviceHeight;
-  late bool isCompactView;
+  late bool isCompactView, isSignedIn;
 
   @override
   void initState() {
     super.initState();
     postList = widget.posts;
+    viewMode = widget.viewMode;
+    isSignedIn = context.read<HomeCubit>().checkCurrentUserSignedIn();
   }
 
   @override
@@ -52,23 +57,21 @@ class _PostListViewState extends State<PostListView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return ScrollConfiguration(
+    if(isSignedIn || (!isSignedIn && viewMode != ViewMode.following)) {
+      return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
       child: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (overscroll) {
           overscroll.disallowIndicator();
           return true;
         },
-        child: ListView.builder(
-          itemCount: postList.length,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            PostModel postDetail = postList[index];
+        child: ListView(
+          children: postList.map((postDetail) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Container(
-                padding:
-                    AppTheme.homeListPostPaddingEdgeInsets( isCompactView ? smallHorizontalPadding :horizontalPadding),
+                padding: AppTheme.homeListPostPaddingEdgeInsets(
+                    isCompactView ? smallHorizontalPadding : horizontalPadding),
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppColors.white,
@@ -88,10 +91,12 @@ class _PostListViewState extends State<PostListView>
                 ),
               ),
             );
-          },
+          }).toList(),
         ),
       ),
     );
+    }
+    return SignInPagePlaceholder(width: widget.listBodyWidth,);
   }
 
   @override

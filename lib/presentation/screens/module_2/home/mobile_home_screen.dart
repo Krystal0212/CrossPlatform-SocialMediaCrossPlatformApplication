@@ -2,7 +2,7 @@ import 'package:socialapp/utils/import.dart';
 
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
-import 'widgets/app_post.dart';
+import 'widgets/post_list_view.dart';
 import 'widgets/search_bar.dart';
 import 'widgets/segmented_tab_controller.dart';
 
@@ -41,9 +41,8 @@ class _HomeScreenState extends State<MobileHomeScreen>
 
   @override
   void dispose() {
-    super.dispose();
     _tabController.dispose();
-    context.read<HomeCubit>().close();
+    super.dispose();
   }
 
   @override
@@ -157,17 +156,17 @@ class _HomeScreenState extends State<MobileHomeScreen>
                     child: TabBarView(
                       children: [
                         PostListView(
-                          posts: state.posts,
+                          posts: state.postLists[0],
                           viewMode: ViewMode.explore,
                           listBodyWidth: listBodyWidth,
                         ),
                         PostListView(
-                          posts: state.posts,
+                          posts: state.postLists[1],
                           viewMode: ViewMode.trending,
                           listBodyWidth: listBodyWidth,
                         ),
                         PostListView(
-                          posts: state.posts,
+                          posts: state.postLists[2],
                           viewMode: ViewMode.following,
                           listBodyWidth: listBodyWidth,
                         ),

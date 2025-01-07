@@ -12,8 +12,8 @@ class PostModel {
   final int commentAmount;
   final int viewAmount;
   final List<String> topicRefs;
-  final List<String>? comments;
-  final List<String>? likes;
+  final Set<String> comments;
+  final Set<String> likes;
 
   PostModel({
     required this.postId,
@@ -57,8 +57,8 @@ class PostModel {
       likeAmount: 0,
       commentAmount: 0,
       viewAmount: 0,
-      comments: [],
-      likes: [],
+      comments: {},
+      likes: {},
       topicRefs: topicRefs,
     );
   }

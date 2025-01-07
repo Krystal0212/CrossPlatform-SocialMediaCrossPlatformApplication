@@ -1,6 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 
 class UserModel {
+  String? id;
   final String name;
   final String email;
   final String lastName;
@@ -13,6 +14,7 @@ class UserModel {
   final Map<String, String> socialAccounts;
 
   UserModel({
+    this.id,
     required this.name,
     required this.lastName,
     required this.location,
@@ -39,6 +41,7 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
+      id: map['id'] ?? '',
       emailChanged: false,
       avatarChanged: false,
       name: map['name'] ?? '',

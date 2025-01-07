@@ -2,8 +2,7 @@
 mixin Methods {
   String calculateTimeFromNow(DateTime time) {
     var now = DateTime.now();
-    var date = time;
-    var diff = now.difference(date);
+    var diff = now.difference(time);
     var timeString = '';
 
     if (diff.inSeconds <= 0) {

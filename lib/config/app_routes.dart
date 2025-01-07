@@ -2,6 +2,7 @@ import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/p
 import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/reset_password_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/mobile_navigator/navigator_bar.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/new_post_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AppRoutes {
@@ -83,6 +84,19 @@ class AppRoutes {
                 create: (context) => HomeCubit(), child: const HomeScreen()));
             }else{
               return _buildPageRoute(const CustomNavigatorBar());
+            }
+          }),
+      GoRoute(
+          path: '/new-post',
+          pageBuilder: (context, state) {
+            final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
+
+            if(isWeb) {
+              return _buildPageRoute(BlocProvider(
+                  create: (context) => HomeCubit(), child: const HomeScreen()));
+            }
+            else {
+              return _buildPageRoute(const NewPostScreen());
             }
           })
     ],

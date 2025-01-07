@@ -33,11 +33,14 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         DocumentReference,
         Timestamp,
         Query,
+        WriteBatch,
         AggregateQuerySnapshot,
         FieldValue,
         QueryDocumentSnapshot
 ;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
+export 'package:like_button/like_button.dart';
+export 'package:pulp_flash/pulp_flash.dart';
 
 // App Configurations
 export 'package:socialapp/config/platforms.dart';

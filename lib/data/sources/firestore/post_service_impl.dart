@@ -8,9 +8,12 @@ abstract class PostService {
 
   Future<String?> getPostImageById(String postId);
 
-  Future<List<PostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false});
+  Future<List<PostModel>> getPostsData(
+      {required bool isOffline, bool skipLocalFetch = false});
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
+
+  Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache);
 }
 
 class PostServiceImpl extends PostService {
@@ -52,10 +55,11 @@ class PostServiceImpl extends PostService {
     return snapshot.docs[index];
   }
 
-
-  Future<List<String>> _fetchSubCollection(DocumentSnapshot postDoc, String subCollectionName) async {
+  Future<List<String>> _fetchSubCollection(
+      DocumentSnapshot postDoc, String subCollectionName) async {
     try {
-      QuerySnapshot subCollectionSnapshot = await postDoc.reference.collection(subCollectionName).get();
+      QuerySnapshot subCollectionSnapshot =
+          await postDoc.reference.collection(subCollectionName).get();
       return subCollectionSnapshot.docs.map((doc) => doc.id).toList();
     } catch (e) {
       if (kDebugMode) {
@@ -65,7 +69,7 @@ class PostServiceImpl extends PostService {
     }
   }
 
-  Future<List<PostModel>> _fetchPostWithSubCollections(int randomIndex) async {
+  Future<List<PostModel>> _fetchPostWithSubCollections(Set<int> randomIndexes) async {
     List<PostModel> posts = [];
 
     try {
@@ -75,14 +79,16 @@ class PostServiceImpl extends PostService {
       String userAvatar = '';
       List<String> comments, likes;
 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      for(int randomIndex in randomIndexes){
       QuerySnapshot postsSnapshot = await _postRef
           .startAtDocument(await _getDocumentAtIndex(randomIndex))
           .limit(1)
           .get();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-
       if (postsSnapshot.docs.isEmpty) {
-        throw CustomFirestoreException(code: 'no-post-found', message: 'No post found');
+        throw CustomFirestoreException(
+            code: 'no-post-found', message: 'No post found');
       }
 
       for (QueryDocumentSnapshot document in postsSnapshot.docs) {
@@ -99,7 +105,7 @@ class PostServiceImpl extends PostService {
 
         List<Map<String, String>> mediaOffline = [];
 
-        if (!kIsWeb){
+        if (!kIsWeb) {
           for (var item in document['media']) {
             String mediaUrl = item['url'];
 
@@ -124,16 +130,18 @@ class PostServiceImpl extends PostService {
         documentMap['postId'] = document.id;
         documentMap['username'] = username;
         documentMap['userAvatar'] = userAvatar;
-        documentMap['mediaOffline']= mediaOffline;
-        documentMap['comments'] = comments;
-        documentMap['likes'] = likes;
+        documentMap['mediaOffline'] = mediaOffline;
+        documentMap['comments'] = comments.toSet();
+        documentMap['likes'] = likes.toSet();
 
         PostModel post = PostModel.fromMap(documentMap);
 
         posts.add(post);
       }
+      }
 
-      List<String> postStrings = posts.map((post) => jsonEncode(post.toMap())).toList();
+      List<String> postStrings =
+          posts.map((post) => jsonEncode(post.toMap())).toList();
       await prefs.setStringList('offline_posts', postStrings);
 
       return posts;
@@ -146,7 +154,8 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<List<PostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false}) async {
+  Future<List<PostModel>> getPostsData(
+      {required bool isOffline, bool skipLocalFetch = false}) async {
     List<PostModel> posts = [];
 
     try {
@@ -169,13 +178,14 @@ class PostServiceImpl extends PostService {
           );
         }
 
-        // Generate a random index
         Random random = Random();
-        int randomIndex = random.nextInt(count);
+        Set<int> randomIndexes = {};
 
-        posts = await _fetchPostWithSubCollections(randomIndex);
+        while (randomIndexes.length < 3) {
+          randomIndexes.add(random.nextInt(count));
+        }
 
-
+          posts = await _fetchPostWithSubCollections(randomIndexes);
 
       }
       return posts;
@@ -197,6 +207,58 @@ class PostServiceImpl extends PostService {
     await downloadFile.copy(file.path);
 
     return file;
+  }
+
+  @override
+  Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache) async {
+    if (likedPostsCache.isEmpty) {
+      if (kDebugMode) {
+        print('No likes to sync.');
+      }
+      return;
+    }
+
+    WriteBatch batch = _firestoreDB.batch();
+
+    try {
+      likedPostsCache.forEach((postId, userIdsMap) {
+        DocumentReference postRef = _postRef.doc(postId);
+
+        userIdsMap.forEach((userId, isAdded) async {
+          DocumentReference likeRef = postRef.collection('likes').doc(userId);
+
+          DocumentSnapshot likeSnapshot = await likeRef.get();
+
+          if (isAdded) {
+            if (!likeSnapshot.exists) {
+              batch.set(likeRef, {'userId': userId});
+              batch.update(postRef, {
+                'likeAmount': FieldValue.increment(1),
+              });
+            }
+          } else {
+            if (likeSnapshot.exists) {
+              batch.delete(likeRef);
+              batch.update(postRef, {
+                'likeAmount': FieldValue.increment(-1),
+              });
+            }
+          }
+        }
+
+        );
+      });
+
+      await batch.commit();
+      if (kDebugMode) {
+        print('Likes synced to Firestore successfully.');
+      }
+      likedPostsCache.clear(); // Clear the cache after successful sync
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error syncing likes: $e');
+      }
+    }
   }
 
   @override
@@ -244,8 +306,8 @@ class PostServiceImpl extends PostService {
             );
           }).toList(),
           timestamp: (doc['timestamp'] as Timestamp).toDate(),
-          comments: null,
-          likes: null,
+          comments: {},
+          likes: {},
           topicRefs: (doc['topicRef'] as List<dynamic>)
               .map((item) => item.toString())
               .toList(),

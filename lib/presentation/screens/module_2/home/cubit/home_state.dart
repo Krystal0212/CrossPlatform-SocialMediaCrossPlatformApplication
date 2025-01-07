@@ -1,6 +1,5 @@
 
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:socialapp/utils/import.dart';
 
 enum ViewMode { explore, trending, following }
@@ -9,24 +8,15 @@ enum ViewMode { explore, trending, following }
 class HomeLoading extends HomeState{}
 
 class HomeLoadedPostsSuccess extends HomeState {
-  final List<PostModel> posts; // Example data, replace with your actual model
+  final List<List<PostModel>> postLists; // Example data, replace with your actual model
 
-  HomeLoadedPostsSuccess(this.posts);
+  HomeLoadedPostsSuccess(this.postLists);
 }
 
 
 abstract class HomeState {}
 
 class HomeViewModeInitial extends HomeState {
-  final ViewMode viewMode;
-
-  HomeViewModeInitial(this.viewMode);
-}
-
-class HomeViewModeChanged extends HomeState {
-  final ViewMode viewMode;
-
-  HomeViewModeChanged(this.viewMode);
 }
 
 class HomeFailure extends HomeState{

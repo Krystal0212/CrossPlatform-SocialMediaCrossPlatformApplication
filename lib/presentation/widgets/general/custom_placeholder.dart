@@ -24,43 +24,82 @@ class ErrorPagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double deviceWidth = MediaQuery.of(context).size.width;
+    double deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Error'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 100,
-              color: AppColors.sangoRed,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Page Not Found',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'The page you are looking for does not exist.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Go Back'),
-            ),
-          ],
+      body: SizedBox(
+        width: deviceWidth,
+        height: deviceHeight,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 100,
+                color: AppColors.sangoRed,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                AppStrings.pageNotFound,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                AppStrings.noPageExist,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(AppStrings.goBack),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
+class SignInPagePlaceholder extends StatelessWidget {
+  final double width;
+
+  const SignInPagePlaceholder({super.key, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SizedBox(
+        width: width,
+        height: 700,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(AppImages.pleaseSignIn, width: 280,),
+              const SizedBox(height: 20),
+              const Text(
+                AppStrings.pleaseSignIn,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                AppStrings.needSignIn,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class ImageErrorPlaceholder extends StatelessWidget {
   const ImageErrorPlaceholder({super.key});
@@ -78,7 +117,7 @@ class ImageErrorPlaceholder extends StatelessWidget {
           ),
           SizedBox(height: 10),
           Text(
-            'Unable to Display Image',
+            AppStrings.notDisplayImage,
             style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
         ],

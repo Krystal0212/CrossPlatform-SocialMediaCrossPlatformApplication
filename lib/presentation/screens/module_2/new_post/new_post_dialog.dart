@@ -1,6 +1,5 @@
-import 'package:rich_field_controller/rich_field_controller.dart';
-import 'package:image_picker_web/image_picker_web.dart';
-
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:universal_html/html.dart' as html;
 import 'package:socialapp/utils/import.dart';
 
 import 'widgets/styleable_text_field_controller.dart';
@@ -21,6 +20,9 @@ class _CreateNewPostDialogContentState
   final ValueNotifier<int> maxLinesNotifier = ValueNotifier<int>(2);
   final ValueNotifier<List<Uint8List>> imagePathNotifier =
       ValueNotifier<List<Uint8List>>([]);
+
+  late FlutterSoundRecorder _recorder;
+  bool _isRecording = false;
 
   late double deviceWidth, deviceHeight;
   late bool isCompactView, isMediumView, isLargeView;
@@ -44,6 +46,8 @@ class _CreateNewPostDialogContentState
     textEditingController.addListener(() {
       updateMaxLines(deviceWidth * 0.23, textEditingController.text);
     });
+
+    _recorder = FlutterSoundRecorder();
   }
 
   @override
@@ -90,17 +94,81 @@ class _CreateNewPostDialogContentState
     }
   }
 
-  Future pickImageFromGallery() async {
-    List<Uint8List>? bytesFromPicker = await ImagePickerWeb.getMultiImagesAsBytes();
+  void uploadImages() async {
+    // Create a file input element
+    final html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+    uploadInput.accept = 'image/*,video/*'; // Accept images and videos
+    uploadInput.multiple = true; // Allow multiple file selection
 
-    if (bytesFromPicker != null) {
+    // Trigger file selection dialog
+    uploadInput.click();
 
-      List<Uint8List> tempList = List.from(imagePathNotifier.value);
-      tempList.add(bytesFromPicker[0]);
-
-      imagePathNotifier.value = tempList;
-    }
+    // Wait for the user to select files
+    uploadInput.onChange.listen((event) async {
+      final files = uploadInput.files;
+      if (files != null && files.isNotEmpty) {
+        final List<Uint8List> uploadedFiles = [];
+        for (var file in files) {
+          final reader = html.FileReader();
+          reader.readAsArrayBuffer(file);
+          await reader.onLoad.first;
+          uploadedFiles.add(reader.result as Uint8List);
+        }
+        // Update the ValueNotifier with the selected files
+        imagePathNotifier.value = uploadedFiles;
+      }
+    });
   }
+
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      await _recorder.stopRecorder();
+    } else {
+      await _recorder.startRecorder(toFile: 'audio.aac');
+    }
+    setState(() {
+      _isRecording = !_isRecording;
+    });
+  }
+  void _showRecordingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Scaffold(
+          appBar: AppBar(title: const Text("Voice Recording")),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Center(
+                child: _isRecording
+                    ? IconButton(
+                  icon: Icon(Icons.stop),
+                  onPressed: _toggleRecording,
+                  iconSize: 60,
+                  color: Colors.red,
+                )
+                    : IconButton(
+                  icon: Icon(Icons.mic),
+                  onPressed: _toggleRecording,
+                  iconSize: 60,
+                  color: Colors.blue,
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                _isRecording ? "Recording..." : "Tap to Record",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              if (_isRecording) SizedBox(height: 20),
+              if (_isRecording)
+                CircularProgressIndicator(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -204,21 +272,45 @@ class _CreateNewPostDialogContentState
                                   );
                                 }),
                           ),
+                          ValueListenableBuilder<List<Uint8List>>(
+                            valueListenable: imagePathNotifier,
+                            builder: (context, imagePathList, child) {
+                              if (imagePathList.isNotEmpty) {
+                                if (kDebugMode) {
+                                  print('Images/Videos picked');
+                                }
+                                return GridView.builder(
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3, // Number of columns
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                  ),
+                                  itemCount: imagePathList.length,
+                                  itemBuilder: (context, index) {
+                                    return Image.memory(
+                                      imagePathList[index],
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                );
+                              }
+                              return const Center(child: Text('No images/videos selected.'));
+                            },
+                          )
                         ],
                       ),
                     ),
                     ValueListenableBuilder<List<Uint8List>>(
                       valueListenable: imagePathNotifier,
                       builder: (context, imagePathList, child) {
-                        print('check 1 ${imagePathNotifier.value.toString()}');
-                        print('check ${imagePathList.toString()}');
-                        if(imagePathList.isNotEmpty){
+                        if (imagePathList.isNotEmpty) {
                           print('images picked');
                           return Column(
                             children: [
                               const SizedBox(height: 20),
-                               Image.memory(
-                                 imagePathList[0], // Display image from byte data
+                              Image.memory(
+                                imagePathList[0],
+                                // Display image from byte data
                                 fit: BoxFit.cover,
                                 height: 150, // Adjust height as needed
                                 width: 150, // Adjust width as needed
@@ -234,7 +326,7 @@ class _CreateNewPostDialogContentState
                 Column(
                   children: [
                     IconButton(
-                      onPressed: () => pickImageFromGallery(),
+                      onPressed: () => uploadImages(),
                       icon: ShaderMask(
                         shaderCallback: (Rect bounds) {
                           return AppTheme.mainGradient.createShader(bounds);
@@ -244,7 +336,7 @@ class _CreateNewPostDialogContentState
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () => _showRecordingDialog(context),
                       icon: ShaderMask(
                         shaderCallback: (Rect bounds) {
                           return AppTheme.mainGradient.createShader(bounds);

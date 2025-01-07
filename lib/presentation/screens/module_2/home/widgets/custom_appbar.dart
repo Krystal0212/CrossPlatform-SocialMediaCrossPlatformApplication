@@ -10,11 +10,12 @@ import 'icon_elevated_button.dart';
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double deviceWidth;
   final ValueNotifier<UserModel?> currentUserNotifier;
+  final TabController tabController;
 
   const HomeScreenAppBar({
     required this.deviceWidth,
     super.key,
-    required this.currentUserNotifier,
+    required this.currentUserNotifier, required this.tabController,
   });
 
   bool get isCompactView => deviceWidth < 680;
@@ -73,7 +74,7 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                           deviceWidth: deviceWidth,
                           controlWidth: controlWidth,
                           controlHeight: controlHeight,
-                          isCompactView: isCompactView,
+                          isCompactView: isCompactView, tabController: tabController,
                         ),
                       HomeAppBarActionButtons(
                         rightWidth: isCompactView
@@ -96,7 +97,7 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                       deviceWidth: deviceWidth,
                       controlWidth: controlWidth,
                       controlHeight: controlHeight,
-                      isCompactView: isCompactView,
+                      isCompactView: isCompactView, tabController: tabController,
                     ),
                   )
                 : null,
@@ -160,13 +161,14 @@ class LeftSection extends StatelessWidget {
 class HomeAppBarSegmentedTabControl extends StatelessWidget {
   final double deviceWidth, controlWidth, controlHeight;
   final bool isCompactView;
+  final TabController tabController;
 
   const HomeAppBarSegmentedTabControl({
     super.key,
     required this.deviceWidth,
     required this.controlWidth,
     required this.controlHeight,
-    required this.isCompactView,
+    required this.isCompactView, required this.tabController,
   });
 
   @override
@@ -181,6 +183,7 @@ class HomeAppBarSegmentedTabControl extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
         ),
         child: SegmentedTabControl(
+          controller: tabController,
           splashColor: Colors.transparent,
           tabTextColor: AppColors.iris,
           selectedTabTextColor: AppColors.white,

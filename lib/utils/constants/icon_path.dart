@@ -53,4 +53,5 @@ class AppIcons {
   static const String userSignIn = '${iconPath}user-sign-in$pngFormat';
   static const String createNewPost = '${iconPath}plus$svgFormat';
   static const String cross = '${iconPath}cross$svgFormat';
+  static const String heartFilled = '${iconPath}heart-filled$svgFormat';
 }

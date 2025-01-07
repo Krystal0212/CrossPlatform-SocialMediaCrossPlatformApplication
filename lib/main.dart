@@ -1,3 +1,4 @@
+import 'package:pulp_flash/pulp_flash.dart';
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 import 'background_tasks.dart';
@@ -17,16 +18,14 @@ void main() async {
         : await getApplicationDocumentsDirectory(),
   );
 
-
-
   await initializeDependencies();
 
-  if (!kIsWeb) {
-    Workmanager().initialize(
-      callbackDispatcher, // The top level function
-      isInDebugMode: kDebugMode,
-    );
-  }
+  // if (!kIsWeb) {
+  //   Workmanager().initialize(
+  //     callbackDispatcher, // The top level function
+  //     isInDebugMode: kDebugMode,
+  //   );
+  // }
 
   final dynamicLinkService = DeepLinkServiceImpl();
   dynamicLinkService.handleIncomingLinks(AppRoutes.router);
@@ -34,7 +33,7 @@ void main() async {
   runApp(
     const PlatformConfig(
       isWeb: kIsWeb,
-      child: MyApp(),
+      child: PulpFlashProvider(child: MyApp()),
     ),
   );
 }

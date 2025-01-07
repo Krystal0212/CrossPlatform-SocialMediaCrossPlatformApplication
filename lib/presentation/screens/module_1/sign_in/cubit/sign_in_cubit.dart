@@ -35,7 +35,7 @@ class SignInCubit extends Cubit<SignInState> {
   }
 
   void reset() {
-    emit(SignInInitial()); // Reset to initial state
+    emit(SignInInitial());
   }
 
   void loginWithEmailAndPassword(BuildContext context,

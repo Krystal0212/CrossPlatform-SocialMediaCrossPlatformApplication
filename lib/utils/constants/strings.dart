@@ -1,4 +1,20 @@
 class AppStrings {
+  static const String pageNotFound = 'Page Not Found';
+  static const String noPageExist = 'The page you are looking for does not exist.';
+  static const String goBack = 'Go Back';
+  static const String notDisplayImage = 'Unable to display image';
+  static const String pleaseSignIn = 'Please sign in';
+  static const String needSignIn = 'You need to sign in to browse this section';
+
+  // For flash message
+  static const String blankSpace = '    ';
+  static const String successTitle = '${blankSpace}Hurayyyy!';
+  static const String successPushDescription = 'Your file successfully uploaded. You can change whenever you want in the profile section.';
+  static const String notSignedInTitle = '${blankSpace}You\'re not sign in';
+  static const String notSignedInLikedDescription = '${blankSpace}Sign in to do this action';
+  static const String notSignedInMessageDescription = '${blankSpace}Sign in to join the discussion';
+  static const String notSignedInCollectionDescription = '${blankSpace}Can not add to your collection';
+
   // For sign in section
   static const String welcome = "WELCOME";
   static const String emailHint = "Email";
