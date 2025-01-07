@@ -20,6 +20,8 @@ abstract class AuthFirebaseService {
 
   Future<void> sendPasswordResetEmail(String recipientEmail);
 
+  Future<void> resetPassword(String recipientEmail);
+
   User? getCurrentUser();
 
   Future<void> signOut();
@@ -308,7 +310,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> sendPasswordResetEmail(String recipientEmail) async {
     final Uri url =
-        Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailWithOTP');
+        Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailResetPassword');
     final String otpCode = generateOtp();
     try {
       // use a post function from url of send reset email deployed on cloud functions
@@ -322,7 +324,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         body: jsonEncode({
           'recipientEmail': recipientEmail,
           'otpCode': otpCode,
-          'verificationLink': 'zineround.site/#/verify?code='
+          'verificationLink': 'zineround.site/#/reset-password?code='
         }),
       );
 
@@ -348,25 +350,25 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
     // Create Cloud functions first before parsing URLs
-    // final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyResetPasswordLink');
-
+    final url = Uri.parse(
+        'https://api-m2ogw2ba2a-uc.a.run.app//verifyResetPasswordLink');
     try {
-      // final response = await get(url.replace(queryParameters: {
-      //   'encryptedLink': encryptedLink.trim(),
-      // }));
+      final response = await get(url.replace(queryParameters: {
+        'encryptedLink': encryptedLink.trim(),
+      }));
 
-      // if (response.statusCode == 200) {
-      //   if (kDebugMode) {
-      //     print(response.body);
-      //   }
-      // } else {
-      //   throw response.body;
-      // }
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print(response.body);
+        }
+      } else {
+        throw response.body;
+      }
     } catch (error) {
-      // if (kDebugMode) {
-      //   print('Verification failed: $error');
-      // }
-      // rethrow;
+      if (kDebugMode) {
+        print('Verification failed: $error');
+      }
+      rethrow;
     }
   }
 
@@ -436,6 +438,12 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl) {
     // TODO: implement updateCurrentUserAvatarUrl
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> resetPassword(String recipientEmail) {
+    // TODO: implement resetPassword
     throw UnimplementedError();
   }
 }
