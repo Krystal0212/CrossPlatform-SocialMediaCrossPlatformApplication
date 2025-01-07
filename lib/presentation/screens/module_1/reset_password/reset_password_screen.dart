@@ -19,19 +19,20 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   late double deviceWidth, deviceHeight;
   late bool _isWeb;
 
-
   @override
   void initState() {
     FlutterNativeSplash.remove();
     _formKey = GlobalKey<FormState>();
     _passwordController = TextEditingController();
-    _confirmPasswordController =  TextEditingController();
+    _confirmPasswordController = TextEditingController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       String hash = widget.hashParameters ?? "";
 
       if (hash.isNotEmpty) {
-        context.read<ResetPasswordCubit>().verifyPasswordRequestByLink(context, hash);
+        context
+            .read<ResetPasswordCubit>()
+            .verifyPasswordRequestByLink(context, hash);
       } else {
         context.go('/home');
       }
@@ -87,8 +88,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           height: 15,
                         ),
                         const MessageContent(
-                                text: AppStrings.typeNewPassword,
-                              ),
+                          text: AppStrings.typeNewPassword,
+                        ),
                         const SizedBox(
                           height: 30,
                         ),
@@ -106,22 +107,25 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         ),
                         BlocBuilder<ResetPasswordCubit, ResetPasswordState>(
                             builder: (context, state) {
-                              return Column(
-                                children: [
-                                  AuthElevatedButton(
-                                    width: deviceWidth,
-                                    height: 52,
-                                    inputText: AppStrings.send,
-                                    onPressed: () async {
-                                        // context
-                                        //     .read<ResetPasswordCubit>()
-                                        //     .setNewPassword();
-                                    },
-                                    isLoading: (state is VerifyRequestLoading || state is ResetPasswordLoading),
-                                  ),
-                                ],
-                              );
-                            }),
+                          return Column(
+                            children: [
+                              AuthElevatedButton(
+                                width: deviceWidth,
+                                height: 52,
+                                inputText: AppStrings.send,
+                                onPressed: () async {
+                                  context
+                                      .read<ResetPasswordCubit>()
+                                      .setNewPassword(_confirmPasswordController
+                                          .text
+                                          .trim());
+                                },
+                                isLoading: (state is VerifyRequestLoading ||
+                                    state is ResetPasswordLoading),
+                              ),
+                            ],
+                          );
+                        }),
                         const SizedBox(
                           height: 20,
                         ),
@@ -138,4 +142,3 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 }
-

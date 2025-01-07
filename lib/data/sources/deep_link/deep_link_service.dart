@@ -1,8 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 
-abstract class DeepLinkService {
-
-}
+abstract class DeepLinkService {}
 
 class DeepLinkServiceImpl extends DeepLinkService {
   final AppLinks _appLinks = AppLinks();
@@ -13,26 +11,26 @@ class DeepLinkServiceImpl extends DeepLinkService {
       (deepLink) {
         if (deepLink.hasEmptyPath) return;
         if (deepLink.hasFragment) {
-          final String fragment = deepLink.fragment; // Get everything after `#`
+          final String fragment = deepLink.fragment; // Get everything after #
 
           if (fragment.isNotEmpty && fragment.contains('?')) {
-            final Map<String, String> hashParameters = Uri.splitQueryString(fragment.split('?').last);
+            final Map<String, String> hashParameters =
+                Uri.splitQueryString(fragment.split('?').last);
 
-            // if (kDebugMode) {
-            //   print("Navigating to verification page with link: ${hashParameters.toString()}");
-            // }
-
-            if (hashParameters.isNotEmpty) {
+            if (hashParameters.isNotEmpty && deepLink.path == '/verify') {
               router.go('/verify', extra: hashParameters);
+            } else if (hashParameters.isNotEmpty &&
+                deepLink.path == '/reset-password') {
+              router.go('/reset-password ', extra: hashParameters);
             }
           }
         } else {
           final Map<String, String> hashParameters = deepLink.queryParameters;
-          if (deepLink.path == '/verify' && hashParameters.isNotEmpty ) {
-            if (kDebugMode) {
-              print("Navigating to verification page with OTP: ${hashParameters.toString()}");
-            }
+          if (hashParameters.isNotEmpty && deepLink.path == '/verify') {
             router.go('/verify', extra: hashParameters);
+          } else if (hashParameters.isNotEmpty &&
+              deepLink.path == '/reset-password') {
+            router.go('/reset-password ', extra: hashParameters);
           }
         }
       },

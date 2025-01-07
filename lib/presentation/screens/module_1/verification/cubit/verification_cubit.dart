@@ -45,7 +45,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
         emit(VerificationLoading());
         await serviceLocator<AuthRepository>().verifyAccountByOTPCode(otpCode);
 
-        if(!context.mounted) return;
+        if (!context.mounted) return;
         context.go('/home');
         emit(VerificationSuccess());
       }
@@ -111,30 +111,6 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
       }
 
       VerificationFailure(errorMessage: 'An error occurred: $e');
-    }
-  }
-
-  void verifyResetPasswordRequestByLink(
-      BuildContext context, String encryptedLink) async {
-    try {
-      if (encryptedLink.isNotEmpty) {
-        emit(VerificationLoading());
-        await serviceLocator<AuthRepository>()
-            .verifyAccountByOTPLink(encryptedLink);
-        emit(VerificationSuccess());
-
-        if (context.mounted) {
-          context.go('/home');
-        }
-      }
-    } catch (error) {
-      emit(VerificationFailure(errorMessage: error.toString()));
-
-      if (!context.mounted) return;
-      showSimpleAlertDialog(
-          context: context,
-          title: AppStrings.error,
-          message: 'The link is invalid or expired');
     }
   }
 }

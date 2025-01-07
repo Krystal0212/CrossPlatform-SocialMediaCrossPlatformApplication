@@ -1,6 +1,7 @@
 import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/preferred_topic_cubit.dart';
 import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/reset_password_cubit.dart';
 import 'package:socialapp/utils/import.dart';
+import '../presentation/screens/module_1/reset_password/reset_password_screen.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -68,7 +69,7 @@ class AppRoutes {
 
             return _buildPageRoute(BlocProvider(
                 create: (context) => ResetPasswordCubit(),
-                child: VerificationScreen(
+                child: ResetPasswordScreen(
                   hashParameters: params,
                 )));
           }),

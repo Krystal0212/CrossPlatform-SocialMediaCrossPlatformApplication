@@ -5,11 +5,12 @@ import 'reset_password_state.dart';
 class ResetPasswordCubit extends Cubit<ResetPasswordState> with AppDialogs {
   ResetPasswordCubit() : super(ResetPasswordInitial());
 
-  void verifyPasswordRequestByLink(BuildContext context, String encryptedLink) async {
+  void verifyPasswordRequestByLink(
+      BuildContext context, String encryptedLink) async {
     try {
       if (encryptedLink.isNotEmpty) {
         emit(VerifyRequestLoading());
-        await serviceLocator<AuthRepository>()
+        await serviceLocator<AuthFirebaseService>()
             .verifyResetPasswordRequestByOTPLink(encryptedLink);
         emit(VerifyRequestSuccess());
       }
@@ -27,7 +28,11 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> with AppDialogs {
     }
   }
 
-  void setNewPassword(String email, String password) {
-    try{}catch (error){}
+  void setNewPassword(String password) async {
+    try {
+      emit(ResetPasswordLoading());
+      await serviceLocator<AuthFirebaseService>().resetPassword(password);
+      emit(ResetPasswordSuccess());
+    } catch (error) {}
   }
 }

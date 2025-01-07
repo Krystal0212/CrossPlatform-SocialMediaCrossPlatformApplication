@@ -76,7 +76,6 @@ export 'package:socialapp/domain/entities/topic.dart';
 export 'package:socialapp/domain/entities/post.dart';
 export 'package:socialapp/domain/entities/comment.dart';
 
-
 // Presentation Screens and Self Widgets
 export 'package:socialapp/presentation/screens/module_1/module_1_exports.dart';
 export 'package:socialapp/presentation/screens/module_2/module_2_exports.dart';
