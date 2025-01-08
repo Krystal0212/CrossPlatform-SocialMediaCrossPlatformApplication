@@ -1,5 +1,4 @@
 import 'package:socialapp/utils/import.dart';
-import 'cubit/verification_cubit.dart';
 import 'cubit/verification_state.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -25,7 +24,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   void initState() {
-    FlutterNativeSplash.remove();
+
+    final dynamicLinkService = DeepLinkServiceImpl();
+    dynamicLinkService.handleIncomingLinks(AppRoutes.router);
 
     _formKey = GlobalKey<FormState>();
     _codeController = TextEditingController();
@@ -39,10 +40,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
       } else if (!context
           .read<VerificationCubit>()
           .checkNecessaryConditionToUseScreen(
-              context, widget.isFromSignIn ?? false)) {
+          context, widget.isFromSignIn ?? false)) {
         context.go('/home');
       }
     });
+
+    FlutterNativeSplash.remove();
+
 
     super.initState();
   }

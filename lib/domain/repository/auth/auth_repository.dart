@@ -28,4 +28,6 @@ abstract class AuthRepository {
   Future<void> verifyAccountByOTPCode(String otpCode);
 
   Future<void> sendForCurrentUserVerificationEmail();
+
+  Future<void> sendPasswordResetEmail(String email);
 }

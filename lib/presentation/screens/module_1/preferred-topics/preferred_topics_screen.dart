@@ -7,13 +7,17 @@ import 'cubit/preferred_topic_cubit.dart';
 import 'cubit/preferred_topic_state.dart';
 
 class PreferredTopicsScreen extends StatefulWidget {
+
   const PreferredTopicsScreen({super.key});
 
   @override
   State<PreferredTopicsScreen> createState() => _PreferredTopicsScreenState();
 }
 
-class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> {
+class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> with AutomaticKeepAliveClientMixin{
+  @override
+  bool get wantKeepAlive => true;
+
   late double deviceWidth, deviceHeight;
   late ValueNotifier<List<Map<TopicModel, bool>>> chosenTopics;
   late bool _isWeb, isSmallScreen;
@@ -26,6 +30,7 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> {
   final double outerPaddingVerticalRatio = 0.05;
   final double innerPaddingHorizontalRatio = 0.075;
   final double innerPaddingVerticalRatio = 0.025;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -68,6 +73,7 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> {
   @override
   void dispose() {
     chosenTopics.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -164,7 +170,7 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> {
                               valueListenable: chosenTopics,
                               builder: (context, value, child) {
                                 return GridView.builder(
-                                  key: ValueKey(chosenTopics.value),
+                                  // key: ValueKey(chosenTopics.value),
                                   shrinkWrap: true,
                                   itemCount: value.length,
                                   gridDelegate:

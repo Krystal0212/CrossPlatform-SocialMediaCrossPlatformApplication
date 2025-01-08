@@ -30,6 +30,7 @@ class _DialogBodyState extends State<DialogBody> {
 
   bool _isRecording = false;
   bool _isModelReady = false;
+  late bool isWeb;
 
   final ValueNotifier<int> maxLinesNotifier = ValueNotifier<int>(2);
   final ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier =
@@ -40,6 +41,7 @@ class _DialogBodyState extends State<DialogBody> {
   @override
   void initState() {
     super.initState();
+
 
     textEditingController = StyleableTextFieldController(
       styles: TextPartStyleDefinitions(
@@ -58,7 +60,9 @@ class _DialogBodyState extends State<DialogBody> {
 
     _recorder = FlutterSoundRecorder();
 
-    initNSFWModel();
+    if(kIsWeb) {
+      initNSFWModel();
+    }
   }
 
   Future<void> initNSFWModel() async {
@@ -70,6 +74,9 @@ class _DialogBodyState extends State<DialogBody> {
       print("Model finished");
         _isModelReady = true;
     } catch (e) {
+      if (kDebugMode) {
+        print('Model initialization error $e');
+      }
         _isModelReady = false;
     }
   }
@@ -231,8 +238,7 @@ class _DialogBodyState extends State<DialogBody> {
   }
 
   Future<bool> _isNSFWAsset(Uint8List image) async {
-    if (image.isEmpty ) return false;
-    double errorCount = 0;
+    if (image.isEmpty || kIsWeb) return false;
 
     try {
       print('checking');
