@@ -1,3 +1,4 @@
+
 import 'package:socialapp/utils/import.dart';
 import "package:http/http.dart";
 
@@ -20,7 +21,9 @@ abstract class AuthFirebaseService {
 
   Future<void> sendForCurrentUserVerificationEmail();
 
-  Future<void> sendPasswordResetEmail(String email);
+  Future<void> sendPasswordResetEmail(String recipientEmail);
+
+  Future<void> resetPassword(String recipientEmail);
 
   User? getCurrentUser();
 
@@ -58,8 +61,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       if (!user.emailVerified) {
         throw FirebaseAuthException(
           code: 'email-not-verified',
-          message:
-              'Your email address has not been verified. Please verify your email before proceeding.',
+          message: 'Your email address has not been verified. Please verify your email before proceeding.',
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -206,7 +208,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         body: jsonEncode({
           'recipientEmail': recipientEmail,
           'otpCode': otpCode,
-          'verificationLink': 'zineround.site/#/verify?code='
+          'verificationLink': 'zineround.site/verify?code='
         }),
       );
 
@@ -326,10 +328,36 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> sendPasswordResetEmail(String email) async {
+  Future<void> sendPasswordResetEmail(String recipientEmail) async {
+    final Uri url =
+        Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailResetPassword');
+    final String otpCode = generateOtp();
     try {
       // use a post function from url of send reset email deployed on cloud functions
       // final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//sendEmailResetPassword');
+      final response = await post(
+        url,
+        headers: {
+          // "auth-token": accessToken,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'recipientEmail': recipientEmail,
+          'otpCode': otpCode,
+          'verificationLink': 'zineround.site/#/reset-password?code='
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('Email sent successfully: ${response.body}');
+        }
+      } else {
+        if (kDebugMode) {
+          print(
+              'Failed to send email: ${response.statusCode} - ${response.body}');
+        }
+      }
     } catch (error) {
       if (kDebugMode) {
         print("${AppStrings.authenticationError} : ${error.toString()}");
@@ -342,25 +370,25 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
     // Create Cloud functions first before parsing URLs
-    // final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app//verifyResetPasswordLink');
-
+    final url = Uri.parse(
+        'https://api-m2ogw2ba2a-uc.a.run.app//verifyResetPasswordLink');
     try {
-      // final response = await get(url.replace(queryParameters: {
-      //   'encryptedLink': encryptedLink.trim(),
-      // }));
+      final response = await get(url.replace(queryParameters: {
+        'encryptedLink': encryptedLink.trim(),
+      }));
 
-      // if (response.statusCode == 200) {
-      //   if (kDebugMode) {
-      //     print(response.body);
-      //   }
-      // } else {
-      //   throw response.body;
-      // }
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print(response.body);
+        }
+      } else {
+        throw response.body;
+      }
     } catch (error) {
-      // if (kDebugMode) {
-      //   print('Verification failed: $error');
-      // }
-      // rethrow;
+      if (kDebugMode) {
+        print('Verification failed: $error');
+      }
+      rethrow;
     }
   }
 
@@ -430,6 +458,12 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl) {
     // TODO: implement updateCurrentUserAvatarUrl
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> resetPassword(String recipientEmail) {
+    // TODO: implement resetPassword
     throw UnimplementedError();
   }
 }

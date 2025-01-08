@@ -2,10 +2,18 @@ import 'package:pulp_flash/pulp_flash.dart';
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 import 'background_tasks.dart';
+import 'package:socialapp/web_plugins.dart';
 import 'firebase_options.dart';
 
+
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    // Call the web-specific setup
+    setupWeb();
+  }
+
+    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await Firebase.initializeApp(
@@ -51,6 +59,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

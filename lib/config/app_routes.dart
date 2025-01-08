@@ -4,6 +4,7 @@ import 'package:socialapp/presentation/screens/module_1/reset_password/reset_pas
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/mobile_navigator/navigator_bar.dart';
 import 'package:socialapp/presentation/screens/module_2/new_post/new_post_screen.dart';
+import 'package:socialapp/presentation/widgets/general/custom_placeholder.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AppRoutes {

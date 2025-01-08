@@ -11,7 +11,7 @@ class DeepLinkServiceImpl extends DeepLinkService {
       (deepLink) {
         if (deepLink.hasEmptyPath) return;
         if (deepLink.hasFragment) {
-          final String fragment = deepLink.fragment; // Get everything after `#`
+          final String fragment = deepLink.fragment; // Get everything after #
 
           if (fragment.isNotEmpty && fragment.contains('?')) {
             final Map<String, String> hashParameters =

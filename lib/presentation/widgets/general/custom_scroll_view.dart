@@ -1,3 +1,4 @@
+import 'package:socialapp/presentation/widgets/general/custom_placeholder.dart';
 import 'package:socialapp/utils/import.dart';
 
 class AuthScrollView extends StatelessWidget {
