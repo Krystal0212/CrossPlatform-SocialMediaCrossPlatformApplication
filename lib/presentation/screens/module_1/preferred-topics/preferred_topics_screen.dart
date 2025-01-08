@@ -2,6 +2,7 @@ import 'package:socialapp/presentation/screens/module_1/preferred-topics/widgets
 import 'package:socialapp/presentation/widgets/auth/auth_container.dart';
 import 'package:socialapp/presentation/widgets/edit_profile/bottom_rounded_appbar.dart';
 import 'package:socialapp/utils/import.dart';
+import '../../../widgets/general/custom_placeholder.dart';
 import 'cubit/preferred_topic_cubit.dart';
 import 'cubit/preferred_topic_state.dart';
 

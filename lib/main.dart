@@ -1,8 +1,16 @@
 import 'package:socialapp/utils/import.dart';
+import 'package:socialapp/web_plugins.dart';
 import 'firebase_options.dart';
 
+
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    // Call the web-specific setup
+    setupWeb();
+  }
+
+    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // WidgetsFlutterBinding.ensureInitialized();

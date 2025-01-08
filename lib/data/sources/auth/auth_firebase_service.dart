@@ -188,7 +188,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         body: jsonEncode({
           'recipientEmail': recipientEmail,
           'otpCode': otpCode,
-          'verificationLink': 'zineround.site/#/verify?code='
+          'verificationLink': 'zineround.site/verify?code='
         }),
       );
 

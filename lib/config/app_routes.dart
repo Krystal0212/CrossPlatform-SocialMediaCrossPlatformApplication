@@ -1,5 +1,6 @@
 import 'package:socialapp/presentation/screens/module_1/preferred-topics/cubit/preferred_topic_cubit.dart';
 import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/reset_password_cubit.dart';
+import 'package:socialapp/presentation/widgets/general/custom_placeholder.dart';
 import 'package:socialapp/utils/import.dart';
 import '../presentation/screens/module_1/reset_password/reset_password_screen.dart';
 

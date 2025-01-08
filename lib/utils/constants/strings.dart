@@ -1,4 +1,21 @@
 class AppStrings {
+  static const String pageNotFound = 'Page Not Found';
+  static const String noPageExist = 'The page you are looking for does not exist.';
+  static const String goBack = 'Go Back';
+  static const String notDisplayImage = 'Unable to display image';
+  static const String pleaseSignIn = 'Please sign in';
+  static const String needSignIn = 'You need to sign in to browse this section';
+  static const String alertNSFW = 'This content may not be suitable for all audiences. Proceed with NSFW label.';
+
+  // For flash message
+  static const String blankSpace = '    ';
+  static const String successTitle = '${blankSpace}Hurayyyy!';
+  static const String successPushDescription = 'Your file successfully uploaded. You can change whenever you want in the profile section.';
+  static const String notSignedInTitle = '${blankSpace}You\'re not sign in';
+  static const String notSignedInLikedDescription = '${blankSpace}Sign in to do this action';
+  static const String notSignedInMessageDescription = '${blankSpace}Sign in to join the discussion';
+  static const String notSignedInCollectionDescription = '${blankSpace}Can not add to your collection';
+
   // For sign in section
   static const String welcome = "WELCOME";
   static const String emailHint = "Email";
@@ -9,8 +26,10 @@ class AppStrings {
   static const String logIn = "LOG IN";
   static const String orLogInBy = "OR LOG IN BY";
   static const String noAccount = "Don't have an account?";
-  static const String signIn = "SIGN IN";
-  static const String signUp = "SIGN UP";
+  static const String signInUppercase = "SIGN IN";
+  static const String signUpUppercase = "SIGN UP";
+  static const String maybeLater = "May be later";
+  static const String goToHome = "GO TO HOME";
   static const String exitDialogTitle = "Are you sure?";
   static const String exitDialogContent =
       "Do you want to exit this application?";
@@ -50,6 +69,15 @@ class AppStrings {
   static const String titleBannerMessage ="PICK YOUR PREFERRED TOPICS";
   static const String pick5ToContinue = "PICK 5 TOPICS TO CONTINUES";
   static const String exploreNow = "EXPLORE NOW";
+
+  // For home
+  static const String signIn = "Sign In";
+  static const String createNewPost = "Upload New Post";
+  static const String signUp = "Sign Up";
+  static const String about = "About Zineround";
+  static const String term = "Terms & Privacy";
+  static const String signOut = "Sign Out";
+  static const String whatNew = 'What\'s new ?';
 
   // For collection section
   static const String createCollection = "Create collection";

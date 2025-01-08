@@ -86,7 +86,6 @@ export 'package:socialapp/presentation/screens/module_4/module_4_exports.dart';
 export 'package:socialapp/presentation/widgets/general/custom_scroll_view.dart';
 export 'package:socialapp/presentation/widgets/general/custom_container.dart';
 export 'package:socialapp/presentation/widgets/general/custom_sized_box.dart';
-export 'package:socialapp/presentation/widgets/general/placeholder.dart';
 export 'package:socialapp/presentation/widgets/general/custom_alert_dialog.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_body.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_elevated_button.dart';
