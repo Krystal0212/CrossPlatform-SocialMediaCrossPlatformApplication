@@ -17,15 +17,20 @@ abstract class AuthRepository {
 
   Future<void> signOut();
 
-  Future<void> reAuthenticationAndChangeEmail(String email, String newEmail, String password);
+  Future<void> reAuthenticationAndChangeEmail(
+      String email, String newEmail, String password);
 
   Future<void> updateCurrentUserAvatarUrl(String avatarUrl);
 
   Future<void> verifyAccountByOTPLink(String encryptedLink);
 
-  Future <void>verifyResetPasswordRequestByOTPLink(String encryptedLink);
+  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink);
 
   Future<void> verifyAccountByOTPCode(String otpCode);
 
   Future<void> sendForCurrentUserVerificationEmail();
+
+  Future<void> sendPasswordResetEmail(String email);
+
+  Future<void> resetPassword(String email);
 }

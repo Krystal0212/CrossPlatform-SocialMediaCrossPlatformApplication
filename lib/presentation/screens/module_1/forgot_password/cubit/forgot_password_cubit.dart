@@ -9,8 +9,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> with AppDialogs {
     try {
       if (formKey.currentState!.validate()) {
         emit(ForgotPasswordLoading());
-        await serviceLocator<AuthRepositoryImpl>()
-            .sendPasswordResetEmail(email);
+        await serviceLocator<AuthRepository>().sendPasswordResetEmail(email);
 
         emit(ForgotPasswordSuccess());
 

@@ -5,15 +5,13 @@ import 'background_tasks.dart';
 import 'package:socialapp/web_plugins.dart';
 import 'firebase_options.dart';
 
-
 void main() async {
+  // if (kIsWeb) {
+  //   // Call the web-specific setup
+  //   setupWeb();
+  // }
 
-  if (kIsWeb) {
-    // Call the web-specific setup
-    setupWeb();
-  }
-
-    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await Firebase.initializeApp(
@@ -76,7 +74,12 @@ class _MyAppState extends State<MyApp> {
     return SafeArea(
       child: MaterialApp.router(
         scrollBehavior: const MaterialScrollBehavior().copyWith(
-          dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
+          dragDevices: {
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.touch,
+            PointerDeviceKind.stylus,
+            PointerDeviceKind.unknown
+          },
         ),
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,

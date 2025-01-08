@@ -1,4 +1,3 @@
-
 import 'package:socialapp/utils/import.dart';
 import "package:http/http.dart";
 
@@ -61,7 +60,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       if (!user.emailVerified) {
         throw FirebaseAuthException(
           code: 'email-not-verified',
-          message: 'Your email address has not been verified. Please verify your email before proceeding.',
+          message:
+              'Your email address has not been verified. Please verify your email before proceeding.',
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -344,7 +344,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         body: jsonEncode({
           'recipientEmail': recipientEmail,
           'otpCode': otpCode,
-          'verificationLink': 'zineround.site/#/reset-password?code='
+          'verificationLink': 'zineround.site/reset-password?code='
         }),
       );
 
@@ -462,8 +462,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> resetPassword(String recipientEmail) {
+  Future<void> resetPassword(String recipientEmail) async {
     // TODO: implement resetPassword
-    throw UnimplementedError();
   }
 }

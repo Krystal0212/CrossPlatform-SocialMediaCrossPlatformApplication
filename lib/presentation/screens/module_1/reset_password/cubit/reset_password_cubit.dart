@@ -10,7 +10,7 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> with AppDialogs {
     try {
       if (encryptedLink.isNotEmpty) {
         emit(VerifyRequestLoading());
-        await serviceLocator<AuthFirebaseService>()
+        await serviceLocator<AuthRepository>()
             .verifyResetPasswordRequestByOTPLink(encryptedLink);
         emit(VerifyRequestSuccess());
       }
@@ -31,7 +31,7 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> with AppDialogs {
   void setNewPassword(String password) async {
     try {
       emit(ResetPasswordLoading());
-      await serviceLocator<AuthFirebaseService>().resetPassword(password);
+      await serviceLocator<AuthRepository>().resetPassword(password);
       emit(ResetPasswordSuccess());
     } catch (error) {}
   }
