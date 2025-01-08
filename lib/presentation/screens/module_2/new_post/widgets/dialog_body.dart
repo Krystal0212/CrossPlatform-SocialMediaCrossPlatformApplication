@@ -2,7 +2,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:universal_html/html.dart' as html;
-
 import 'styleable_text_field_controller.dart';
 import 'video_player.dart';
 
@@ -193,8 +192,8 @@ class _DialogBodyState extends State<DialogBody> {
 
           if (file.type.startsWith('image')) {
             final String imgUrl = html.Url.createObjectUrl(file);
-            final html.ImageElement imageElement =
-                html.ImageElement(src: imgUrl);
+            final html.ImageElement imageElement = html.ImageElement();
+            imageElement.src = imgUrl;
 
             imageElement.onLoad.listen((_) {
               int width = imageElement.width ?? 0;
@@ -282,8 +281,9 @@ class _DialogBodyState extends State<DialogBody> {
       ..src = videoUrl
       ..preload = 'metadata';
     videoElement.onLoadedMetadata.listen((_) {
-      final double width = videoElement.videoWidth.toDouble();
-      final double height = videoElement.videoHeight.toDouble();
+      final double width = videoElement.getBoundingClientRect().width.toDouble();
+      final double height = videoElement.getBoundingClientRect().height.toDouble();
+
       completer.complete({'width': width, 'height': height});
     });
     videoElement.onError.listen((_) {

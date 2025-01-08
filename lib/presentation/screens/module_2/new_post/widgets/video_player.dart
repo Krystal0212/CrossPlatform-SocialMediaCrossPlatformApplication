@@ -1,5 +1,6 @@
 import 'package:socialapp/utils/import.dart';
-import 'dart:html' as html; // For web usage
+import 'package:video_player/video_player.dart';
+import 'video_player_helper.dart'; // Import helper for conditional imports
 
 class VideoPlayerWidget extends StatefulWidget {
   final Uint8List videoData;
@@ -33,30 +34,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   Future<void> _initializeVideo() async {
-    if (kIsWeb) {
-      // Convert Uint8List to a Blob URL for web
-      final blob = html.Blob([widget.videoData]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-
-      _controller = VideoPlayerController.networkUrl(Uri.parse(url))
-        ..initialize().then((_) {
-          _cancelTimeout();
-          isInitialized.value = true;
-        });
-
-      _controller.play();
-    } else {
-      // Save Uint8List as a temporary file for mobile
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/video.mp4');
-      await tempFile.writeAsBytes(widget.videoData);
-
-      _controller = VideoPlayerController.file(tempFile)
-        ..initialize().then((_) {
-          _cancelTimeout();
-          isInitialized.value = true;
-        });
-    }
+    _controller = await createVideoPlayerController(widget.videoData);
+    await _controller.initialize();
+    _cancelTimeout();
+    isInitialized.value = true;
   }
 
   void _startTimeout() {
@@ -76,8 +57,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       valueListenable: isTimeout,
       builder: (context, timeout, child) {
         if (timeout) {
-          // Display placeholder after timeout
-          return const ImageErrorPlaceholder();
+          return const Center(child: Text("Loading timed out"));
         }
 
         return ValueListenableBuilder<bool>(
@@ -86,37 +66,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             if (!initialized) {
               return const Center(child: CircularProgressIndicator());
             }
-            return Stack(children: [
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              ),
-              Positioned.fill(
-                child: Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (_controller.value.isPlaying) {
-                        _controller.pause();
-                      } else {
-                        _controller.play();
-                      }
-                      setState(() {}); // Refresh to toggle the icon
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black54,
-                      radius: 30,
-                      child: Icon(
-                        _controller.value.isPlaying
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ]);
+            return AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            );
           },
         );
       },

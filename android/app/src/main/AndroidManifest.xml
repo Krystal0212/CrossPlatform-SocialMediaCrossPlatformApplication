@@ -34,8 +34,12 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:host="zineround.site" android:pathPrefix="/verify" android:scheme="https"/>
+                <data android:scheme="https" android:host="zineround.site" android:pathPrefix="/reset-password"/>
+                <data android:scheme="https" android:host="zineround.site" android:pathPrefix="/verify"/>
+                <data android:scheme="http" android:host="zineround.site" android:pathPrefix="/reset-password"/>
+                <data android:scheme="http" android:host="zineround.site" android:pathPrefix="/verify"/>
             </intent-filter>
+
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
