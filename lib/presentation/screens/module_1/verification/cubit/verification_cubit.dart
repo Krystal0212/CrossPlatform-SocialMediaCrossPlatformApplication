@@ -25,7 +25,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
         emit(VerificationSuccess());
 
         if (context.mounted) {
-          context.go('/home');
+          context.go('/preferred-topic');
         }
       }
     } catch (error) {

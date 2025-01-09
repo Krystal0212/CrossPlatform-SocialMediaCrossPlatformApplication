@@ -1,8 +1,5 @@
-import 'package:pulp_flash/pulp_flash.dart';
-import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/utils/import.dart';
-import 'background_tasks.dart';
-import 'package:socialapp/web_plugins.dart';
+import 'package:socialapp/utils/specifics/web_plugins.dart';
 import 'firebase_options.dart';
 
 void main() async {

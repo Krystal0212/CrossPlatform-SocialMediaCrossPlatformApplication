@@ -295,26 +295,12 @@ class AppTheme {
   }
 
   //ToDo: BoxContainerShadow
-  static List<BoxShadow> get topicNotChosenOptionBoxShadow => const [
-        BoxShadow(
-          color: AppColors.dynamicBlack,
-          blurRadius: 65,
-          spreadRadius: 8,
-          offset: Offset(0, 120),
-        ),
-        BoxShadow(
-          color: AppColors.dynamicBlack,
-          blurRadius: 65,
-          spreadRadius: 8,
-          offset: Offset(-170, 00),
-        ),
-        BoxShadow(
-          color: AppColors.dynamicBlack,
-          blurRadius: 65,
-          spreadRadius: 8,
-          offset: Offset(170, 00),
-        ),
-      ];
+  static List<BoxShadow> get topicNotChosenOptionBoxShadow => [
+    BoxShadow(
+      color: AppColors.dynamicBlack.withOpacity(0.25),
+    ),
+  ];
+
 
   static List<BoxShadow> get topicChosenOptionBoxShadow => [
         BoxShadow(
