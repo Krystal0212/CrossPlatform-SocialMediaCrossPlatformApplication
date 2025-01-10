@@ -33,9 +33,11 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
 
       if (!context.mounted) return;
       showSimpleAlertDialog(
-          context: context,
-          title: AppStrings.error,
-          message: 'The link is invalid or expired');
+        context: context,
+        title: AppStrings.error,
+        message: 'The link is invalid or expired',
+        isError: true,
+      );
     }
   }
 
@@ -45,7 +47,7 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
         emit(VerificationLoading());
         await serviceLocator<AuthRepository>().verifyAccountByOTPCode(otpCode);
 
-        if(!context.mounted) return;
+        if (!context.mounted) return;
         context.go('/preferred-topic');
         emit(VerificationSuccess());
       }
@@ -54,9 +56,11 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
 
       if (!context.mounted) return;
       showSimpleAlertDialog(
-          context: context,
-          title: AppStrings.error,
-          message: 'The code is invalid or expired');
+        context: context,
+        title: AppStrings.error,
+        message: 'The code is invalid or expired',
+        isError: true,
+      );
     }
   }
 
