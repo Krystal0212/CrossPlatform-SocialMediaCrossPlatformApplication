@@ -81,28 +81,24 @@ class AppRoutes {
           pageBuilder: (context, state) {
             final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
 
-            if(isWeb) {
-              return _buildPageRoute(BlocProvider(
-                create: (context) => HomeCubit(), child: const HomeScreen()));
-            }else{
-              return _buildPageRoute(const CustomNavigatorBar());
-            }
+            return _buildPageRoute(BlocProvider(
+                create: (context) => HomeCubit(),
+                child: (isWeb) ? const HomeScreen() : const CustomNavigatorBar()));
           }),
       GoRoute(
           path: '/new-post',
           pageBuilder: (context, state) {
             final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
 
-            if(isWeb) {
+            if (isWeb) {
               return _buildPageRoute(BlocProvider(
                   create: (context) => HomeCubit(), child: const HomeScreen()));
-            }
-            else {
+            } else {
               return _buildPageRoute(const NewPostScreen());
             }
           })
     ],
-    errorBuilder: (context, state) => const AppPlaceHolder(),
+    errorBuilder: (context, state) => const ErrorPagePlaceholder(),
   );
 
   static GoRouter getRoutes() => router;

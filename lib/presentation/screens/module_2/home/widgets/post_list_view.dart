@@ -31,7 +31,7 @@ class _PostListViewState extends State<PostListView>
   final double smallHorizontalPadding = 10;
 
   late double deviceWidth, deviceHeight;
-  late bool isCompactView, isSignedIn;
+  late bool isCompactView, isSignedIn, isWeb;
 
   @override
   void initState() {
@@ -42,11 +42,14 @@ class _PostListViewState extends State<PostListView>
   }
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     deviceWidth = MediaQuery.of(context).size.width;
     deviceHeight = MediaQuery.of(context).size.height;
 
-    isCompactView = (deviceWidth < 530) ? true : false;
+    isWeb = PlatformConfig.of(context)?.isWeb ?? false;
+
+
+    isCompactView = (deviceWidth < 530 || !isWeb) ? true : false;
     postWidth = isCompactView
         ? widget.listBodyWidth - smallHorizontalPadding * 2
         : widget.listBodyWidth - horizontalPadding * 2;
@@ -100,6 +103,5 @@ class _PostListViewState extends State<PostListView>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }
