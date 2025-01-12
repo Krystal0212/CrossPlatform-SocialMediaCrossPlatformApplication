@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
+import 'package:socialapp/presentation/screens/module_4/chat_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -195,6 +197,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       result!,
                       textAlign: TextAlign.center,
                     ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ChatScreen()));
+                    },
+                    child: const Text(
+                      "Chat cho vui",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ],
               ),
             );

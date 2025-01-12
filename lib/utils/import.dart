@@ -21,6 +21,7 @@ export 'package:flutter/services.dart';
 export 'package:flutter_bloc/flutter_bloc.dart';
 export 'package:flutter_svg/svg.dart';
 export 'package:firebase_auth/firebase_auth.dart';
+export 'package:firebase_storage/firebase_storage.dart';
 export 'package:google_sign_in/google_sign_in.dart';
 export 'package:go_router/go_router.dart';
 export 'package:cached_network_image/cached_network_image.dart';
@@ -37,8 +38,7 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         WriteBatch,
         AggregateQuerySnapshot,
         FieldValue,
-        QueryDocumentSnapshot
-;
+        QueryDocumentSnapshot;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 export 'package:like_button/like_button.dart';
 export 'package:pulp_flash/pulp_flash.dart';
@@ -73,6 +73,7 @@ export 'package:socialapp/data/sources/storage/storage_service.dart';
 export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 export 'package:socialapp/data/models/auth/create_user_req.dart';
+export 'package:socialapp/data/models/module_4/message.dart';
 export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/post_service_impl.dart';
 
@@ -109,3 +110,4 @@ export 'package:socialapp/presentation/widgets/general/linear_gradient_title.dar
 export 'package:socialapp/presentation/widgets/forgot_password/message_content.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/stacks_bottom.dart';
 export 'package:socialapp/presentation/widgets/edit_profile/app_text_form_field.dart';
+export 'package:socialapp/presentation/widgets/chat/chat_bubble.dart';
