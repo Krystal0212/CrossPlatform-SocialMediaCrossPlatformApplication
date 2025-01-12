@@ -1,4 +1,3 @@
-
 import 'package:socialapp/utils/import.dart';
 
 class AppPlaceHolder extends StatelessWidget {
@@ -45,10 +44,10 @@ class ErrorPagePlaceholder extends StatelessWidget {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-              const Text(
+               Text(
                 AppStrings.noPageExist,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: AppTheme.white),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -80,11 +79,17 @@ class SignInPagePlaceholder extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(AppImages.pleaseSignIn, width: 280,),
+              Image.asset(
+                AppImages.pleaseSignIn,
+                width: 280,
+              ),
               const SizedBox(height: 20),
               const Text(
                 AppStrings.pleaseSignIn,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 10),
               const Text(
@@ -99,7 +104,6 @@ class SignInPagePlaceholder extends StatelessWidget {
     );
   }
 }
-
 
 class ImageErrorPlaceholder extends StatelessWidget {
   const ImageErrorPlaceholder({super.key});

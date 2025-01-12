@@ -98,7 +98,7 @@ class AppRoutes {
             }
           })
     ],
-    errorBuilder: (context, state) => const AppPlaceHolder(),
+    errorBuilder: (context, state) => const ErrorPagePlaceholder(),
   );
 
   static GoRouter getRoutes() => router;
