@@ -9,29 +9,41 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> with AppDialogs {
     try {
       if (formKey.currentState!.validate()) {
         emit(ForgotPasswordLoading());
-        await serviceLocator<AuthRepository>()
-            .sendPasswordResetEmail(email);
+        await serviceLocator<AuthRepository>().sendPasswordResetEmail(email);
 
         emit(ForgotPasswordSuccess());
 
         if (context.mounted) {
           showSimpleAlertDialog(
-              context: context,
-              title: "Success",
-              message:
-                  "Send reset password email success. Please check your mail to reset password");
+            context: context,
+            title: "Success",
+            message: "An email has been sent to your email."
+                " Please check it out to reset your password !",
+            isError: false,
+          );
         }
         // Go to otp verify screen with passType = resetEmail using
       }
     } catch (e) {
-      if (e is FirebaseAuthException) {
-        if (kDebugMode) {
-          print("Error firebase auth error: $e");
-        }
+      String errorMessage;
+      if (e.toString().contains('Recipient email not found')) {
+        errorMessage =
+            'The email address is not registered. Please check your input.';
+      } else if (e.toString().contains('Bad request:')) {
+        errorMessage = 'Please verify your email before doing this action.';
+      } else if (e.toString().contains('Internal server error')) {
+        errorMessage =
+            'Our system is currently experiencing issues. Please try again later.';
       } else {
-        if (kDebugMode) {
-          print("Error send password reset email: $e");
-        }
+        errorMessage = 'An unexpected error occurred. Please try again.';
+      }
+      if (context.mounted) {
+        showSimpleAlertDialog(
+          context: context,
+          title: "An error has occurred",
+          message: errorMessage,
+          isError: true,
+        );
       }
       emit(ForgotPasswordFailure());
     }

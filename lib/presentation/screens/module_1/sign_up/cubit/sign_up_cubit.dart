@@ -17,7 +17,11 @@ class SignUpCubit extends Cubit<SignUpState> with AppDialogs {
 
       if (!context.mounted) return;
       showSimpleAlertDialog(
-          context: context, title: AppStrings.error, message: error.toString());
+        context: context,
+        title: AppStrings.error,
+        message: error.toString(),
+        isError: true,
+      );
     }
   }
 }

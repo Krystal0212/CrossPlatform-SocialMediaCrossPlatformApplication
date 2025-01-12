@@ -1,4 +1,3 @@
-
 import 'package:socialapp/utils/import.dart';
 import "package:http/http.dart";
 
@@ -61,7 +60,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       if (!user.emailVerified) {
         throw FirebaseAuthException(
           code: 'email-not-verified',
-          message: 'Your email address has not been verified. Please verify your email before proceeding.',
+          message:
+              'Your email address has not been verified. Please verify your email before proceeding.',
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -347,22 +347,24 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
           'verificationLink': 'zineround.site/reset-password?code='
         }),
       );
-
       if (response.statusCode == 200) {
         if (kDebugMode) {
           print('Email sent successfully: ${response.body}');
         }
+      } else if (response.statusCode == 400) {
+        throw Exception('Bad request: ${response.body}');
+      } else if (response.statusCode == 404) {
+        throw Exception('Recipient email not found.');
+      } else if (response.statusCode == 500) {
+        throw Exception('Internal server error.');
       } else {
-        if (kDebugMode) {
-          print(
-              'Failed to send email: ${response.statusCode} - ${response.body}');
-        }
+        throw Exception(
+            'Failed to send email: ${response.statusCode} - ${response.body}');
       }
     } catch (error) {
       if (kDebugMode) {
         print("${AppStrings.authenticationError} : ${error.toString()}");
       }
-
       rethrow;
     }
   }
@@ -462,8 +464,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> resetPassword(String recipientEmail) {
-    // TODO: implement resetPassword
-    throw UnimplementedError();
+  Future<void> resetPassword(String recipientEmail) async {
+    try {} catch (e) {}
   }
 }

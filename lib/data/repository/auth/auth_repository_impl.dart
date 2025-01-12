@@ -19,7 +19,7 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  bool isSignedIn(){
+  bool isSignedIn() {
     return serviceLocator<AuthFirebaseService>().isSignedIn();
   }
 
@@ -38,6 +38,7 @@ class AuthRepositoryImpl extends AuthRepository {
     return serviceLocator<AuthFirebaseService>().getCurrentUser();
   }
 
+  @override
   Future<void> sendPasswordResetEmail(String email) async {
     return await serviceLocator<AuthFirebaseService>()
         .sendPasswordResetEmail(email);
@@ -63,21 +64,30 @@ class AuthRepositoryImpl extends AuthRepository {
 
   @override
   Future<void> verifyAccountByOTPLink(String encryptedLink) async {
-    return await serviceLocator<AuthFirebaseService>().verifyAccountByOTPLink(encryptedLink);
+    return await serviceLocator<AuthFirebaseService>()
+        .verifyAccountByOTPLink(encryptedLink);
   }
 
   @override
   Future<void> verifyAccountByOTPCode(String otpCode) async {
-    return await serviceLocator<AuthFirebaseService>().verifyAccountByOTPCode(otpCode);
+    return await serviceLocator<AuthFirebaseService>()
+        .verifyAccountByOTPCode(otpCode);
   }
 
   @override
   Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
-    return await verifyResetPasswordRequestByOTPLink(encryptedLink);
+    return await serviceLocator<AuthFirebaseService>()
+        .verifyResetPasswordRequestByOTPLink(encryptedLink);
   }
 
   @override
-  Future<void> sendForCurrentUserVerificationEmail() async{
-    return await serviceLocator<AuthFirebaseService>().sendForCurrentUserVerificationEmail();
+  Future<void> sendForCurrentUserVerificationEmail() async {
+    return await serviceLocator<AuthFirebaseService>()
+        .sendForCurrentUserVerificationEmail();
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    return await serviceLocator<AuthFirebaseService>().resetPassword(email);
   }
 }
