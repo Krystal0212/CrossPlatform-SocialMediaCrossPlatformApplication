@@ -34,8 +34,7 @@ class ChatService extends ChangeNotifier {
   }
 
   // Get message
-  Stream<QuerySnapshot> getMessages(
-      String userId, String otherUserId, int limit) {
+  Stream<QuerySnapshot> getMessages(String userId, String otherUserId) {
     List<String> ids = [userId, otherUserId];
     ids.sort(); // Sort ids to ensure chatRoomId is the same for every pair of chatter
     String chatRoomId = ids.join("_");
@@ -44,8 +43,7 @@ class ChatService extends ChangeNotifier {
         .collection("chat_rooms")
         .doc(chatRoomId)
         .collection("messages")
-        .orderBy("timestamp", descending: false)
-        .limit(limit)
+        .orderBy("timestamp", descending: true)
         .snapshots();
   }
 

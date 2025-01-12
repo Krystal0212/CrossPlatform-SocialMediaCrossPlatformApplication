@@ -1,48 +1,13 @@
 import 'package:socialapp/utils/import.dart';
-import '../../../../../data/sources/chat/chat_service.dart';
-import 'image_state.dart';
 
-class ImageCubit extends Cubit<ImageCubitState> {
-  final ImagePicker _picker;
+enum ImageSendStatus { initial, loading, success, failure }
 
-  ImageCubit()
-      : _picker = ImagePicker(),
-        super(ImageInitial());
+class ImageSendCubit extends Cubit<ImageSendStatus> {
+  ImageSendCubit() : super(ImageSendStatus.initial);
 
-  Future<void> pickImage() async {
-    try {
-      emit(ImageLoading());
-      final XFile? pickedImage =
-          await _picker.pickImage(source: ImageSource.gallery);
-      if (pickedImage != null) {
-        emit(ImagePicked(image: pickedImage));
-      } else {
-        emit(ImageInitial()); // No image selected
-      }
-    } catch (e) {
-      emit(ImageError(message: "Failed to pick image: $e"));
-    }
-  }
+  void sendImageInProgress() => emit(ImageSendStatus.loading);
 
-  Future<void> sendImage(String receiverUserId, String messageText,
-      ChatService chatService) async {
-    final currentState = state;
-    if (currentState is ImagePicked) {
-      try {
-        emit(ImageSending());
-        await chatService.sendImageMessage(
-          receiverUserId,
-          currentState.image.path,
-          messageText,
-        );
-        emit(ImageSent());
-      } catch (e) {
-        emit(ImageError(message: "Failed to send image: $e"));
-      }
-    }
-  }
+  void sendImageSuccess() => emit(ImageSendStatus.success);
 
-  void reset() {
-    emit(ImageInitial());
-  }
+  void sendImageFailure() => emit(ImageSendStatus.failure);
 }
