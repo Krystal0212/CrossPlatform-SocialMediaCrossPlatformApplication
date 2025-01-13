@@ -4,8 +4,8 @@ import 'verification_state.dart';
 class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
   VerificationCubit() : super(VerificationInitial());
 
-  bool checkNecessaryConditionToUseScreen(
-      BuildContext context, bool isFromSignIn) {
+  bool checkNecessaryConditionToUseScreen(BuildContext context,
+      bool isFromSignIn) {
     try {
       if (serviceLocator<AuthRepository>().isUserVerified()) {
         return false;
@@ -32,12 +32,11 @@ class VerificationCubit extends Cubit<VerificationState> with AppDialogs {
       emit(VerificationFailure(errorMessage: error.toString()));
 
       if (!context.mounted) return;
-      showSimpleAlertDialog(
-        context: context,
-        title: AppStrings.error,
-        message: 'The link is invalid or expired',
-        isError: true,
-      );
+
+      showNavigateAlertDialog(context: context,
+          title: AppStrings.error  ,
+          message:'The link is invalid or expired',
+          navigateFunction: () => context.go('/sign-in') );
     }
   }
 
