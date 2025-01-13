@@ -161,7 +161,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                           ),
                           TextButton(
                             style: AppTheme.navigationTextButtonStyle,
-                            onPressed: () => context.go('/forgot-password'),
+                            onPressed: () => context.push('/forgot-password'),
                             child: Text(
                               AppStrings.forgotPassword,
                               style: AppTheme.authForgotStyle,
@@ -233,7 +233,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
                               const SizedBox(width: 5),
                               TextButton(
                                 style: AppTheme.navigationTextButtonStyle,
-                                onPressed: () => context.go('/sign-up'),
+                                onPressed: () => context.push('/sign-up'),
                                 child: Text(
                                   AppStrings.signUpUppercase,
                                   style: AppTheme.authSignUpStyle,
