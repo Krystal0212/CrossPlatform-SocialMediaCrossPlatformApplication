@@ -103,7 +103,7 @@ class _HomeScreenState extends State<MobileHomeScreen>
                           height: compactActionButtonsWidth,
                           width: compactActionButtonsWidth,
                           child: ElevatedButton(
-                            onPressed: () => context.go('/sign-in'),
+                            onPressed: () => context.push('/sign-in'),
                             style: AppTheme.actionNoEffectCircleButtonStyle
                                 .copyWith(
                               backgroundColor: const WidgetStatePropertyAll(

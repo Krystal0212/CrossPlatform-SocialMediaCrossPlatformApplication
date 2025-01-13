@@ -81,184 +81,192 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SignInCubit(),
-      child: Material(
-        child: BackgroundContainer(
-          center: AuthSizedBox(
-            isWeb: _isWeb,
-            deviceWidth: deviceWidth,
-            deviceHeight: deviceHeight,
-            child: Stack(
-              children: [
-                AuthHeaderImage(
-                  isWeb: _isWeb,
-                  heightRatio: 0.42,
-                  childAspectRatio: 1.41,
-                  positioned: Positioned.fill(
-                    top: (_isWeb) ? 0 : -45,
-                    child: Center(
-                      child: Text(
-                        AppStrings.welcome,
-                        style: AppTheme.authHeaderStyle,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, Object? result) async {
+          if (!kIsWeb) {
+            context.pop();
+          }
+        },
+        child: Material(
+          child: BackgroundContainer(
+            center: AuthSizedBox(
+              isWeb: _isWeb,
+              deviceWidth: deviceWidth,
+              deviceHeight: deviceHeight,
+              child: Stack(
+                children: [
+                  AuthHeaderImage(
+                    isWeb: _isWeb,
+                    heightRatio: 0.42,
+                    childAspectRatio: 1.41,
+                    positioned: Positioned.fill(
+                      top: (_isWeb) ? 0 : -45,
+                      child: Center(
+                        child: Text(
+                          AppStrings.welcome,
+                          style: AppTheme.authHeaderStyle,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                AuthBody(
-                  isWeb: _isWeb,
-                  marginTop: deviceHeight * 0.32,
-                  height: deviceHeight * (1 - 0.32),
-                  child: AuthScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              AuthTextFormField(
-                                textEditingController: _emailController,
-                                hintText: AppStrings.email,
-                                textInputAction: TextInputAction.next,
-                                validator: (value) => validateEmail(value),
-                              ),
-                              const SizedBox(
-                                height: 15,
-                              ),
-                              ValueListenableBuilder(
-                                valueListenable: _obscureText,
-                                builder: (context, value, child) {
-                                  return AuthTextFormField(
-                                    textEditingController: _passwordController,
-                                    hintText: AppStrings.passwordHint,
-                                    obscureText: value,
-                                    textInputAction: TextInputAction.done,
-                                    validator: (value) =>
-                                        validateSignInPassword(value),
-                                    suffixIcon: IconButton(
-                                      onPressed: () {
-                                        _obscureText.value = !value;
-                                      },
-                                      icon: Icon(value
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined),
+                  AuthBody(
+                    isWeb: _isWeb,
+                    marginTop: deviceHeight * 0.32,
+                    height: deviceHeight * (1 - 0.32),
+                    child: AuthScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                AuthTextFormField(
+                                  textEditingController: _emailController,
+                                  hintText: AppStrings.email,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) => validateEmail(value),
+                                ),
+                                const SizedBox(
+                                  height: 15,
+                                ),
+                                ValueListenableBuilder(
+                                  valueListenable: _obscureText,
+                                  builder: (context, value, child) {
+                                    return AuthTextFormField(
+                                      textEditingController: _passwordController,
+                                      hintText: AppStrings.passwordHint,
+                                      obscureText: value,
+                                      textInputAction: TextInputAction.done,
+                                      validator: (value) =>
+                                          validateSignInPassword(value),
+                                      suffixIcon: IconButton(
+                                        onPressed: () {
+                                          _obscureText.value = !value;
+                                        },
+                                        icon: Icon(value
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined),
+                                      ),
+                                    );
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextButton(
+                            style: AppTheme.navigationTextButtonStyle,
+                            onPressed: () => context.go('/forgot-password'),
+                            child: Text(
+                              AppStrings.forgotPassword,
+                              style: AppTheme.authForgotStyle,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          BlocListener<SignInCubit, SignInState>(
+                            listener: (context, state) {
+                              if (state is SignInSuccessButNotVerified) {
+                                if (!context.mounted) return;
+                                context
+                                    .go('/verify', extra: {"isFromSignIn": true});
+                              } else if (state is SignInSuccessButNotPickTopics) {
+                                if (!context.mounted) return;
+                                context.go('/preferred-topic');
+                              } else if (state is SignInSuccessProcessCompleted) {
+                                if (!context.mounted) return;
+                                context.go('/home');
+                              }
+                            },
+                            child: BlocBuilder<SignInCubit, SignInState>(
+                              builder: (context, state) {
+                                return Column(
+                                  children: [
+                                    AuthElevatedButton(
+                                      width: deviceWidth,
+                                      height: 45,
+                                      inputText: AppStrings.logIn,
+                                      onPressed: () => context
+                                          .read<SignInCubit>()
+                                          .loginWithEmailAndPassword(
+                                            context,
+                                            _formKey,
+                                            SignInUserReq(
+                                                email: _emailController.text,
+                                                password:
+                                                    _passwordController.text),
+                                          ),
+                                      isLoading:
+                                          (state is SignInLoading ? true : false),
                                     ),
-                                  );
-                                },
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      AppStrings.orLogInBy,
+                                      style: AppTheme.authNormalStyle,
+                                    ),
+                                    GoogleButton(
+                                      onPressed: () => context
+                                          .read<SignInCubit>()
+                                          .loginWithGoogle(context),
+                                    )
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                AppStrings.noAccount,
+                                style: AppTheme.authSignUpStyle
+                                    .copyWith(color: AppColors.kettleman),
+                              ),
+                              const SizedBox(width: 5),
+                              TextButton(
+                                style: AppTheme.navigationTextButtonStyle,
+                                onPressed: () => context.go('/sign-up'),
+                                child: Text(
+                                  AppStrings.signUpUppercase,
+                                  style: AppTheme.authSignUpStyle,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 5),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                AppStrings.maybeLater,
+                                style: AppTheme.authSignUpStyle
+                                    .copyWith(color: AppColors.kettleman),
+                              ),
+                              const SizedBox(width: 5),
+                              TextButton(
+                                style: AppTheme.navigationTextButtonStyle,
+                                onPressed: () => context.go('/home'),
+                                child: Text(
+                                  AppStrings.goToHome,
+                                  style: AppTheme.authSignUpStyle,
+                                ),
                               )
                             ],
                           ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextButton(
-                          style: AppTheme.navigationTextButtonStyle,
-                          onPressed: () => context.go('/forgot-password'),
-                          child: Text(
-                            AppStrings.forgotPassword,
-                            style: AppTheme.authForgotStyle,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        BlocListener<SignInCubit, SignInState>(
-                          listener: (context, state) {
-                            if (state is SignInSuccessButNotVerified) {
-                              if (!context.mounted) return;
-                              context
-                                  .go('/verify', extra: {"isFromSignIn": true});
-                            } else if (state is SignInSuccessButNotPickTopics) {
-                              if (!context.mounted) return;
-                              context.go('/preferred-topic');
-                            } else if (state is SignInSuccessProcessCompleted) {
-                              if (!context.mounted) return;
-                              context.go('/home');
-                            }
-                          },
-                          child: BlocBuilder<SignInCubit, SignInState>(
-                            builder: (context, state) {
-                              return Column(
-                                children: [
-                                  AuthElevatedButton(
-                                    width: deviceWidth,
-                                    height: 45,
-                                    inputText: AppStrings.logIn,
-                                    onPressed: () => context
-                                        .read<SignInCubit>()
-                                        .loginWithEmailAndPassword(
-                                          context,
-                                          _formKey,
-                                          SignInUserReq(
-                                              email: _emailController.text,
-                                              password:
-                                                  _passwordController.text),
-                                        ),
-                                    isLoading:
-                                        (state is SignInLoading ? true : false),
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  Text(
-                                    AppStrings.orLogInBy,
-                                    style: AppTheme.authNormalStyle,
-                                  ),
-                                  GoogleButton(
-                                    onPressed: () => context
-                                        .read<SignInCubit>()
-                                        .loginWithGoogle(context),
-                                  )
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              AppStrings.noAccount,
-                              style: AppTheme.authSignUpStyle
-                                  .copyWith(color: AppColors.kettleman),
-                            ),
-                            const SizedBox(width: 5),
-                            TextButton(
-                              style: AppTheme.navigationTextButtonStyle,
-                              onPressed: () => context.go('/sign-up'),
-                              child: Text(
-                                AppStrings.signUpUppercase,
-                                style: AppTheme.authSignUpStyle,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 5),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              AppStrings.maybeLater,
-                              style: AppTheme.authSignUpStyle
-                                  .copyWith(color: AppColors.kettleman),
-                            ),
-                            const SizedBox(width: 5),
-                            TextButton(
-                              style: AppTheme.navigationTextButtonStyle,
-                              onPressed: () => context.go('/home'),
-                              child: Text(
-                                AppStrings.goToHome,
-                                style: AppTheme.authSignUpStyle,
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
