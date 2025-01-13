@@ -2,14 +2,14 @@ import 'package:socialapp/utils/import.dart';
 import 'package:intl/intl.dart';
 import 'chat_page/chat_page.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class DemoChatScreen extends StatefulWidget {
+  const DemoChatScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<DemoChatScreen> createState() => _DemoChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _DemoChatScreenState extends State<DemoChatScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -29,56 +29,83 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<List<Widget>>(
-          future: _fetchAndBuildChatRooms(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text("No chat rooms found."));
-            }
-            return ListView(children: snapshot.data!);
-          },
-        ),
+        child: _userList(),
       ),
     );
   }
 
-  Future<List<Widget>> _fetchAndBuildChatRooms() async {
+  Widget _userList() {
     final String uid = _auth.currentUser!.uid;
-    final userRef = FirebaseFirestore.instance.doc('/User/$uid');
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection(uid).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text("Error");
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
 
-    // Fetch chat rooms
-    QuerySnapshot chatRooms1 = await FirebaseFirestore.instance
-        .collection('DemoChatRoom')
-        .where('user1Ref', isEqualTo: userRef)
-        .get();
+        final filteredDocs = snapshot.data!.docs.where((doc) => doc.id != uid);
 
-    QuerySnapshot chatRooms2 = await FirebaseFirestore.instance
-        .collection('DemoChatRoom')
-        .where('user2Ref', isEqualTo: userRef)
-        .get();
+        return ListView(
+          children: filteredDocs
+              .map<Widget>((doc) => _fetchAndBuildChatRooms(doc, uid))
+              .toList(),
+        );
+      },
+    );
+  }
 
-    final uniqueChatRooms = <dynamic>{
-      ...chatRooms1.docs,
-      ...chatRooms2.docs,
-    };
+  Widget _fetchAndBuildChatRooms(DocumentSnapshot document, String uid) {
+    String chatRoomId = _getChatRoomId(uid, document.id);
 
-    // Build widgets for chat rooms
-    return Future.wait(
-      uniqueChatRooms.map((chatRoom) => _buildChatRoomListTile(chatRoom, uid)),
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      future: FirebaseFirestore.instance
+          .collection('DemoChatRoom')
+          .doc(chatRoomId)
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text("Error fetching chat room");
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+
+        if (snapshot.hasData && snapshot.data!.exists) {
+          return FutureBuilder<Widget>(
+            future: _buildChatRoomListTile(snapshot.data!, uid),
+            builder: (context, tileSnapshot) {
+              if (tileSnapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              }
+              if (tileSnapshot.hasError) {
+                if (kDebugMode) {
+                  print("Error building chat room list tile");
+                  return const SizedBox();
+                }
+              }
+              return tileSnapshot.data ?? const Text("No data available");
+            },
+          );
+        } else {
+          return const Text("No chat room available");
+        }
+      },
     );
   }
 
   Future<Widget> _buildChatRoomListTile(
-      QueryDocumentSnapshot chatRoom,
-      String currentUserId,
-      ) async {
+    DocumentSnapshot<Map<String, dynamic>> chatRoom,
+    String currentUserId,
+  ) async {
+    final currentUserRef =
+        FirebaseFirestore.instance.doc('/User/$currentUserId');
     String chatRoomId = chatRoom.id;
-    bool isUser1 = chatRoom['user1Ref'].id == currentUserId;
+    bool isUser1 = chatRoom['user1Ref'] == currentUserRef;
     DocumentReference otherUserRef =
-    isUser1 ? chatRoom['user2Ref'] : chatRoom['user1Ref'];
+        isUser1 ? chatRoom['user2Ref'] : chatRoom['user1Ref'];
 
     // Fetch other user's info
     DocumentSnapshot otherUserSnapshot = await otherUserRef.get();
@@ -103,7 +130,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
         final message = snapshot.data?.docs.first;
         String recentMessage = message?['message'] ?? "No messages yet";
-        String recentTime = message != null ? formatTime(message['timestamp']) : "";
+        String recentTime =
+            message != null ? formatTime(message['timestamp']) : "";
         bool isImageMessage = message?['imageUrl'] != null;
         bool isFromUser1 = message?['isFromUser1'] ?? false;
 
@@ -115,9 +143,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 imageUrl: otherUserAvatar,
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>
-                const CircularProgressIndicator(),
-                errorWidget: (context, url, error) =>
-                const Icon(Icons.error),
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
             ),
           ),
@@ -128,11 +155,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Text(
                   isImageMessage
                       ? isFromUser1 == isUser1
-                      ? "You: Sent a picture"
-                      : "Sent you a picture"
+                          ? "You: Sent a picture"
+                          : "Sent you a picture"
                       : isFromUser1 == isUser1
-                      ? "You: $recentMessage"
-                      : recentMessage,
+                          ? "You: $recentMessage"
+                          : recentMessage,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14),
@@ -150,13 +177,20 @@ class _ChatScreenState extends State<ChatScreen> {
             MaterialPageRoute(
               builder: (context) => ChatPage(
                 receiverUserEmail: otherUserEmail,
-                receiverUserID: otherUserRef.id,
+                receiverUserID: otherUserRef.id, receiverAvatar: '',
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  String _getChatRoomId(String userId, String otherUserId) {
+    List<String> ids = [userId, otherUserId];
+    ids.sort(); // Sort ids to ensure chatRoomId is the same for every pair of chatter
+    String chatRoomId = ids.join("_");
+    return chatRoomId;
   }
 
   String formatTime(Timestamp timestamp) {
