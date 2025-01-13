@@ -1,6 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 
-class ChatMessage {
+class ChatMessageModel {
   final String senderId;
   final String senderEmail;
   final String receiverId;
@@ -8,7 +8,7 @@ class ChatMessage {
   final String? imageUrl; // Add this field
   final Timestamp timestamp;
 
-  ChatMessage({
+  ChatMessageModel({
     required this.senderId,
     required this.senderEmail,
     required this.receiverId,
@@ -28,8 +28,8 @@ class ChatMessage {
     };
   }
 
-  static ChatMessage fromMap(Map<String, dynamic> map) {
-    return ChatMessage(
+  static ChatMessageModel fromMap(Map<String, dynamic> map) {
+    return ChatMessageModel(
       senderId: map['senderId'],
       senderEmail: map['senderEmail'],
       receiverId: map['receiverId'],

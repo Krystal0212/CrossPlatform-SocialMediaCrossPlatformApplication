@@ -62,7 +62,7 @@ class _DemoChatScreenState extends State<DemoChatScreen> {
 
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       future: FirebaseFirestore.instance
-          .collection('DemoChatRoom')
+          .collection('ChatRoom')
           .doc(chatRoomId)
           .get(),
       builder: (context, snapshot) {
@@ -114,7 +114,7 @@ class _DemoChatScreenState extends State<DemoChatScreen> {
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('DemoChatRoom')
+          .collection('ChatRoom')
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: true)

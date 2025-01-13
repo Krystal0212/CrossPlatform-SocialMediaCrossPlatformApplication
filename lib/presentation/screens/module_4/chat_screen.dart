@@ -11,27 +11,19 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(AppColors.white),
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
         backgroundColor: Colors.lightBlueAccent,
         title: const Text(
           "My box",
           style: TextStyle(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
         ),
         centerTitle: true,
       ),
@@ -42,162 +34,157 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  // User List here
   Widget _userList() {
-    return StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection("User")
-            // .where('followers', arrayContains: _auth.currentUser!.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Text("Error");
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Column(
-                children: [
-                  CircularProgressIndicator(
-                    color: Colors.blue,
-                  ),
-                  SizedBox(
-                    height: 4.0,
-                  ),
-                  Text("Fetching user list...")
-                ],
-              ),
-            );
-          }
-          if (snapshot.hasData && snapshot.data!.docs.isEmpty) {
-            // Followers handle here in future
-            return const Center(
-              child: Text("No user available"),
-            );
-          } else {
-            return ListView.builder(
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  return _userListItem(snapshot.data!.docs[index]);
-                });
-          }
-        });
+    final String uid = _auth.currentUser!.uid;
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('User').doc(uid).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text("Error");
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasData && snapshot.data != null){
+            final filteredDocs = snapshot.data!['interacts'].toList();
+
+          return ListView(
+            children: filteredDocs
+                .map<Widget>((doc) => _fetchAndBuildChatRooms(doc, uid))
+                .toList(),
+          );
+        }
+        return const Text('No messages available right now "."v"." ');
+
+      },
+    );
   }
 
-  Widget _userListItem(DocumentSnapshot document) {
-    Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+  Widget _fetchAndBuildChatRooms(DocumentSnapshot document, String uid) {
+    String chatRoomId = _getChatRoomId(uid, document.id);
 
-    // Display all users except the current user
-    if (_auth.currentUser!.email != data["email"]) {
-      String chatRoomId = _getChatRoomId(_auth.currentUser!.uid, document.id);
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      future: FirebaseFirestore.instance
+          .collection('ChatRoom')
+          .doc(chatRoomId)
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text("Error fetching chat room");
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
 
-      return StreamBuilder<QuerySnapshot>(
-        // get new message for display
-        stream: FirebaseFirestore.instance
-            .collection("chat_rooms")
-            .doc(chatRoomId)
-            .collection("messages")
-            .orderBy("timestamp", descending: true)
-            .limit(1)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Column(
-              children: [
-                ListTile(
-                  leading: CircularProgressIndicator(
-                    color: Colors.blue,
-                  ),
-                  title: Text("Loading..."),
-                ),
-                SizedBox(
-                  height: 5.0,
-                ),
-              ],
-            );
-          }
-
-          String recentMessage = "Send your first message";
-          String recentTime = "No time available";
-          bool isImageMessage = false;
-          bool isSender = false;
-          if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-            var document = snapshot.data!.docs.first;
-            recentMessage = document["message"];
-            recentTime = formatTime(document["timestamp"]);
-            isImageMessage = (document["imageUrl"] == null) ? false : true;
-            isSender =
-                (document["senderId"] != _auth.currentUser!.uid) ? false : true;
-          }
-
-          return Column(
-            children: [
-              ListTile(
-                tileColor: Colors.grey.withOpacity(0.1),
-                leading: CircleAvatar(
-                  child: ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: data["avatar"],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          const CircularProgressIndicator(
-                        color: Colors.blue,
-                      ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  data["email"],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        (!isImageMessage)
-                            ? (!isSender)
-                                ? recentMessage
-                                : "You: $recentMessage"
-                            : (!isSender)
-                                ? "Sent you a picture"
-                                : "You: Sent a picture",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    Text(
-                      (recentTime != "No time available")
-                          ? " · $recentTime"
-                          : "",
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatPage(
-                        receiverUserEmail: data["email"],
-                        receiverUserID: document.id,
-                        receiverAvatar: data["avatar"],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(
-                height: 5.0,
-              ),
-            ],
+        if (snapshot.hasData && snapshot.data!.exists) {
+          return FutureBuilder<Widget>(
+            future: _buildChatRoomListTile(snapshot.data!, uid),
+            builder: (context, tileSnapshot) {
+              if (tileSnapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              }
+              if (tileSnapshot.hasError) {
+                if (kDebugMode) {
+                  print("Error building chat room list tile");
+                  return const SizedBox();
+                }
+              }
+              return tileSnapshot.data ?? const Text("No data available");
+            },
           );
-        },
-      );
-    } else {
-      return Container();
-    }
+        } else {
+          return const Text("No chat room available");
+        }
+      },
+    );
+  }
+
+  Future<Widget> _buildChatRoomListTile(
+      DocumentSnapshot<Map<String, dynamic>> chatRoom,
+      String currentUserId,
+      ) async {
+    final currentUserRef =
+    FirebaseFirestore.instance.doc('/User/$currentUserId');
+    String chatRoomId = chatRoom.id;
+    bool isUser1 = chatRoom['user1Ref'] == currentUserRef;
+    DocumentReference otherUserRef =
+    isUser1 ? chatRoom['user2Ref'] : chatRoom['user1Ref'];
+
+    // Fetch other user's info
+    DocumentSnapshot otherUserSnapshot = await otherUserRef.get();
+    String otherUserEmail = otherUserSnapshot['email'];
+    String otherUserAvatar = otherUserSnapshot['avatar'];
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('ChatRoom')
+          .doc(chatRoomId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const ListTile(
+            leading: CircularProgressIndicator(color: Colors.blue),
+            title: Text("Loading..."),
+          );
+        }
+
+        final message = snapshot.data?.docs.first;
+        String recentMessage = message?['message'] ?? "No messages yet";
+        String recentTime =
+        message != null ? formatTime(message['timestamp']) : "";
+        bool isImageMessage = message?['imageUrl'] != null;
+        bool isFromUser1 = message?['isFromUser1'] ?? false;
+
+        return ListTile(
+          tileColor: Colors.grey.withOpacity(0.1),
+          leading: CircleAvatar(
+            child: ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: otherUserAvatar,
+                fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              ),
+            ),
+          ),
+          title: Text(otherUserEmail),
+          subtitle: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isImageMessage
+                      ? isFromUser1 == isUser1
+                      ? "You: Sent a picture"
+                      : "Sent you a picture"
+                      : isFromUser1 == isUser1
+                      ? "You: $recentMessage"
+                      : recentMessage,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+              if (recentTime.isNotEmpty)
+                Text(
+                  " · $recentTime",
+                  style: const TextStyle(fontSize: 14),
+                ),
+            ],
+          ),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                receiverUserEmail: otherUserEmail,
+                receiverUserID: otherUserRef.id, receiverAvatar: '',
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   String _getChatRoomId(String userId, String otherUserId) {
@@ -209,7 +196,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   String formatTime(Timestamp timestamp) {
     DateTime dateTime = timestamp.toDate();
-
     DateTime now = DateTime.now();
 
     if (DateFormat('yyyyMMdd').format(dateTime) ==
