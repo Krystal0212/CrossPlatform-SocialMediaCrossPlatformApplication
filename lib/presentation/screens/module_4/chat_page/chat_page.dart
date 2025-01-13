@@ -9,10 +9,12 @@ import 'cubit/image_cubit.dart';
 class ChatPage extends StatefulWidget {
   final String receiverUserEmail;
   final String receiverUserID;
+  final String receiverAvatar;
   const ChatPage(
       {super.key,
       required this.receiverUserEmail,
-      required this.receiverUserID});
+      required this.receiverUserID,
+      required this.receiverAvatar});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -34,6 +36,13 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     _imageSendCubit = ImageSendCubit();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+    _messageController.dispose();
+  }
+
   void pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -46,7 +55,7 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
   void sendMessage() async {
     // Ensure not to send an empty message
     if (_messageController.text.isNotEmpty) {
-      String message = _messageController.text;
+      String message = _messageController.text.trim();
       _messageController.clear();
       await _chatService.sendMessage(widget.receiverUserID, message);
       // Clear the message controller after sending the message
@@ -57,17 +66,14 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     if (_selectedImageNotifier.value != null) {
       _imageSendCubit.sendImageInProgress();
       try {
-        // Clear after sending image and message
-        String imgPath = _selectedImageNotifier.value!.path;
-        String message = _messageController.text;
-        _selectedImageNotifier.value = null;
-        _messageController.clear();
         await _chatService.sendImageMessage(
           widget.receiverUserID,
-          imgPath,
-          message,
+          _selectedImageNotifier.value!.path,
+          _messageController.text.trim(),
         );
         _imageSendCubit.sendImageSuccess();
+        _selectedImageNotifier.value = null;
+        _messageController.clear();
       } catch (e) {
         _imageSendCubit.sendImageFailure();
         if (kDebugMode) {
@@ -109,21 +115,45 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
               color: Colors.black,
             ),
           ),
-          title: Text(widget.receiverUserEmail),
+          title: Row(
+            children: [
+              CircleAvatar(
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.receiverAvatar,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(
+                      color: Colors.blue,
+                    ),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 8.0,
+              ),
+              Text(widget.receiverUserEmail),
+            ],
+          ),
           backgroundColor: AppColors.iris.withOpacity(0.3),
           centerTitle: true,
         ),
         body: Stack(children: [
           Container(
             color: Colors.grey.withOpacity(0.2),
-            child: Column(
-              children: [
-                // Message list
-                Expanded(child: _messageList()),
-                // Message input
-                _imageSendStatusWidget(),
-                _messageInput()
-              ],
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Column(
+                children: [
+                  // Message list
+                  Expanded(child: _messageList()),
+                  // Message input
+                  _imageSendStatusWidget(),
+                  _messageInput()
+                ],
+              ),
             ),
           ),
           _imagePreview()
@@ -132,12 +162,12 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     );
   }
 
-  void _showSnackbar(String message) {
+  void _showSnackbar(String message, Color color) {
     final snackBar = SnackBar(
       content: Text(message),
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: color,
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -146,15 +176,16 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     return BlocListener<ImageSendCubit, ImageSendStatus>(
       listener: (context, state) {
         if (state == ImageSendStatus.loading) {
-          _showSnackbar('Sending message...');
+          _showSnackbar('Uploading image...', Colors.amber);
         } else if (state == ImageSendStatus.success) {
           _scrollToBottom();
-          _showSnackbar('Image sent successfully!');
+          _showSnackbar('Image sent successfully!', Colors.green);
         } else if (state == ImageSendStatus.failure) {
-          _showSnackbar('Failed to send image, please try again');
+          _showSnackbar(
+              'Failed to send image, please try again', Colors.redAccent);
         }
       },
-      child: const SizedBox.shrink(), // Không hiển thị gì trong giao diện
+      child: const SizedBox.shrink(),
     );
   }
 
@@ -181,82 +212,132 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
           );
         } else {
           _scrollToBottom();
-          return ListView.builder(
-            reverse: true,
-            controller: _scrollController,
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              return _messageItem(snapshot.data!.docs[index]);
-            },
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                  child: ListView.builder(
+                reverse: true,
+                shrinkWrap: true,
+                controller: _scrollController,
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot currentDocument = snapshot.data!.docs[index];
+                  DocumentSnapshot? nextDocument =
+                      (index - 1 >= 0) ? snapshot.data!.docs[index - 1] : null;
+                  return _messageItem(currentDocument, index, nextDocument);
+                },
+              )),
+            ],
           );
         }
       },
     );
   }
 
-  // Build message item
-  Widget _messageItem(DocumentSnapshot document) {
+  Widget _messageItem(
+      DocumentSnapshot document, int index, DocumentSnapshot? nextDocument) {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+    Map<String, dynamic>? nextData =
+        nextDocument?.data() as Map<String, dynamic>?;
 
     // Align sender message to the right, receiver message to the left
-    Alignment alignment = (data['senderId'] == _firebaseAuth.currentUser!.uid)
-        ? Alignment.centerRight
-        : Alignment.centerLeft;
+    bool isSender = data['senderId'] == _firebaseAuth.currentUser!.uid;
 
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment:
-              (data['senderId'] == _firebaseAuth.currentUser!.uid)
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-          children: [
-            Text(
-              data['senderEmail'],
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 5.0),
-            if (data['imageUrl'] != null && data['imageUrl'].isNotEmpty)
-              LayoutBuilder(
-                // Use LayoutBuilder
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth:
-                          constraints.maxWidth * 0.6, // 60% of parent width
+    // Determine whether to show avatar
+    bool showAvatar =
+        nextData == null || nextData['senderId'] != data['senderId'];
+
+    // Determine whether to show timestamp
+    bool showTimestamp =
+        nextData == null || nextData['senderId'] != data['senderId'];
+
+    // Spacing based on whether next message is from the same sender
+    double spacing =
+        (nextData == null || nextData['senderId'] != data['senderId'])
+            ? 16.0 // Larger spacing for different senders
+            : 4.0; // Smaller spacing for the same sender
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: spacing, left: 8.0, right: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end, // Align bottom of messages
+        mainAxisAlignment:
+            isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: [
+          // Reserve space for avatar consistency
+          if (!isSender) ...[
+            if (showAvatar)
+              CircleAvatar(
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.receiverAvatar,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(
+                      color: Colors.blue,
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12.0),
-                      child: CachedNetworkImage(
-                        imageUrl: data["imageUrl"],
-                        fit: BoxFit.fitWidth,
-                        placeholder: (context, url) => ImagePlaceholder(
-                          width: constraints.maxWidth * 0.6,
-                          height: 300,
-                        ),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            if (data['imageUrl'] != null && data['imageUrl'].isNotEmpty)
-              const SizedBox(height: 5.0),
-            if (data['message'].isNotEmpty)
-              ChatBubble(
-                message: data['message'],
-                isSender: data['senderId'] == _firebaseAuth.currentUser!.uid,
-              ),
-            const SizedBox(height: 5.0),
-            Text(
-              formatTime(data['timestamp']),
-              style: TextStyle(color: Colors.grey[600], fontSize: 11.0),
-            ),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                  ),
+                ),
+              )
+            else
+              const SizedBox(width: 40), // Placeholder to align messages
+            const SizedBox(width: 8.0), // Space between avatar and message
           ],
-        ),
+          Flexible(
+            child: Column(
+              crossAxisAlignment:
+                  isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                // Image message
+                if (data['imageUrl'] != null && data['imageUrl'].isNotEmpty)
+                  LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth:
+                              constraints.maxWidth * 0.7, // 70% of parent width
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: InkWell(
+                            onTap: () =>
+                                showImageDialog(context, data['imageUrl']),
+                            child: CachedNetworkImage(
+                              imageUrl: data["imageUrl"],
+                              fit: BoxFit.fitWidth,
+                              placeholder: (context, url) => ImagePlaceholder(
+                                width: constraints.maxWidth * 0.7,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2,
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                // Text message
+                if (data['message'].isNotEmpty)
+                  ChatBubble(
+                    message: data['message'],
+                    isSender: isSender,
+                  ),
+                // Timestamp
+                if (showTimestamp)
+                  Text(
+                    formatTime(data['timestamp']),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 11.0),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -9,7 +9,7 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.85,
+        maxWidth: MediaQuery.of(context).size.width * 0.7,
         minWidth: 0,
       ),
       child: Container(

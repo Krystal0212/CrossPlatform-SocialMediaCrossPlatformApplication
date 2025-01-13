@@ -45,19 +45,41 @@ class _ChatScreenState extends State<ChatScreen> {
   // User List here
   Widget _userList() {
     return StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection("User").snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection("User")
+            // .where('followers', arrayContains: _auth.currentUser!.uid)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Text("Error");
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(
+                    color: Colors.blue,
+                  ),
+                  SizedBox(
+                    height: 4.0,
+                  ),
+                  Text("Fetching user list...")
+                ],
+              ),
+            );
           }
-          return ListView(
-            children: snapshot.data!.docs
-                .map<Widget>((doc) => _userListItem(doc))
-                .toList(),
-          );
+          if (snapshot.hasData && snapshot.data!.docs.isEmpty) {
+            // Followers handle here in future
+            return const Center(
+              child: Text("No user available"),
+            );
+          } else {
+            return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  return _userListItem(snapshot.data!.docs[index]);
+                });
+          }
         });
   }
 
@@ -69,6 +91,7 @@ class _ChatScreenState extends State<ChatScreen> {
       String chatRoomId = _getChatRoomId(_auth.currentUser!.uid, document.id);
 
       return StreamBuilder<QuerySnapshot>(
+        // get new message for display
         stream: FirebaseFirestore.instance
             .collection("chat_rooms")
             .doc(chatRoomId)
@@ -116,13 +139,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       imageUrl: data["avatar"],
                       fit: BoxFit.cover,
                       placeholder: (context, url) =>
-                          const CircularProgressIndicator(),
+                          const CircularProgressIndicator(
+                        color: Colors.blue,
+                      ),
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.error),
                     ),
                   ),
                 ),
-                title: Text(data["email"]),
+                title: Text(
+                  data["email"],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Row(
                   children: [
                     Expanded(
@@ -152,8 +180,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ChatPage(
-                          receiverUserEmail: data["email"],
-                          receiverUserID: document.id),
+                        receiverUserEmail: data["email"],
+                        receiverUserID: document.id,
+                        receiverAvatar: data["avatar"],
+                      ),
                     ),
                   );
                 },

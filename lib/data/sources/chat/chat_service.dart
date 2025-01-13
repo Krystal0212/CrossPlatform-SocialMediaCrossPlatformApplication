@@ -33,7 +33,7 @@ class ChatService extends ChangeNotifier {
         .add(newMessage.toMap());
   }
 
-  // Get message
+  // Get message for chat room
   Stream<QuerySnapshot> getMessages(String userId, String otherUserId) {
     List<String> ids = [userId, otherUserId];
     ids.sort(); // Sort ids to ensure chatRoomId is the same for every pair of chatter
