@@ -21,7 +21,7 @@ class _HomeScreenState extends State<MobileHomeScreen>
   late double deviceWidth, deviceHeight;
   late TabController _tabController;
   late double compactActionButtonsWidth;
-  late UserModel? currentUser;
+  late UserModel? currentUser = UserModel.empty();
 
   late double listBodyWidth = 490;
 

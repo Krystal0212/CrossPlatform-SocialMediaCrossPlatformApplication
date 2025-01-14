@@ -26,6 +26,19 @@ class UserModel {
     this.avatarChanged = false,
   });
 
+  UserModel.empty()
+      : name = '',
+        lastName = '',
+        location = '',
+        emailChanged = false,
+        avatarChanged = false,
+        avatar = '',
+        email = '',
+        socialAccounts = {} {
+    preferredTopics = {};
+  }
+
+
   UserModel.newUser(
       Map<String, bool> chosenTopics, String? userAvatar, String? userEmail)
       : name = '',
