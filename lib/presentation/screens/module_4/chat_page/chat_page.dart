@@ -161,7 +161,9 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                         messageController: _messageController,
                         selectedImageNotifier: _selectedImageNotifier,
                         sendMessage: sendMessage,
-                        sendImageWithText: sendImageWithText,
+                        sendImageWithText: () {
+                          sendImageWithText(isUser1);
+                        },
                         pickImage: pickImage)
                   ],
                 ),

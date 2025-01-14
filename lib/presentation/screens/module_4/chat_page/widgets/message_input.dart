@@ -3,8 +3,8 @@ import 'package:socialapp/utils/import.dart';
 class MessageInput extends StatelessWidget {
   final TextEditingController messageController;
   final ValueNotifier<XFile?> selectedImageNotifier;
-  final Function sendMessage;
-  final Function sendImageWithText;
+  final VoidCallback sendMessage;
+  final VoidCallback sendImageWithText;
   final VoidCallback pickImage;
 
   const MessageInput({
