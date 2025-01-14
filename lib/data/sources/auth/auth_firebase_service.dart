@@ -16,13 +16,13 @@ abstract class AuthFirebaseService {
 
   Future<void> verifyAccountByOTPCode(String otpCode);
 
-  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink);
+  Future<String> verifyResetPasswordRequestByOTPLink(String encryptedLink);
 
   Future<void> sendForCurrentUserVerificationEmail();
 
   Future<void> sendPasswordResetEmail(String recipientEmail);
 
-  Future<void> resetPassword(String recipientEmail);
+  Future<void> resetPassword(String password, String userId);
 
   User? getCurrentUser();
 
@@ -370,19 +370,22 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
-    // Create Cloud functions first before parsing URLs
+  Future<String> verifyResetPasswordRequestByOTPLink(
+      String encryptedLink) async {
     final url = Uri.parse(
-        'https://api-m2ogw2ba2a-uc.a.run.app//verifyResetPasswordLink');
+        'https://api-m2ogw2ba2a-uc.a.run.app/verifyResetPasswordLink');
     try {
       final response = await get(url.replace(queryParameters: {
         'encryptedLink': encryptedLink.trim(),
       }));
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final uid = data['uid'];
         if (kDebugMode) {
-          print(response.body);
+          print('uid: $uid');
         }
+        return uid;
       } else {
         throw response.body;
       }
@@ -390,7 +393,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       if (kDebugMode) {
         print('Verification failed: $error');
       }
-      rethrow;
+      throw 'Verification failed: $error';
     }
   }
 
@@ -464,7 +467,26 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> resetPassword(String recipientEmail) async {
-    try {} catch (e) {}
+  Future<void> resetPassword(String password, String userId) async {
+    final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/resetPassword');
+    try {
+      final response = await post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'userId': userId, 'newPassword': password}),
+      );
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('Password updated successfully.');
+        }
+      } else {
+        final error = response.body;
+        throw 'Failed to reset password: $error';
+      }
+    } catch (e) {
+      throw 'Error resetting password: $e';
+    }
   }
 }
