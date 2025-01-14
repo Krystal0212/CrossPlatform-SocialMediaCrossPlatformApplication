@@ -46,74 +46,82 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ForgotPasswordCubit(),
-      child: Material(
-        child: BackgroundContainer(
-          center: AuthSizedBox(
-            isWeb: _isWeb,
-            deviceWidth: deviceWidth,
-            deviceHeight: deviceHeight,
-            child: Stack(
-              children: [
-                AuthHeaderImage(
-                  heightRatio: 0.36,
-                  childAspectRatio: 1.85,
-                  isWeb: _isWeb,
-                ),
-                AuthBody(
-                  isWeb: _isWeb,
-                  marginTop: deviceHeight * 0.26,
-                  height: deviceHeight,
-                  child: AuthScrollView(
-                    child: Column(
-                      children: [
-                        LinearGradientTitle(
-                          text: "TYPE YOUR EMAIL",
-                          textStyle: AppTheme.forgotPasswordLabelStyle,
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        const MessageContent(
-                            text: AppStrings.defaultResetPasswordMessage, ),
-                        const SizedBox(
-                          height: 25,
-                        ),
-                        Form(
-                          key: _formKey,
-                          child: AuthTextFormField(
-                            textEditingController: _emailController,
-                            hintText: "Email",
-                            textInputAction: TextInputAction.done,
-                            validator: (value) => validateEmail(value),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, Object? result) async {
+          if (!kIsWeb) {
+            context.pop();
+          }
+        },
+        child: Material(
+          child: BackgroundContainer(
+            center: AuthSizedBox(
+              isWeb: _isWeb,
+              deviceWidth: deviceWidth,
+              deviceHeight: deviceHeight,
+              child: Stack(
+                children: [
+                  AuthHeaderImage(
+                    heightRatio: 0.36,
+                    childAspectRatio: 1.85,
+                    isWeb: _isWeb,
+                  ),
+                  AuthBody(
+                    isWeb: _isWeb,
+                    marginTop: deviceHeight * 0.26,
+                    height: deviceHeight,
+                    child: AuthScrollView(
+                      child: Column(
+                        children: [
+                          LinearGradientTitle(
+                            text: "TYPE YOUR EMAIL",
+                            textStyle: AppTheme.forgotPasswordLabelStyle,
                           ),
-                        ),
-                        const SizedBox(
-                          height: 35,
-                        ),
-                        BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
-                          builder: (context, state) => AuthElevatedButton(
-                            width: deviceWidth,
-                            height: 45,
-                            inputText: "SEND",
-                            onPressed: () => context
-                                .read<ForgotPasswordCubit>()
-                                .sendPasswordResetEmail(
-                                  context,
-                                  _formKey,
-                                  _emailController.text.trim(),
-                                ),
-                            isLoading: (state is ForgotPasswordLoading ? true : false),
+                          const SizedBox(
+                            height: 15,
                           ),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const StacksBottom(),
-                      ],
+                          const MessageContent(
+                              text: AppStrings.defaultResetPasswordMessage, ),
+                          const SizedBox(
+                            height: 25,
+                          ),
+                          Form(
+                            key: _formKey,
+                            child: AuthTextFormField(
+                              textEditingController: _emailController,
+                              hintText: "Email",
+                              textInputAction: TextInputAction.done,
+                              validator: (value) => validateEmail(value),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 35,
+                          ),
+                          BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
+                            builder: (context, state) => AuthElevatedButton(
+                              width: deviceWidth,
+                              height: 45,
+                              inputText: "SEND",
+                              onPressed: () => context
+                                  .read<ForgotPasswordCubit>()
+                                  .sendPasswordResetEmail(
+                                    context,
+                                    _formKey,
+                                    _emailController.text.trim(),
+                                  ),
+                              isLoading: (state is ForgotPasswordLoading ? true : false),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const StacksBottom(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
