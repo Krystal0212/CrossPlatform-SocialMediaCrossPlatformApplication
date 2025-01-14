@@ -36,6 +36,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _userList() {
     final String uid = _auth.currentUser!.uid;
+
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance.collection('User').doc(uid).snapshots(),
       builder: (context, snapshot) {
@@ -43,23 +44,29 @@ class _ChatScreenState extends State<ChatScreen> {
           return const Text("Error");
         } else if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
-        } else if (snapshot.hasData && snapshot.data != null){
-            final filteredDocs = snapshot.data!['interacts'].toList();
+        } else if (snapshot.hasData && snapshot.data != null) {
+          // Safely extract 'interacts' from the document
+          final data = snapshot.data!.data();
+          if (data != null && data['interacts'] is List) {
+            final List interacts = data['interacts'];
 
-          return ListView(
-            children: filteredDocs
-                .map<Widget>((doc) => _fetchAndBuildChatRooms(doc, uid))
-                .toList(),
-          );
+            return ListView(
+              children: interacts
+                  .map<Widget>((userRef) => _fetchAndBuildChatRooms(userRef.id, uid))
+                  .toList(),
+            );
+          } else {
+            return const Text('No interactions found.');
+          }
         }
-        return const Text('No messages available right now "."v"." ');
-
+        return const Text('No data available.');
       },
     );
   }
 
-  Widget _fetchAndBuildChatRooms(DocumentSnapshot document, String uid) {
-    String chatRoomId = _getChatRoomId(uid, document.id);
+
+  Widget _fetchAndBuildChatRooms(String secondUID, String uID) {
+    String chatRoomId = _getChatRoomId(uID, secondUID);
 
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       future: FirebaseFirestore.instance
@@ -76,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
         if (snapshot.hasData && snapshot.data!.exists) {
           return FutureBuilder<Widget>(
-            future: _buildChatRoomListTile(snapshot.data!, uid),
+            future: _buildChatRoomListTile(snapshot.data!, uID),
             builder: (context, tileSnapshot) {
               if (tileSnapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
@@ -98,15 +105,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<Widget> _buildChatRoomListTile(
-      DocumentSnapshot<Map<String, dynamic>> chatRoom,
-      String currentUserId,
-      ) async {
+    DocumentSnapshot<Map<String, dynamic>> chatRoom,
+    String currentUserId,
+  ) async {
     final currentUserRef =
-    FirebaseFirestore.instance.doc('/User/$currentUserId');
+        FirebaseFirestore.instance.doc('/User/$currentUserId');
     String chatRoomId = chatRoom.id;
     bool isUser1 = chatRoom['user1Ref'] == currentUserRef;
     DocumentReference otherUserRef =
-    isUser1 ? chatRoom['user2Ref'] : chatRoom['user1Ref'];
+        isUser1 ? chatRoom['user2Ref'] : chatRoom['user1Ref'];
 
     // Fetch other user's info
     DocumentSnapshot otherUserSnapshot = await otherUserRef.get();
@@ -132,7 +139,7 @@ class _ChatScreenState extends State<ChatScreen> {
         final message = snapshot.data?.docs.first;
         String recentMessage = message?['message'] ?? "No messages yet";
         String recentTime =
-        message != null ? formatTime(message['timestamp']) : "";
+            message != null ? formatTime(message['timestamp']) : "";
         bool isImageMessage = message?['imageUrl'] != null;
         bool isFromUser1 = message?['isFromUser1'] ?? false;
 
@@ -144,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 imageUrl: otherUserAvatar,
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>
-                const CircularProgressIndicator(),
+                    const CircularProgressIndicator(),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
             ),
@@ -156,11 +163,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Text(
                   isImageMessage
                       ? isFromUser1 == isUser1
-                      ? "You: Sent a picture"
-                      : "Sent you a picture"
+                          ? "You: Sent a picture"
+                          : "Sent you a picture"
                       : isFromUser1 == isUser1
-                      ? "You: $recentMessage"
-                      : recentMessage,
+                          ? "You: $recentMessage"
+                          : recentMessage,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14),
@@ -177,8 +184,10 @@ class _ChatScreenState extends State<ChatScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => ChatPage(
+                isUser1: isUser1,
                 receiverUserEmail: otherUserEmail,
-                receiverUserID: otherUserRef.id, receiverAvatar: '',
+                receiverUserID: otherUserRef.id,
+                receiverAvatar: otherUserAvatar,
               ),
             ),
           ),

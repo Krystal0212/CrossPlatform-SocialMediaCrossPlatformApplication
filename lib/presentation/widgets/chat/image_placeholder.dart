@@ -1,12 +1,11 @@
 import 'package:socialapp/utils/import.dart';
-import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ImagePlaceholder extends StatelessWidget {
+class ChatImagePlaceholder extends StatelessWidget {
   final double height;
   final double width;
 
-  const ImagePlaceholder({
+  const ChatImagePlaceholder({
     super.key,
     required this.height,
     required this.width,
@@ -15,10 +14,10 @@ class ImagePlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-        baseColor: const Color.fromARGB(255, 216, 216, 216),
-        highlightColor: const Color.fromARGB(255, 255, 255, 255),
+        baseColor: AppColors.tangledWeb,
+        highlightColor:  AppColors.white,
         child: Container(
-          color: Colors.amber,
+          color: AppColors.corona,
           width: width,
           height: height,
         ));

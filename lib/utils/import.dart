@@ -60,6 +60,9 @@ export 'package:socialapp/utils/mixin/methods/alert_dialog.dart';
 export 'package:socialapp/utils/mixin/methods/convert_timestamp.dart';
 
 // Data and Repositories
+export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
+export 'package:socialapp/data/models/auth/create_user_req.dart';
+
 export 'package:socialapp/data/repository/collection/collection_repository_impl.dart';
 export 'package:socialapp/data/repository/post/post_repository_impl.dart';
 export 'package:socialapp/data/repository/topic/topic_repository_impl.dart';
@@ -71,9 +74,6 @@ export 'package:socialapp/data/sources/firestore/firestore_service.dart';
 export 'package:socialapp/data/sources/firestore/user_service_impl.dart';
 export 'package:socialapp/data/sources/storage/storage_service.dart';
 export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
-export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
-export 'package:socialapp/data/models/auth/create_user_req.dart';
-export 'package:socialapp/data/models/module_4/message.dart';
 export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/post_service_impl.dart';
 
