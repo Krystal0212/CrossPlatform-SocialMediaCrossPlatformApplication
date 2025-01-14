@@ -5,7 +5,7 @@ class MessageInput extends StatelessWidget {
   final ValueNotifier<XFile?> selectedImageNotifier;
   final Function sendMessage;
   final Function sendImageWithText;
-  final Function pickImage;
+  final VoidCallback pickImage;
 
   const MessageInput({
     super.key,
@@ -63,7 +63,7 @@ class MessageInput extends StatelessWidget {
           const SizedBox(width: 6.0),
           IconButton(
             icon: const Icon(Icons.image, size: 40, color: AppColors.iris),
-            onPressed: ()=>pickImage,
+            onPressed: pickImage,
           ),
         ],
       ),
