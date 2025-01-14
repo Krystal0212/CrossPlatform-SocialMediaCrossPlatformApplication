@@ -4,7 +4,6 @@ import 'package:socialapp/presentation/widgets/chat/image_placeholder.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:intl/intl.dart';
 
-
 class MessageItem extends StatelessWidget with AppDialogs {
   final DocumentSnapshot document;
   final DocumentSnapshot? nextDocument;
@@ -15,8 +14,8 @@ class MessageItem extends StatelessWidget with AppDialogs {
     super.key,
     required this.document,
     required this.nextDocument,
-    required this.chatService, required this.receiverAvatar,
-
+    required this.chatService,
+    required this.receiverAvatar,
   });
 
   // Function to format time
@@ -40,7 +39,7 @@ class MessageItem extends StatelessWidget with AppDialogs {
   Widget build(BuildContext context) {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
     Map<String, dynamic>? nextData =
-    nextDocument?.data() as Map<String, dynamic>?;
+        nextDocument?.data() as Map<String, dynamic>?;
     final bool isUser1 = ChatPageUserProperty.of(context);
 
     final Map<String, dynamic> layoutData = chatService.getMessageLayoutData(
@@ -58,7 +57,7 @@ class MessageItem extends StatelessWidget with AppDialogs {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment:
-        isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isSender) ...[
             if (showAvatar)
@@ -68,11 +67,11 @@ class MessageItem extends StatelessWidget with AppDialogs {
                     imageUrl: receiverAvatar,
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
-                    const CircularProgressIndicator(
+                        const CircularProgressIndicator(
                       color: Colors.blue,
                     ),
                     errorWidget: (context, url, error) =>
-                    const Icon(Icons.error),
+                        const Icon(Icons.error),
                   ),
                 ),
               )
@@ -83,30 +82,33 @@ class MessageItem extends StatelessWidget with AppDialogs {
           Flexible(
             child: Column(
               crossAxisAlignment:
-              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 if (data['imageUrl'] != null && data['imageUrl'].isNotEmpty)
                   LayoutBuilder(
-                    builder: (BuildContext context, BoxConstraints constraints) {
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
                       return ConstrainedBox(
                         constraints: BoxConstraints(
                           maxWidth:
-                          constraints.maxWidth * 0.7, // 70% of parent width
+                              constraints.maxWidth * 0.7, // 70% of parent width
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12.0),
                           child: InkWell(
-                            onTap: () => showImageDialog(context, data['imageUrl']),
+                            onTap: () =>
+                                showImageDialog(context, data['imageUrl']),
                             child: CachedNetworkImage(
                               imageUrl: data["imageUrl"],
                               fit: BoxFit.fitWidth,
-                              placeholder: (context, url) => ChatImagePlaceholder(
+                              placeholder: (context, url) =>
+                                  ChatImagePlaceholder(
                                 width: constraints.maxWidth * 0.7,
                                 height:
-                                MediaQuery.of(context).size.height * 0.2,
+                                    MediaQuery.of(context).size.height * 0.2,
                               ),
                               errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
+                                  const Icon(Icons.error),
                             ),
                           ),
                         ),

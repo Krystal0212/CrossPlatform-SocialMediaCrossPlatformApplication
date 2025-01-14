@@ -148,10 +148,17 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                   children: [
                     // Message list
                     Expanded(
-                        child: MessageList(
-                      receiverUserID: receiverUserID,
-                      scrollController: _scrollController,
-                      receiverAvatar: receiverAvatar,
+                        child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: MessageList(
+                            receiverUserID: receiverUserID,
+                            scrollController: _scrollController,
+                            receiverAvatar: receiverAvatar,
+                          ),
+                        ),
+                      ],
                     )),
                     // Message input
                     ImageSendStatusWidget(

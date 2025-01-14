@@ -4,15 +4,14 @@ import 'package:socialapp/utils/import.dart';
 import 'message_item.dart';
 
 class MessageList extends StatelessWidget {
-
   final String receiverUserID, receiverAvatar;
   final ScrollController scrollController;
 
   const MessageList({
     super.key,
     required this.receiverUserID,
-    required this.scrollController, required this.receiverAvatar,
-
+    required this.scrollController,
+    required this.receiverAvatar,
   });
 
   @override
@@ -38,18 +37,20 @@ class MessageList extends StatelessWidget {
           );
         } else {
           return ListView.builder(
+            shrinkWrap: true,
             reverse: true,
             controller: scrollController,
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               DocumentSnapshot currentDocument = snapshot.data!.docs[index];
               DocumentSnapshot? nextDocument =
-              (index - 1 >= 0) ? snapshot.data!.docs[index - 1] : null;
+                  (index - 1 >= 0) ? snapshot.data!.docs[index - 1] : null;
 
               return MessageItem(
                 document: currentDocument,
                 nextDocument: nextDocument,
-                chatService: chatService, receiverAvatar: receiverAvatar,
+                chatService: chatService,
+                receiverAvatar: receiverAvatar,
               );
             },
           );

@@ -38,7 +38,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final String uid = _auth.currentUser!.uid;
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance.collection('User').doc(uid).snapshots(),
+      stream:
+          FirebaseFirestore.instance.collection('User').doc(uid).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text("Error");
@@ -52,7 +53,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
             return ListView(
               children: interacts
-                  .map<Widget>((userRef) => _fetchAndBuildChatRooms(userRef.id, uid))
+                  .map<Widget>(
+                      (userRef) => _fetchAndBuildChatRooms(userRef.id, uid))
                   .toList(),
             );
           } else {
@@ -63,7 +65,6 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     );
   }
-
 
   Widget _fetchAndBuildChatRooms(String secondUID, String uID) {
     String chatRoomId = _getChatRoomId(uID, secondUID);
@@ -150,8 +151,9 @@ class _ChatScreenState extends State<ChatScreen> {
               child: CachedNetworkImage(
                 imageUrl: otherUserAvatar,
                 fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    const CircularProgressIndicator(),
+                placeholder: (context, url) => const CircularProgressIndicator(
+                  color: Colors.blue,
+                ),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
             ),
