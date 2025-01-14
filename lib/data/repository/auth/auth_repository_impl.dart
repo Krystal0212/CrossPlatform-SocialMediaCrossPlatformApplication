@@ -75,7 +75,8 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
+  Future<String> verifyResetPasswordRequestByOTPLink(
+      String encryptedLink) async {
     return await serviceLocator<AuthFirebaseService>()
         .verifyResetPasswordRequestByOTPLink(encryptedLink);
   }
@@ -87,7 +88,8 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  Future<void> resetPassword(String email) async {
-    return await serviceLocator<AuthFirebaseService>().resetPassword(email);
+  Future<void> resetPassword(String password, String userId) async {
+    return await serviceLocator<AuthFirebaseService>()
+        .resetPassword(password, userId);
   }
 }

@@ -24,7 +24,7 @@ abstract class AuthRepository {
 
   Future<void> verifyAccountByOTPLink(String encryptedLink);
 
-  Future<void> verifyResetPasswordRequestByOTPLink(String encryptedLink);
+  Future<String> verifyResetPasswordRequestByOTPLink(String encryptedLink);
 
   Future<void> verifyAccountByOTPCode(String otpCode);
 
@@ -32,5 +32,5 @@ abstract class AuthRepository {
 
   Future<void> sendPasswordResetEmail(String email);
 
-  Future<void> resetPassword(String email);
+  Future<void> resetPassword(String password, String userId);
 }

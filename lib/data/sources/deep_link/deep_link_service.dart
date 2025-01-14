@@ -21,15 +21,16 @@ class DeepLinkServiceImpl extends DeepLinkService {
               router.go('/verify', extra: hashParameters);
             } else if (hashParameters.isNotEmpty &&
                 deepLink.path == '/reset-password') {
-              router.go('/reset-password ', extra: hashParameters);
+              router.go('/reset-password', extra: hashParameters);
             }
           }
         } else {
           final Map<String, String> hashParameters = deepLink.queryParameters;
           if (hashParameters.isNotEmpty && deepLink.path == '/verify') {
             router.go('/verify', extra: hashParameters);
-          } else if (hashParameters.isNotEmpty && deepLink.path == '/reset-password') {
-            router.go('/reset-password ', extra: hashParameters);
+          } else if (hashParameters.isNotEmpty &&
+              deepLink.path == '/reset-password') {
+            router.go('/reset-password', extra: hashParameters);
           }
         }
       },

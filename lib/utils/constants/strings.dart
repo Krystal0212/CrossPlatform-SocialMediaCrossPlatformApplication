@@ -1,20 +1,26 @@
 class AppStrings {
   static const String pageNotFound = 'Page Not Found';
-  static const String noPageExist = 'The page you are looking for does not exist.';
+  static const String noPageExist =
+      'The page you are looking for does not exist.';
   static const String goBack = 'Go Back';
   static const String notDisplayImage = 'Unable to display image';
   static const String pleaseSignIn = 'Please sign in';
   static const String needSignIn = 'You need to sign in to browse this section';
-  static const String alertNSFW = 'This content may not be suitable for all audiences. Proceed with NSFW label.';
+  static const String alertNSFW =
+      'This content may not be suitable for all audiences. Proceed with NSFW label.';
 
   // For flash message
   static const String blankSpace = '    ';
   static const String successTitle = '${blankSpace}Hurayyyy!';
-  static const String successPushDescription = 'Your file successfully uploaded. You can change whenever you want in the profile section.';
+  static const String successPushDescription =
+      'Your file successfully uploaded. You can change whenever you want in the profile section.';
   static const String notSignedInTitle = '${blankSpace}You\'re not sign in';
-  static const String notSignedInLikedDescription = '${blankSpace}Sign in to do this action';
-  static const String notSignedInMessageDescription = '${blankSpace}Sign in to join the discussion';
-  static const String notSignedInCollectionDescription = '${blankSpace}Can not add to your collection';
+  static const String notSignedInLikedDescription =
+      '${blankSpace}Sign in to do this action';
+  static const String notSignedInMessageDescription =
+      '${blankSpace}Sign in to join the discussion';
+  static const String notSignedInCollectionDescription =
+      '${blankSpace}Can not add to your collection';
 
   // For sign in section
   static const String welcome = "WELCOME";
@@ -61,12 +67,14 @@ class AppStrings {
   static const String defaultResetPasswordMessage =
       "We will send you instruction on how to reset your password";
   static const String setNewPassword = "SET NEW PASSWORD";
+  static const String confirmNewPassword = "REWRITE YOUR NEW PASSWORD";
   static const String typeNewPassword = "Type your new password";
-  static const String send= "Send";
+  static const String send = "Send";
 
   // For preferred topic
-  static const String titlePreferredTopicMessage = "WHAT  ARE YOU CONCERNED ABOUT ?";
-  static const String titleBannerMessage ="PICK YOUR PREFERRED TOPICS";
+  static const String titlePreferredTopicMessage =
+      "WHAT  ARE YOU CONCERNED ABOUT ?";
+  static const String titleBannerMessage = "PICK YOUR PREFERRED TOPICS";
   static const String pick5ToContinue = "PICK 5 TOPICS TO CONTINUES";
   static const String exploreNow = "EXPLORE NOW";
 
