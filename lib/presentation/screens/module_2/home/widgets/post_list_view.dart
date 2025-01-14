@@ -10,12 +10,13 @@ class PostListView extends StatefulWidget {
   final List<PostModel> posts;
   final ViewMode viewMode;
   final double listBodyWidth;
+  final UserModel? currentUser;
 
   const PostListView(
       {super.key,
       required this.posts,
       required this.viewMode,
-      required this.listBodyWidth});
+      required this.listBodyWidth, required this.currentUser});
 
   @override
   State<PostListView> createState() => _PostListViewState();
@@ -88,7 +89,7 @@ class _PostListViewState extends State<PostListView>
                         post: postDetail,
                         postWidth: postWidth,
                       ),
-                      PostBottom(post: postDetail)
+                      PostBottom(post: postDetail, currentUser: widget.currentUser,)
                     ],
                   ),
                 ),

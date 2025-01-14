@@ -163,6 +163,7 @@ class _ProfilePartState extends State<ProfilePart>
                                   alignment: Alignment.topCenter,
                                   child: SizedBox(
                                     height: appBarBackgroundHeight,
+                                    width: deviceWidth,
                                     child: const BottomRoundedAppBar(
                                       bannerPath:
                                           AppImages.editProfileAppbarBackground,

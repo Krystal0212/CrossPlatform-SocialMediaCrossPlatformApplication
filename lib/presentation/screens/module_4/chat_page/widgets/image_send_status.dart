@@ -24,8 +24,6 @@ class _ImageSendStatusWidgetState extends State<ImageSendStatusWidget> {
 
   @override
   void dispose() {
-    scrollController.dispose();
-
     super.dispose();
   }
 

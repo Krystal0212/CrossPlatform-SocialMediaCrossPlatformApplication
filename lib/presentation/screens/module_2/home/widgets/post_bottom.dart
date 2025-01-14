@@ -4,8 +4,9 @@ import 'package:socialapp/utils/mixin/methods/flash_message.dart';
 
 class PostBottom extends StatefulWidget {
   final PostModel post;
+  final UserModel? currentUser;
 
-  const PostBottom({super.key, required this.post});
+  const PostBottom({super.key, required this.post, required this.currentUser});
 
   @override
   State<PostBottom> createState() => _PostBottomState();
@@ -23,7 +24,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
   @override
   void initState() {
     super.initState();
-    currentUser = context.read<HomeCubit>().getCurrentUser();
+    currentUser = widget.currentUser;
     isUserLiked = ValueNotifier<bool>(
       widget.post.likes.contains(currentUser?.id ?? ''),
     );

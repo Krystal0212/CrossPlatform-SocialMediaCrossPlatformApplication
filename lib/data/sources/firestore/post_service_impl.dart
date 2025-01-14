@@ -13,7 +13,8 @@ abstract class PostService {
 
   Future<List<CommentModel>?> getCommentPost(PostModel post);
 
-  Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache);
+  Future<void> syncLikesToFirestore(
+      Map<String, Map<String, bool>> likedPostsCache);
 }
 
 class PostServiceImpl extends PostService {
@@ -81,63 +82,69 @@ class PostServiceImpl extends PostService {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      for(int randomIndex in randomIndexes){
-      QuerySnapshot postsSnapshot = await _postRef
-          .startAtDocument(await _getDocumentAtIndex(randomIndex))
-          .limit(1)
-          .get();
-      if (postsSnapshot.docs.isEmpty) {
-        throw CustomFirestoreException(
-            code: 'no-post-found', message: 'No post found');
-      }
-
-      for (QueryDocumentSnapshot document in postsSnapshot.docs) {
-        comments = await _fetchSubCollection(document, 'comments');
-        likes = await _fetchSubCollection(document, 'likes');
-
-        userRef = document['userRef'];
-        userData = userRef.get();
-
-        await userData.then((value) {
-          username = value['name'];
-          userAvatar = value['avatar'];
-        });
-
-        List<Map<String, String>> mediaOffline = [];
-
-        if (!kIsWeb) {
-          for (var item in document['media']) {
-            String mediaUrl = item['url'];
-
-            String? cachedFilePath = prefs.getString(mediaUrl);
-
-            if (cachedFilePath == null || !File(cachedFilePath).existsSync()) {
-              File cachedFile = await _downloadAndSaveLocalImage(mediaUrl);
-              await prefs.setString(mediaUrl, cachedFile.path);
-              cachedFilePath = cachedFile.path;
-            }
-
-            mediaOffline.add({
-              'uri': cachedFilePath,
-              'dominantColor': item['dominantColor'],
-              'type': item['type'],
-            });
-          }
+      for (int randomIndex in randomIndexes) {
+        QuerySnapshot postsSnapshot = await _postRef
+            .startAtDocument(await _getDocumentAtIndex(randomIndex))
+            .limit(1)
+            .get();
+        if (postsSnapshot.docs.isEmpty) {
+          throw CustomFirestoreException(
+              code: 'no-post-found', message: 'No post found');
         }
 
-        Map<String, dynamic> documentMap = document.data() as Map<String, dynamic>;
+        for (QueryDocumentSnapshot document in postsSnapshot.docs) {
+          comments = await _fetchSubCollection(document, 'comments');
+          likes = await _fetchSubCollection(document, 'likes');
 
-        documentMap['postId'] = document.id;
-        documentMap['username'] = username;
-        documentMap['userAvatar'] = userAvatar;
-        documentMap['mediaOffline'] = mediaOffline;
-        documentMap['comments'] = comments.toSet();
-        documentMap['likes'] = likes.toSet();
+          userRef = document['userRef'];
+          userData = userRef.get();
 
-        PostModel post = PostModel.fromMap(documentMap);
+          await userData.then((value) {
+            username = value['name'];
+            userAvatar = value['avatar'];
+          });
 
-        posts.add(post);
-      }
+          List<Map<String, String>> mediaOffline = [];
+
+          if (!kIsWeb) {
+            for (var item in document['media']) {
+              String mediaUrl = item['url'];
+
+              String? cachedFilePath = prefs.getString(mediaUrl);
+
+              if (cachedFilePath == null ||
+                  !File(cachedFilePath).existsSync()) {
+                File cachedFile = await _downloadAndSaveLocalImage(mediaUrl);
+                await prefs.setString(mediaUrl, cachedFile.path);
+                cachedFilePath = cachedFile.path;
+              }
+
+              mediaOffline.add({
+                'uri': cachedFilePath,
+                'dominantColor': item['dominantColor'],
+                'type': item['type'],
+              });
+            }
+          }
+
+          Map<String, dynamic> documentMap =
+              document.data() as Map<String, dynamic>;
+
+
+
+          documentMap['postId'] = document.id;
+          documentMap['username'] = username;
+          documentMap['userAvatar'] = userAvatar;
+          documentMap['mediaOffline'] = mediaOffline;
+          documentMap['comments'] = comments.toSet();
+          documentMap['likes'] = likes.toSet();
+
+          print('catch me');
+
+          PostModel post = PostModel.fromMap(documentMap);
+
+          posts.add(post);
+        }
       }
 
       List<String> postStrings =
@@ -185,8 +192,7 @@ class PostServiceImpl extends PostService {
           randomIndexes.add(random.nextInt(count));
         }
 
-          posts = await _fetchPostWithSubCollections(randomIndexes);
-
+        posts = await _fetchPostWithSubCollections(randomIndexes);
       }
       return posts;
     } catch (e) {
@@ -210,7 +216,8 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache) async {
+  Future<void> syncLikesToFirestore(
+      Map<String, Map<String, bool>> likedPostsCache) async {
     if (likedPostsCache.isEmpty) {
       if (kDebugMode) {
         print('No likes to sync.');
@@ -244,9 +251,7 @@ class PostServiceImpl extends PostService {
               });
             }
           }
-        }
-
-        );
+        });
       });
 
       await batch.commit();

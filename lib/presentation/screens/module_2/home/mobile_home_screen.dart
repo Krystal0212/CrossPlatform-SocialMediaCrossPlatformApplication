@@ -21,6 +21,7 @@ class _HomeScreenState extends State<MobileHomeScreen>
   late double deviceWidth, deviceHeight;
   late TabController _tabController;
   late double compactActionButtonsWidth;
+  late UserModel? currentUser;
 
   late double listBodyWidth = 490;
 
@@ -46,9 +47,8 @@ class _HomeScreenState extends State<MobileHomeScreen>
       final isUserSignedIn = await context.read<HomeCubit>().checkCurrentUser();
       if (isUserSignedIn) {
         if (!context.mounted) return;
-        final currentUser = context.read<HomeCubit>().getCurrentUser();
+        currentUser = context.read<HomeCubit>().getCurrentUser() ?? null;
         currentUserNotifier.value = currentUser;
-        print(currentUserNotifier.value != null);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -194,17 +194,17 @@ class _HomeScreenState extends State<MobileHomeScreen>
                           PostListView(
                             posts: state.postLists[0],
                             viewMode: ViewMode.explore,
-                            listBodyWidth: listBodyWidth,
+                            listBodyWidth: listBodyWidth, currentUser: currentUser,
                           ),
                           PostListView(
                             posts: state.postLists[1],
                             viewMode: ViewMode.trending,
-                            listBodyWidth: listBodyWidth,
+                            listBodyWidth: listBodyWidth, currentUser: currentUser,
                           ),
                           PostListView(
                             posts: state.postLists[2],
                             viewMode: ViewMode.following,
-                            listBodyWidth: listBodyWidth,
+                            listBodyWidth: listBodyWidth, currentUser: currentUser,
                           ),
                         ],
                       ),

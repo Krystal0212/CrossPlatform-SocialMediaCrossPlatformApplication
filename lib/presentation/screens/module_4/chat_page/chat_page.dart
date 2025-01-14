@@ -23,7 +23,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> with AppDialogs {
   final TextEditingController _messageController = TextEditingController();
   final ChatService _chatService = ChatService();
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
   final ValueNotifier<XFile?> _selectedImageNotifier =
       ValueNotifier<XFile?>(null);
 
@@ -38,14 +38,15 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     isUser1 = widget.isUser1;
     receiverUserID = widget.receiverUserID;
     receiverAvatar = widget.receiverAvatar;
+    _scrollController = ScrollController();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _scrollController.dispose();
     _messageController.dispose();
     _selectedImageNotifier.dispose();
+    super.dispose();
   }
 
   void pickImage() async {

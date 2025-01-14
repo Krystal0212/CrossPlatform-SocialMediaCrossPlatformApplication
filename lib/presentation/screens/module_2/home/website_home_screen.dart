@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen>
   late double deviceWidth, deviceHeight, listBodyWidth;
   late bool isCompactView;
   late TabController tabController;
+  late UserModel? currentUser;
 
   final ValueNotifier<bool> isLoading = ValueNotifier(true);
   final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
+    currentUser = context.read<HomeCubit>().getCurrentUser() ?? null;
 
     FlutterNativeSplash.remove();
   }
@@ -114,17 +116,17 @@ class _HomeScreenState extends State<HomeScreen>
                                 PostListView(
                                   posts: state.postLists[0],
                                   viewMode: ViewMode.explore,
-                                  listBodyWidth: listBodyWidth,
+                                  listBodyWidth: listBodyWidth, currentUser: currentUser,
                                 ),
                                 PostListView(
                                   posts: state.postLists[1],
                                   viewMode: ViewMode.trending,
-                                  listBodyWidth: listBodyWidth,
+                                  listBodyWidth: listBodyWidth, currentUser: currentUser,
                                 ),
                                 PostListView(
                                   posts: state.postLists[2],
                                   viewMode: ViewMode.following,
-                                  listBodyWidth: listBodyWidth,
+                                  listBodyWidth: listBodyWidth, currentUser: currentUser,
                                 ),
                               ],
                             ),
