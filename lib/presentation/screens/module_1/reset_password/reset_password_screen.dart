@@ -12,12 +12,16 @@ class ResetPasswordScreen extends StatefulWidget {
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen>
+    with Validator {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _passwordController;
   late final TextEditingController _confirmPasswordController;
+  late ValueNotifier<bool> _obscureText;
+  late ValueNotifier<bool> _obscureConfirmText;
   late double deviceWidth, deviceHeight;
   late bool _isWeb;
+  late String uid;
 
   @override
   void initState() {
@@ -25,6 +29,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     _formKey = GlobalKey<FormState>();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _obscureText = ValueNotifier<bool>(true);
+    _obscureConfirmText = ValueNotifier<bool>(true);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       String hash = widget.hashParameters ?? "";
@@ -53,6 +59,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   void dispose() {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+
+    _obscureText.dispose();
+    _obscureConfirmText.dispose();
     super.dispose();
   }
 
@@ -93,15 +102,50 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         const SizedBox(
                           height: 30,
                         ),
-                        AuthTextFormField(
-                            textEditingController: _passwordController,
-                            hintText: AppStrings.typeCode),
+                        ValueListenableBuilder(
+                          valueListenable: _obscureText,
+                          builder: (context, value, child) {
+                            return AuthTextFormField(
+                              textEditingController: _passwordController,
+                              hintText: AppStrings.passwordHint,
+                              obscureText: value,
+                              textInputAction: TextInputAction.next,
+                              validator: (value) => validatePassword(value),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  _obscureText.value = !value;
+                                },
+                                icon: Icon(value
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined),
+                              ),
+                            );
+                          },
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
-                        AuthTextFormField(
-                            textEditingController: _confirmPasswordController,
-                            hintText: AppStrings.typeCode),
+                        ValueListenableBuilder(
+                          valueListenable: _obscureConfirmText,
+                          builder: (context, value, child) {
+                            return AuthTextFormField(
+                              textEditingController: _confirmPasswordController,
+                              hintText: AppStrings.confirmPasswordHint,
+                              obscureText: value,
+                              textInputAction: TextInputAction.done,
+                              validator: (value) => validateConfirmPassword(
+                                  _passwordController.text, value),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  _obscureConfirmText.value = !value;
+                                },
+                                icon: Icon(value
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined),
+                              ),
+                            );
+                          },
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -116,9 +160,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 onPressed: () async {
                                   context
                                       .read<ResetPasswordCubit>()
-                                      .setNewPassword(_confirmPasswordController
-                                          .text
-                                          .trim());
+                                      .setNewPassword(
+                                          context,
+                                          _confirmPasswordController.text
+                                              .trim());
                                 },
                                 isLoading: (state is VerifyRequestLoading ||
                                     state is ResetPasswordLoading),
