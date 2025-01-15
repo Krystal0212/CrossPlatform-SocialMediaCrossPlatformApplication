@@ -2,7 +2,7 @@ import 'package:socialapp/utils/import.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController messageController;
-  final ValueNotifier<XFile?> selectedImageNotifier;
+  final ValueNotifier <List<Map<String, dynamic>>> selectedImageNotifier;
   final VoidCallback sendMessage;
   final VoidCallback sendImageWithText;
   final VoidCallback pickImage;
@@ -53,7 +53,7 @@ class MessageInput extends StatelessWidget {
             icon: const Icon(Icons.arrow_upward,
                 size: 40, color: AppColors.lightIris),
             onPressed: () {
-              if (selectedImageNotifier.value != null) {
+              if (selectedImageNotifier.value.isNotEmpty) {
                 sendImageWithText();
               } else {
                 sendMessage();

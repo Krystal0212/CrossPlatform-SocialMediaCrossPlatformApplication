@@ -1,5 +1,7 @@
 import 'package:socialapp/domain/entities/message.dart';
 import 'package:socialapp/utils/import.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+
 
 class ChatService extends ChangeNotifier {
   // get instance of auth and firestore
@@ -74,19 +76,48 @@ class ChatService extends ChangeNotifier {
     }
   }
 
+  Future<String> compressAndUploadImage(String imagePath) async {
+    final Uint8List? result = await FlutterImageCompress.compressWithFile(
+      imagePath,
+      // format: CompressFormat.webp,  // Compress to WebP
+      // quality: 100,
+    );
+
+    File tempFile = File('${(await getTemporaryDirectory()).path}/temp.webp');
+    tempFile.writeAsBytesSync(result!);
+
+    // Upload compressed image to Firebase Storage
+    String fileName = '${DateTime.now().millisecondsSinceEpoch}.webp';
+    Reference storageRef = _storage.ref().child('chat_images/$currentUserId/$fileName');
+
+    String imageUrl ='';
+
+    await storageRef.putFile(tempFile).whenComplete(() async{
+      await storageRef.getDownloadURL().then((url){
+        imageUrl = url;
+      }
+      );
+    });
+    return imageUrl;
+  }
+
+
   Future<void> sendImageMessage(
       bool isUser1, String receiverId, String imagePath, String message) async {
     final Timestamp timestamp = Timestamp.now();
+    Stopwatch stopwatch = Stopwatch();
+    stopwatch.start();
 
     // Upload image to Firebase Storage
     String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
     Reference storageRef =
-        _storage.ref().child('chat_images/$currentUserId/$fileName');
+    _storage.ref().child('chat_images/$currentUserId/$fileName');
 
     UploadTask uploadTask = storageRef.putFile(File(imagePath));
     TaskSnapshot snapshot = await uploadTask;
 
-    String imageUrl = await snapshot.ref.getDownloadURL();
+    // String imageUrl = await snapshot.ref.getDownloadURL();
+    String imageUrl = await compressAndUploadImage(imagePath);
 
     List<String> ids = [currentUserId, receiverId];
     ids.sort();
@@ -104,6 +135,11 @@ class ChatService extends ChangeNotifier {
         .doc(chatRoomId)
         .collection("messages")
         .add(newMessage.toMap());
+
+    if (kDebugMode) {
+      print('Data fetching time for storing: ${stopwatch.elapsedMilliseconds}ms');
+    }
+
   }
 
   Map<String, dynamic> getMessageLayoutData(

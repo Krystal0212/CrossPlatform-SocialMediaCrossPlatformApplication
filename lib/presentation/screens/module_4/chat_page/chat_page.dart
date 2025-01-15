@@ -1,3 +1,4 @@
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:socialapp/data/sources/firestore/chat_service_impl.dart';
 
@@ -24,8 +25,8 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
   final TextEditingController _messageController = TextEditingController();
   final ChatService _chatService = ChatService();
   late ScrollController _scrollController;
-  final ValueNotifier<XFile?> _selectedImageNotifier =
-      ValueNotifier<XFile?>(null);
+  final ValueNotifier<List<Map<String, dynamic>>> _selectedAssetsNotifier =
+      ValueNotifier<List<Map<String, dynamic>>>([]);
 
   late ImageSendCubit _imageSendCubit;
   late bool isUser1;
@@ -45,7 +46,7 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
   void dispose() {
     _scrollController.dispose();
     _messageController.dispose();
-    _selectedImageNotifier.dispose();
+    _selectedAssetsNotifier.dispose();
     super.dispose();
   }
 
@@ -53,10 +54,28 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
-      _selectedImageNotifier.value = image;
+    if (image == null) {
+      throw ("No image selected");
     }
+
+    List<Map<String, dynamic>> selectedAssetsList = List.from(_selectedAssetsNotifier.value);
+    selectedAssetsList.add({
+      'data': File(image.path).readAsBytesSync(),
+      'path': image.path,
+      'type': 'image'
+    });
+
+    _selectedAssetsNotifier.value = selectedAssetsList;
   }
+
+  // void pickImage() async {
+  //   final ImagePicker picker = ImagePicker();
+  //   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  //
+  //   if (image != null) {
+  //     _selectedImageNotifier.value = {image:false};
+  //   }
+  // }
 
   void sendMessage() async {
     // Ensure not to send an empty message
@@ -70,18 +89,20 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
   }
 
   void sendImageWithText(isUser1) async {
-    if (_selectedImageNotifier.value != null) {
+    if (_selectedAssetsNotifier.value.isNotEmpty) {
       _imageSendCubit.sendImageInProgress();
       try {
-        await _chatService.sendImageMessage(
-          isUser1,
-          widget.receiverUserID,
-          _selectedImageNotifier.value!.path,
-          _messageController.text.trim(),
-        );
-        _imageSendCubit.sendImageSuccess();
-        _selectedImageNotifier.value = null;
-        _messageController.clear();
+        for (Map<String, dynamic> image in _selectedAssetsNotifier.value) {
+          await _chatService.sendImageMessage(
+            isUser1,
+            widget.receiverUserID,
+            image['path'],
+            _messageController.text.trim(),
+          );
+          _imageSendCubit.sendImageSuccess();
+          _selectedAssetsNotifier.value = [];
+          _messageController.clear();
+        }
       } catch (e) {
         _imageSendCubit.sendImageFailure();
         if (kDebugMode) {
@@ -93,9 +114,6 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print("I'm building");
-    }
     return BlocProvider(
       create: (_) => _imageSendCubit,
       child: ChatPageUserProperty(
@@ -166,7 +184,7 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                     ),
                     MessageInput(
                         messageController: _messageController,
-                        selectedImageNotifier: _selectedImageNotifier,
+                        selectedImageNotifier: _selectedAssetsNotifier,
                         sendMessage: sendMessage,
                         sendImageWithText: () {
                           sendImageWithText(isUser1);
@@ -176,7 +194,7 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                 ),
               ),
             ),
-            ImagePreview(selectedImageNotifier: _selectedImageNotifier)
+            ImagePreview(selectedAssetsNotifier: _selectedAssetsNotifier)
           ]),
         ),
       ),

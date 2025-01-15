@@ -139,8 +139,6 @@ class PostServiceImpl extends PostService {
           documentMap['comments'] = comments.toSet();
           documentMap['likes'] = likes.toSet();
 
-          print('catch me');
-
           PostModel post = PostModel.fromMap(documentMap);
 
           posts.add(post);
@@ -216,8 +214,7 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<void> syncLikesToFirestore(
-      Map<String, Map<String, bool>> likedPostsCache) async {
+  Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache) async {
     if (likedPostsCache.isEmpty) {
       if (kDebugMode) {
         print('No likes to sync.');

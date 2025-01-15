@@ -218,13 +218,11 @@ class _DialogBodyState extends State<DialogBody> {
             final double height = videoDimensions['height'] ?? 1;
 
             imageRatio = width / height;
-
             uploadedAsset['type'] = 'video';
           }
 
           uploadedAsset['ratio'] = imageRatio;
           uploadedAsset['data'] = reader.result as Uint8List;
-
           uploadedAsset['isNSFW'] = await _isNSFWAsset(uploadedAsset['data']);
 
           print('isNSFW ${uploadedAsset['isNSFW']}');
