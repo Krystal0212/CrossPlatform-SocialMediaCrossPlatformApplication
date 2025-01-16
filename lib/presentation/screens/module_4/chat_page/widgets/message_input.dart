@@ -18,8 +18,19 @@ class MessageInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.only(left: 12.0, right: 8.0, bottom: 8.0),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.black, // Shadow color
+            offset: const Offset(0, 1), // Offset in the negative Y direction
+            blurRadius: 2, // How much the shadow is blurred
+          ),
+        ],
+      ),
+
       child: Row(
         children: [
           Expanded(
@@ -50,8 +61,8 @@ class MessageInput extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.arrow_upward,
-                size: 40, color: AppColors.lightIris),
+            icon: Icon(Icons.arrow_upward,
+                size: 40, color: AppTheme.black),
             onPressed: () {
               if (selectedImageNotifier.value.isNotEmpty) {
                 sendImageWithText();
@@ -62,7 +73,7 @@ class MessageInput extends StatelessWidget {
           ),
           const SizedBox(width: 6.0),
           IconButton(
-            icon: const Icon(Icons.image, size: 40, color: AppColors.iris),
+            icon: Icon(Icons.image, size: 40, color: AppTheme.black),
             onPressed: pickImage,
           ),
         ],

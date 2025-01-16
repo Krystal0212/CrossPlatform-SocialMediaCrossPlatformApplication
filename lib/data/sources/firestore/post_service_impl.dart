@@ -225,32 +225,39 @@ class PostServiceImpl extends PostService {
     WriteBatch batch = _firestoreDB.batch();
 
     try {
+      List<Future<void>> operations = [];
+
       likedPostsCache.forEach((postId, userIdsMap) {
         DocumentReference postRef = _postRef.doc(postId);
 
-        userIdsMap.forEach((userId, isAdded) async {
-          DocumentReference likeRef = postRef.collection('likes').doc(userId);
+        userIdsMap.forEach((userId, isAdded) {
+          operations.add(() async {
+            DocumentReference likeRef = postRef.collection('likes').doc(userId);
+            DocumentSnapshot likeSnapshot = await likeRef.get();
 
-          DocumentSnapshot likeSnapshot = await likeRef.get();
-
-          if (isAdded) {
-            if (!likeSnapshot.exists) {
-              batch.set(likeRef, {'userId': userId});
-              batch.update(postRef, {
-                'likeAmount': FieldValue.increment(1),
-              });
+            if (isAdded) {
+              if (!likeSnapshot.exists) {
+                batch.set(likeRef, {'userId': userId});
+                batch.update(postRef, {
+                  'likeAmount': FieldValue.increment(1),
+                });
+              }
+            } else {
+              if (likeSnapshot.exists) {
+                batch.delete(likeRef);
+                batch.update(postRef, {
+                  'likeAmount': FieldValue.increment(-1),
+                });
+              }
             }
-          } else {
-            if (likeSnapshot.exists) {
-              batch.delete(likeRef);
-              batch.update(postRef, {
-                'likeAmount': FieldValue.increment(-1),
-              });
-            }
-          }
+          }());
         });
       });
 
+      // Wait for all operations to complete before committing the batch
+      await Future.wait(operations);
+
+      // Commit the batch after all operations are prepared
       await batch.commit();
       if (kDebugMode) {
         print('Likes synced to Firestore successfully.');

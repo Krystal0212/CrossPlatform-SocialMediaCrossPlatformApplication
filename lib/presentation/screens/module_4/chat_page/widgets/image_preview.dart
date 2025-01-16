@@ -13,27 +13,6 @@ class ImagePreview extends StatelessWidget {
     required this.selectedAssetsNotifier,
   });
 
-  Future<File> convertToWebP(File inputFile, {int targetWidth = 250}) async {
-    final Uint8List? compressedImage =
-        await FlutterImageCompress.compressWithFile(
-      inputFile.absolute.path,
-      format: CompressFormat.webp,
-      quality: 1,
-      minWidth: targetWidth,
-    );
-
-    if (compressedImage == null) {
-      throw Exception("Failed to convert image to WebP.");
-    }
-
-    final String outputPath = inputFile.path
-        .replaceAll(RegExp(r'\.(heic|HEIC|jpg|jpeg|png)$'), '.webp');
-    final File outputFile = File(outputPath);
-    await outputFile.writeAsBytes(compressedImage);
-
-    return outputFile; // Return the new WebP file
-  }
-
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
@@ -45,60 +24,28 @@ class ImagePreview extends StatelessWidget {
             bottom: MediaQuery.of(context).size.height * 0.08,
             left: 16.0,
             right: 16.0,
-               child: SizedBox(
-            width: deviceWidth * 0.8,
-            height: 250,
-
-              child: ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                itemCount: imagePathList.length,
-                itemBuilder: (context, index) {
-                  final Uint8List assetData = imagePathList[index]['data'];
-
-                  return Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 20),
-                        child: imagePathList[index]['type'] == 'video'
-                            ? VideoPlayerWidget(videoData: assetData)
-                            : Container(
-                                height: 250,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.grey),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.memory(
-                                    assetData,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        right: 30,
-                        child: CloseIconButton(
-                          onTap: () {
-                            final List<Map<String, dynamic>> updatedList =
-                                List<Map<String, dynamic>>.from(imagePathList);
-                            updatedList.removeAt(index);
-                            selectedAssetsNotifier.value = updatedList;
-                          },
-                        ),
-                      ),
-                    ],
-                  );
+            child: SizedBox(
+              width: deviceWidth * 0.8,
+              height: 250,
+              child: NotificationListener<OverscrollIndicatorNotification>(
+                onNotification: (overscroll) {
+                  overscroll.disallowIndicator();
+                  return true;
                 },
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: imagePathList.length,
+                  itemBuilder: (context, index) {
+                    return ImageDisplay(
+                      selectedAssetsNotifier: selectedAssetsNotifier,
+                      index: index,
+                    );
+                  },
+                ),
               ),
             ),
           );
-
-          // ImageDisplay(
-          //    imageBytes: File(selectedXFile.path),
-          //    selectedImageNotifier: selectedAssetsNotifier);
         } else {
           return const SizedBox.shrink();
         }
@@ -107,92 +54,113 @@ class ImagePreview extends StatelessWidget {
   }
 }
 
-class ImageDisplay extends StatelessWidget {
-  final File imageBytes;
+class ImageDisplay extends StatefulWidget {
   final int index;
+  final ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier;
 
-  // final bool isHeic;
-  final ValueNotifier<List<Map<String, dynamic>>> selectedImageNotifier;
+  const ImageDisplay({
+    super.key,
+    required this.selectedAssetsNotifier,
+    required this.index,
+  });
 
-  const ImageDisplay(
-      {super.key,
-      required this.imageBytes,
-      required this.selectedImageNotifier,
-      required this.index});
+  @override
+  _ImageDisplayState createState() => _ImageDisplayState();
+}
+
+class _ImageDisplayState extends State<ImageDisplay> {
+  final ValueNotifier<bool> _isImageLoadedNotifier = ValueNotifier<bool>(false);
+
+  late double deviceWidth;
+  late final List imagePathList;
+  late final Uint8List assetData;
+
+  @override
+  void initState() {
+    super.initState();
+
+    imagePathList = widget.selectedAssetsNotifier.value;
+    assetData = imagePathList[widget.index]['data'];
+  }
+
+  @override
+  void dispose() {
+    _isImageLoadedNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    deviceWidth = MediaQuery.of(context).size.width;
+  }
 
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double deviceHeight = MediaQuery.of(context).size.height;
-    // final maxWidth = deviceWidth * 0.5;
-    // final maxHeight = deviceHeight * 0.3;
-    //
-    // final sizeResult = ImageSizeGetter.getSizeResult(FileInput(imageBytes));
-    // final imageWidth = sizeResult.size.width;
-    // final imageHeight = sizeResult.size.height;
-    //
-    // final aspectRatio = imageWidth / imageHeight;
-    // double previewWidth = maxWidth;
-    // double previewHeight = previewWidth / aspectRatio;
-    //
-    // if (previewHeight > maxHeight) {
-    //   previewHeight = maxHeight;
-    //   previewWidth = previewHeight * aspectRatio;
-    // }
+    final List imagePathList = widget.selectedAssetsNotifier.value;
+    final Uint8List assetData = imagePathList[widget.index]['data'];
 
-    return Positioned(
-      bottom: MediaQuery.of(context).size.height * 0.07,
-      left: 16.0,
-      right: 16.0,
-      child: Align(
-        alignment: Alignment.bottomLeft,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.6),
-                blurRadius: 15.0,
-                offset: const Offset(0, 4),
+    return SizedBox(
+      width: deviceWidth * 0.32,
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: imagePathList[widget.index]['type'] == 'video'
+                ? VideoPlayerWidget(videoData: assetData)
+                : Container(
+              height: 250,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 15.0,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: SizedBox(
-            height: 250,
-            width: deviceWidth * 0.32,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.trolleyGrey),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12.0),
-                    child: Image.memory(
-                      imageBytes.readAsBytesSync(),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(
+                  assetData,
+                  fit: BoxFit.cover,
+                  frameBuilder: (BuildContext context, Widget child,
+                      int? frame, bool wasSynchronouslyLoaded) {
+                    if (frame != null || wasSynchronouslyLoaded) {
+                      // Defer the update to the ValueNotifier after the current frame is rendered
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!_isImageLoadedNotifier.value) {
+                          _isImageLoadedNotifier.value = true;
+                        }
+                      });
+                    }
+                    return child;
+                  },
                 ),
-                Positioned(
-                  top: -10,
-                  right: -10,
-                  child: CloseIconButton(
-                    onTap: () {
-                      final List<Map<String, dynamic>> updatedList =
-                          List<Map<String, dynamic>>.from(selectedImageNotifier.value);
-                      updatedList.removeAt(index);
-                      selectedImageNotifier.value = updatedList;
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          ValueListenableBuilder<bool>(
+            valueListenable: _isImageLoadedNotifier,
+            builder: (context, isImageLoaded, child) {
+              if (!isImageLoaded) return const SizedBox.shrink();
+
+              return Positioned(
+                top: 10,
+                right: 30,
+                child: CloseIconButton(
+                  onTap: () {
+                    final List<Map<String, dynamic>> updatedList =
+                    List<Map<String, dynamic>>.from(imagePathList);
+                    updatedList.removeAt(widget.index);
+                    widget.selectedAssetsNotifier.value = updatedList;
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
-  }
-}
+  }}

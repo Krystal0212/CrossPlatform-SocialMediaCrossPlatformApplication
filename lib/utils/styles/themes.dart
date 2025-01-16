@@ -132,6 +132,12 @@ class AppTheme {
         color: black,
       );
 
+  static TextStyle get messageStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: black,
+  );
+
   static TextStyle get highlightedHashtagStyle => GoogleFonts.plusJakartaSans(
         fontSize: 15,
         fontWeight: FontWeight.w700,

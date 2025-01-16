@@ -24,9 +24,10 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> with AppDialogs {
   final TextEditingController _messageController = TextEditingController();
   final ChatService _chatService = ChatService();
+
   late ScrollController _scrollController;
-  final ValueNotifier<List<Map<String, dynamic>>> _selectedAssetsNotifier =
-      ValueNotifier<List<Map<String, dynamic>>>([]);
+  late ValueNotifier<List<Map<String, dynamic>>> _selectedAssetsNotifier;
+
 
   late ImageSendCubit _imageSendCubit;
   late bool isUser1;
@@ -40,6 +41,7 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     receiverUserID = widget.receiverUserID;
     receiverAvatar = widget.receiverAvatar;
     _scrollController = ScrollController();
+    _selectedAssetsNotifier = ValueNotifier<List<Map<String, dynamic>>>([]);
   }
 
   @override
@@ -58,7 +60,8 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
       throw ("No image selected");
     }
 
-    List<Map<String, dynamic>> selectedAssetsList = List.from(_selectedAssetsNotifier.value);
+    List<Map<String, dynamic>> selectedAssetsList =
+        List.from(_selectedAssetsNotifier.value);
     selectedAssetsList.add({
       'data': File(image.path).readAsBytesSync(),
       'path': image.path,
@@ -119,47 +122,77 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
       child: ChatPageUserProperty(
         isUser1: widget.isUser1,
         child: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(AppColors.white),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Colors.black,
-              ),
-            ),
-            title: Row(
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight + 5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  child: ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: widget.receiverAvatar,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          const CircularProgressIndicator(
-                        color: Colors.blue,
-                      ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
+                AppBar(
+                  scrolledUnderElevation: 0,
+                  elevation: 0,
+                  // Disable default AppBar elevation
+                  leading: IconButton(
+                    style: ButtonStyle(
+                      elevation: WidgetStateProperty.all(0.0),
+                      //Remove tap effect
+                      overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: SvgPicture.asset(AppIcons.backButton),
+                  ),
+                  title: Text(
+                    widget.receiverUserEmail,
+                    style: AppTheme.messageStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
                     ),
                   ),
+                  backgroundColor: AppColors.white,
+                  centerTitle: true,
                 ),
-                const SizedBox(
-                  width: 8.0,
+                Container(
+                  height: 1, // Height of the shadow
+                  decoration: const BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.trolleyGrey, // Shadow color
+                        blurRadius: 2, // Spread of the shadow
+                        offset: Offset(0, 1), // Horizontal and vertical offset
+                      ),
+                    ],
+                  ),
                 ),
-                Text(widget.receiverUserEmail),
               ],
             ),
-            backgroundColor: AppColors.iris.withOpacity(0.3),
-            centerTitle: true,
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            // CircleAvatar(
+            //   child: ClipOval(
+            //     child: CachedNetworkImage(
+            //       imageUrl: widget.receiverAvatar,
+            //       fit: BoxFit.cover,
+            //       placeholder: (context, url) =>
+            //           const CircularProgressIndicator(
+            //         color: Colors.blue,
+            //       ),
+            //       errorWidget: (context, url, error) =>
+            //           const Icon(Icons.error),
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(
+            //   width: 8.0,
+            // ),
+            //   Text(widget.receiverUserEmail),
+            // ],
+            // ),
           ),
           body: Stack(children: [
             Container(
-              color: Colors.grey.withOpacity(0.2),
+              color: AppColors.white,
               child: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Column(
@@ -178,6 +211,14 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                         ),
                       ],
                     )),
+                    ValueListenableBuilder(
+                        valueListenable: _selectedAssetsNotifier,
+                        builder: (context, assetList, _) {
+                            return SizedBox(
+                            height: (assetList.isNotEmpty) ? 250: 0,
+                          );
+
+                        }),
                     // Message input
                     ImageSendStatusWidget(
                       scrollController: _scrollController,
