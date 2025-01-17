@@ -1,12 +1,10 @@
 import 'package:socialapp/utils/import.dart';
-import 'package:socialapp/utils/specifics/web_plugins.dart';
 import 'firebase_options.dart';
+import 'package:url_strategy/url_strategy.dart';
+
 
 void main() async {
-  // if (kIsWeb) {
-  //   // Call the web-specific setup
-  //   setupWeb();
-  // }
+  setPathUrlStrategy();
 
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
