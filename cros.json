@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://zineround.site"],
+    "method": ["GET", "POST", "PUT", "DELETE"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"]
+  }
+]
