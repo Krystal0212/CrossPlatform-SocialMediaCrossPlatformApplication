@@ -1,4 +1,3 @@
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:socialapp/utils/specifics/web_plugins.dart';
 import 'firebase_options.dart';

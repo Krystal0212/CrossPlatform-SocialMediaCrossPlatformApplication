@@ -1,15 +1,14 @@
 import 'package:socialapp/utils/import.dart';
 import 'package:intl/intl.dart';
-import 'chat_page/chat_page.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class MessageList extends StatefulWidget {
+  const MessageList({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<MessageList> createState() => _MessageListState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _MessageListState extends State<MessageList> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -141,7 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
         String recentMessage = message?['message'] ?? "No messages yet";
         String recentTime =
             message != null ? formatTime(message['timestamp']) : "";
-        bool isImageMessage = message?['imageUrl'] != null;
+        bool isImageMessage = message?['media'] != null;
         bool isFromUser1 = message?['isFromUser1'] ?? false;
 
         return ListTile(
@@ -182,7 +181,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
             ],
           ),
-          onTap: () => Navigator.push(
+          onTap: () =>
+              Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ChatPage(
