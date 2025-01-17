@@ -1,8 +1,9 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 
-class ImagePickerHelper {
+import 'package:socialapp/utils/import.dart';
+
+
+class ImageProcessingHelper {
   final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> pickImageFromGallery(BuildContext context, dynamic cubit) async {
@@ -18,5 +19,26 @@ class ImagePickerHelper {
       // add image to cubit
       cubit.createImagePost(File(pickedFile.path));
     }
+  }
+
+  static Future<String> getDominantColorFromImage(Uint8List imageData) async {
+    final palette = await PaletteGenerator.fromImageProvider(
+      MemoryImage(imageData),
+      size: const Size(75, 75),
+    );
+    return palette.dominantColor?.color.value.toRadixString(16) ??
+        AppColors.tangledWeb.value.toRadixString(16);
+  }
+
+  static double calculateAspectRatio(img.Image? image) {
+    int width = image?.width ?? 0;
+    int height = image?.height ?? 0;
+    return width / height;
+  }
+
+  static List<int> calculateWidthAndHeight(img.Image? image) {
+    int width = image?.width ?? 0;
+    int height = image?.height ?? 0;
+    return [width,height];
   }
 }

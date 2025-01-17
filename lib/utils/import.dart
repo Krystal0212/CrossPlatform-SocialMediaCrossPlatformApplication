@@ -38,10 +38,16 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         WriteBatch,
         AggregateQuerySnapshot,
         FieldValue,
-        QueryDocumentSnapshot;
+        QueryDocumentSnapshot,
+        SetOptions;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 export 'package:like_button/like_button.dart';
 export 'package:pulp_flash/pulp_flash.dart';
+export 'package:shimmer/shimmer.dart';
+export 'package:palette_generator/palette_generator.dart';
+export 'package:flutter_image_compress/flutter_image_compress.dart';
+
+
 
 // App Configurations
 export 'package:socialapp/config/platforms.dart';
@@ -58,6 +64,7 @@ export 'package:socialapp/utils/constants/image_path.dart';
 export 'package:socialapp/utils/mixin/validators/validators.dart';
 export 'package:socialapp/utils/mixin/methods/alert_dialog.dart';
 export 'package:socialapp/utils/mixin/methods/convert_timestamp.dart';
+export 'package:socialapp/utils/mixin/methods/image_picker.dart';
 
 // Data and Repositories
 export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
@@ -89,6 +96,7 @@ export 'package:socialapp/domain/entities/collection.dart';
 export 'package:socialapp/domain/entities/topic.dart';
 export 'package:socialapp/domain/entities/post.dart';
 export 'package:socialapp/domain/entities/comment.dart';
+export 'package:socialapp/domain/entities/message.dart';
 
 // Presentation Screens and Self Widgets
 export 'package:socialapp/presentation/screens/module_1/module_1_exports.dart';
@@ -110,4 +118,3 @@ export 'package:socialapp/presentation/widgets/general/linear_gradient_title.dar
 export 'package:socialapp/presentation/widgets/forgot_password/message_content.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/stacks_bottom.dart';
 export 'package:socialapp/presentation/widgets/edit_profile/app_text_form_field.dart';
-export 'package:socialapp/presentation/widgets/chat/chat_bubble.dart';

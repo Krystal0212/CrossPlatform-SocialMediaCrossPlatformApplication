@@ -1,4 +1,4 @@
-export 'chat_page/widgets/image_preview.dart';
-export 'chat_page/widgets/message_input.dart';
-export 'chat_page/widgets/message_list.dart';
-export 'chat_page/widgets/image_send_status.dart';
+export 'message_page/widgets/image_preview.dart';
+export 'message_page/widgets/message_input.dart';
+export 'message_page/widgets/message_list.dart';
+export 'message_page/message_page.dart';

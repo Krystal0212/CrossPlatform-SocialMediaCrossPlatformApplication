@@ -1,16 +1,17 @@
 import 'package:socialapp/data/sources/firestore/chat_service_impl.dart';
 import 'package:socialapp/utils/import.dart';
 
-import 'package:socialapp/presentation/screens/module_4/chat_page/widgets/chat_page_properties.dart';
-import 'package:socialapp/presentation/widgets/chat/image_placeholder.dart';
 import 'package:intl/intl.dart';
 
+import 'chat_page_properties.dart';
+import 'message_image_grid_display.dart';
 
 class MessageList extends StatelessWidget {
   final String receiverUserID, receiverAvatar;
   final ScrollController scrollController;
+  final ChatService chatService = ChatService();
 
-  const MessageList({
+  MessageList({
     super.key,
     required this.receiverUserID,
     required this.scrollController,
@@ -19,57 +20,66 @@ class MessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ChatService chatService = ChatService();
-    return StreamBuilder<QuerySnapshot>(
-      stream: chatService.getMessages(receiverUserID),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasData && snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text(
-              "Send your first message now",
-              style: TextStyle(fontSize: 16),
-            ),
-          );
-        } else {
-          return NotificationListener<OverscrollIndicatorNotification>(
-            onNotification: (overscroll) {
-              overscroll.disallowIndicator();
-              return true;
-            },
-            child: ListView.builder(
-              shrinkWrap: true,
-              reverse: true,
-              controller: scrollController,
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                DocumentSnapshot currentDocument = snapshot.data!.docs[index];
-                DocumentSnapshot? nextDocument =
-                    (index - 1 >= 0) ? snapshot.data!.docs[index - 1] : null;
-
-                return MessageItem(
-                  document: currentDocument,
-                  nextDocument: nextDocument,
-                  chatService: chatService,
-                  receiverAvatar: receiverAvatar,
-                );
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: chatService.getMessages(receiverUserID),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
+            
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+            
+                if (snapshot.hasData && snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "Send your first message now",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  );
+                } else {
+                  return NotificationListener<OverscrollIndicatorNotification>(
+                    onNotification: (overscroll) {
+                      overscroll.disallowIndicator();
+                      return true;
+                    },
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      reverse: true,
+                      controller: scrollController,
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot currentDocument = snapshot.data!.docs[index];
+                        DocumentSnapshot? nextDocument =
+                            (index - 1 >= 0) ? snapshot.data!.docs[index - 1] : null;
+            
+                        return MessageItem(
+                          document: currentDocument,
+                          nextDocument: nextDocument,
+                          chatService: chatService,
+                          receiverAvatar: receiverAvatar,
+                        );
+                      },
+                    ),
+                  );
+                }
               },
             ),
-          );
-        }
-      },
+          ),
+        ],
+      ),
     );
   }
 }
 
-class MessageItem extends StatelessWidget with AppDialogs {
+class MessageItem extends StatelessWidget {
   final DocumentSnapshot document;
   final DocumentSnapshot? nextDocument;
   final ChatService chatService;
@@ -104,7 +114,7 @@ class MessageItem extends StatelessWidget with AppDialogs {
   Widget build(BuildContext context) {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
     Map<String, dynamic>? nextData =
-    nextDocument?.data() as Map<String, dynamic>?;
+        nextDocument?.data() as Map<String, dynamic>?;
     final bool isUser1 = ChatPageUserProperty.of(context);
 
     final Map<String, dynamic> layoutData = chatService.getMessageLayoutData(
@@ -117,12 +127,14 @@ class MessageItem extends StatelessWidget with AppDialogs {
     bool showTimestamp = layoutData['showTimestamp'];
     double spacing = layoutData['spacing'];
 
+    double deviceWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: EdgeInsets.only(bottom: spacing, left: 8.0, right: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment:
-        isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+            isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isSender) ...[
             if (showAvatar)
@@ -132,11 +144,11 @@ class MessageItem extends StatelessWidget with AppDialogs {
                     imageUrl: receiverAvatar,
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
-                    const CircularProgressIndicator(
+                        const CircularProgressIndicator(
                       color: AppColors.blueDeFrance,
                     ),
                     errorWidget: (context, url, error) =>
-                    const Icon(Icons.error),
+                        const Icon(Icons.error),
                   ),
                 ),
               )
@@ -147,39 +159,16 @@ class MessageItem extends StatelessWidget with AppDialogs {
           Flexible(
             child: Column(
               crossAxisAlignment:
-              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                if (data['imageUrl'] != null && data['imageUrl'].isNotEmpty)
-                  LayoutBuilder(
-                    builder:
-                        (BuildContext context, BoxConstraints constraints) {
-                      return ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth:
-                          constraints.maxWidth * 0.4, // 70% of parent width
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12.0),
-                          child: InkWell(
-                            onTap: () =>
-                                showImageDialog(context, data['imageUrl']),
-                            child: CachedNetworkImage(
-                              imageUrl: data["imageUrl"],
-                              fit: BoxFit.fitWidth,
-                              placeholder: (context, url) =>
-                                  ChatImagePlaceholder(
-                                    width: constraints.maxWidth * 0.7,
-                                    height:
-                                    MediaQuery.of(context).size.height * 0.2,
-                                  ),
-                              errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                if (data['media'] != null && (data['media'] as Map).isNotEmpty)
+                  ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: deviceWidth * 0.7, // 70% of parent width
+                      ),
+                      child: ImageDisplayGrid(
+                        rawMediaData: data['media'],
+                      )),
                 if (data['message'].isNotEmpty)
                   ChatBubble(
                     message: data['message'],
@@ -199,9 +188,11 @@ class MessageItem extends StatelessWidget with AppDialogs {
   }
 }
 
+
 class ChatBubble extends StatelessWidget {
   final String message;
   final bool isSender;
+
   const ChatBubble({super.key, required this.message, required this.isSender});
 
   @override
@@ -215,7 +206,9 @@ class ChatBubble extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: isSender ? AppColors.lavenderBlueShadow.withOpacity(0.2) : AppColors.christmasSilver.withOpacity(0.2),
+          color: isSender
+              ? AppColors.lavenderBlueShadow.withOpacity(0.2)
+              : AppColors.christmasSilver.withOpacity(0.2),
         ),
         child: Text(
           message,
