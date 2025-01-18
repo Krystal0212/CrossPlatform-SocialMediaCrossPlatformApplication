@@ -1,12 +1,12 @@
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
+import 'package:socialapp/presentation/screens/module_2/home/providers/user_notifier_provider.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:socialapp/utils/mixin/methods/flash_message.dart';
 
 class PostBottom extends StatefulWidget {
   final PostModel post;
-  final UserModel? currentUser;
 
-  const PostBottom({super.key, required this.post, required this.currentUser});
+  const PostBottom({super.key, required this.post});
 
   @override
   State<PostBottom> createState() => _PostBottomState();
@@ -24,7 +24,6 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
   @override
   void initState() {
     super.initState();
-    currentUser = widget.currentUser;
     isUserLiked = ValueNotifier<bool>(
       widget.post.likes.contains(currentUser?.id ?? ''),
     );
@@ -33,6 +32,13 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
     likeAmount = widget.post.likeAmount;
 
     likeAmountNotifier = ValueNotifier<int>(widget.post.likeAmount);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    currentUser = HomePropertiesProvider.of(context)?.user;
   }
 
   @override

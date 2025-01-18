@@ -83,7 +83,7 @@ class AppRoutes {
 
             return _buildPageRoute(BlocProvider(
                 create: (context) => HomeCubit(),
-                child: (isWeb) ? const HomeScreen() : const CustomNavigatorBar()));
+                child: (isWeb) ? const WebsiteHomeScreen() : const CustomNavigatorBar()));
           }),
       GoRoute(
           path: '/new-post',
@@ -92,7 +92,7 @@ class AppRoutes {
 
             if (isWeb) {
               return _buildPageRoute(BlocProvider(
-                  create: (context) => HomeCubit(), child: const HomeScreen()));
+                  create: (context) => HomeCubit(), child: const WebsiteHomeScreen()));
             } else {
               return _buildPageRoute(const NewPostScreen());
             }

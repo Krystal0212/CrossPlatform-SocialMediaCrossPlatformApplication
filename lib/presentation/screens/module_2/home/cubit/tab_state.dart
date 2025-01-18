@@ -1,0 +1,21 @@
+import 'package:socialapp/utils/import.dart';
+
+class TabState {}
+
+class TabLoading extends TabState {}
+
+class TabLoaded extends TabState {
+  final List<PostModel> posts;
+
+  TabLoaded(this.posts);
+}
+
+class TabError extends TabState {
+  final String error;
+
+  TabError(this.error);
+}
+
+class TabNotSignIn extends TabState {
+}
+

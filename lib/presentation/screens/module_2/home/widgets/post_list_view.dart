@@ -1,7 +1,7 @@
-import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 
 import '../cubit/home_state.dart';
+import '../providers/user_notifier_provider.dart';
 import 'post_header.dart';
 import 'post_bottom.dart';
 import 'post_assets.dart';
@@ -9,14 +9,12 @@ import 'post_assets.dart';
 class PostListView extends StatefulWidget {
   final List<PostModel> posts;
   final ViewMode viewMode;
-  final double listBodyWidth;
-  final UserModel? currentUser;
 
-  const PostListView(
-      {super.key,
-      required this.posts,
-      required this.viewMode,
-      required this.listBodyWidth, required this.currentUser});
+  const PostListView({
+    super.key,
+    required this.posts,
+    required this.viewMode,
+  });
 
   @override
   State<PostListView> createState() => _PostListViewState();
@@ -26,34 +24,33 @@ class _PostListViewState extends State<PostListView>
     with AutomaticKeepAliveClientMixin {
   late final List<PostModel> postList;
   late double postWidth;
-  late ViewMode viewMode;
 
   final double horizontalPadding = 125;
   final double smallHorizontalPadding = 10;
 
-  late double deviceWidth, deviceHeight;
+  late double deviceWidth, deviceHeight, listBodyWidth;
   late bool isCompactView, isSignedIn, isWeb;
 
   @override
   void initState() {
     super.initState();
     postList = widget.posts;
-    viewMode = widget.viewMode;
-    isSignedIn = context.read<HomeCubit>().checkCurrentUserSignedIn();
   }
 
   @override
   void didChangeDependencies() async {
     deviceWidth = MediaQuery.of(context).size.width;
     deviceHeight = MediaQuery.of(context).size.height;
+    isSignedIn = HomePropertiesProvider.of(context)?.user != null;
+    listBodyWidth =
+        HomePropertiesProvider.of(context)?.listBodyWidth ?? deviceWidth;
 
     isWeb = PlatformConfig.of(context)?.isWeb ?? false;
 
-
     isCompactView = (deviceWidth < 530 || !isWeb) ? true : false;
     postWidth = isCompactView
-        ? widget.listBodyWidth - smallHorizontalPadding * 2
-        : widget.listBodyWidth - horizontalPadding * 2;
+        ? listBodyWidth - smallHorizontalPadding * 2
+        : listBodyWidth - horizontalPadding * 2;
 
     super.didChangeDependencies();
   }
@@ -61,8 +58,8 @@ class _PostListViewState extends State<PostListView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if(isSignedIn || (!isSignedIn && viewMode != ViewMode.following)) {
-      return ScrollConfiguration(
+
+    return ScrollConfiguration(
       behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
       child: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (overscroll) {
@@ -89,7 +86,9 @@ class _PostListViewState extends State<PostListView>
                         post: postDetail,
                         postWidth: postWidth,
                       ),
-                      PostBottom(post: postDetail, currentUser: widget.currentUser,)
+                      PostBottom(
+                        post: postDetail,
+                      )
                     ],
                   ),
                 ),
@@ -99,8 +98,6 @@ class _PostListViewState extends State<PostListView>
         ),
       ),
     );
-    }
-    return SignInPagePlaceholder(width: widget.listBodyWidth,);
   }
 
   @override

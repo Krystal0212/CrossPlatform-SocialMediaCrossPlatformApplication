@@ -173,7 +173,7 @@ class PostMultipleImage extends StatelessWidget {
 }
 
 class PostSimpleImage extends StatelessWidget {
-  final Map<String, String> image;
+  final Map<String, dynamic> image;
   final double postWidth;
   final bool isCachedData;
 
@@ -187,33 +187,20 @@ class PostSimpleImage extends StatelessWidget {
       required this.postWidth,
       required this.isCachedData});
 
-  Future<ui.Image> _getImageInfo(ImageProvider imageProvider) async {
-    final imageStream = imageProvider.resolve(const ImageConfiguration());
-    final completer = Completer<ui.Image>();
-    imageStream.addListener(
-      ImageStreamListener((ImageInfo info, bool _) {
-        completer.complete(info.image);
-      }, onError: (exception, stackTrace) {
-        completer.completeError(exception);
-      }),
-    );
-    return completer.future;
-  }
-
   void _updateHeight(ImageProvider imageProvider, double mediaWidth) async {
     try {
-      final ui.Image image = await _getImageInfo(imageProvider);
-      final double aspectRatio = image.width / image.height;
+      final int imageWidth = image['width']!;
+      final int imageHeight = image['height'];
+      final double aspectRatio = imageWidth / imageHeight;
 
       if (aspectRatio > 1) {
         containerHeight.value =
-            image.height.toDouble() * (mediaWidth / image.width);
+            imageHeight.toDouble() * (mediaWidth / imageWidth);
       } else {
         containerHeight.value = maxHeight;
       }
     } catch (error) {
-      containerHeight.value =
-          maxHeight; // Fallback to max height if error occurs
+      containerHeight.value = maxHeight;
     }
   }
 
