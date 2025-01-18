@@ -44,6 +44,7 @@ class AppIcons {
   static const String setting = '${iconPath}setting$svgFormat';
   static const String show = '${iconPath}show$svgFormat';
   static const String threeDots = '${iconPath}three-dot$svgFormat';
+  static const String nsfw = '${iconPath}nsfw$pngFormat';
 
   // Specific Icons in the Light Outline Icons
   static const String upload = '${iconPath}upload$svgFormat';

@@ -239,7 +239,6 @@ class _DialogBodyState extends State<DialogBody> {
     if (image.isEmpty || kIsWeb) return false;
 
     try {
-      print('checking');
       List<double>? imagePrediction = await classificationModel
           .getImagePredictionListProbabilities(image,
               mean: [0.5, 0.5, 0.5], std: [0.5, 0.5, 0.5]);
@@ -264,7 +263,6 @@ class _DialogBodyState extends State<DialogBody> {
           }
         }
 
-        print(nsfwLabels.contains(label));
 
         if (nsfwLabels.contains(label)) {
           return true;

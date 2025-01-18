@@ -1,19 +1,18 @@
 import 'package:socialapp/utils/import.dart';
 
+import '../cubit/image_cubit.dart';
+import 'chat_page_properties.dart';
+
 class MessageInput extends StatelessWidget {
   final TextEditingController messageController;
-  final ValueNotifier <List<Map<String, dynamic>>> selectedImageNotifier;
-  final VoidCallback sendMessage;
-  final VoidCallback sendImageWithText;
-  final VoidCallback pickImage;
+  final ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier;
+  final String receiverUserID;
 
   const MessageInput({
     super.key,
     required this.messageController,
-    required this.selectedImageNotifier,
-    required this.sendMessage,
-    required this.sendImageWithText,
-    required this.pickImage,
+    required this.selectedAssetsNotifier,
+    required this.receiverUserID,
   });
 
   @override
@@ -30,7 +29,6 @@ class MessageInput extends StatelessWidget {
           ),
         ],
       ),
-
       child: Row(
         children: [
           Expanded(
@@ -61,20 +59,25 @@ class MessageInput extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.arrow_upward,
-                size: 40, color: AppTheme.black),
+            icon: Icon(Icons.arrow_upward, size: 40, color: AppTheme.black),
             onPressed: () {
-              if (selectedImageNotifier.value.isNotEmpty) {
-                sendImageWithText();
+              bool isUser1 = ChatPageUserProperty.of(context);
+              if (selectedAssetsNotifier.value.isNotEmpty) {
+                context
+                    .read<ChatSendCubit>()
+                    .sendImageWithText(isUser1,
+                    selectedAssetsNotifier, messageController, receiverUserID);
               } else {
-                sendMessage();
+                context
+                    .read<ChatSendCubit>()
+                    .sendMessage(isUser1, messageController, receiverUserID);
               }
             },
           ),
           const SizedBox(width: 6.0),
           IconButton(
             icon: Icon(Icons.image, size: 40, color: AppTheme.black),
-            onPressed: pickImage,
+            onPressed: () => context.read<ChatSendCubit>().pickImage(selectedAssetsNotifier),
           ),
         ],
       ),

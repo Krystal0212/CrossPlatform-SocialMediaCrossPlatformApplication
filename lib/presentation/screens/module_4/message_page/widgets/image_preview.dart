@@ -1,16 +1,15 @@
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:image_size_getter/file_input.dart';
-import 'package:image_size_getter/image_size_getter.dart';
 import 'package:socialapp/presentation/screens/module_2/new_post/widgets/dialog_body.dart';
 import 'package:socialapp/presentation/screens/module_2/new_post/widgets/video_player.dart';
 import 'package:socialapp/utils/import.dart';
 
 class ImagePreview extends StatelessWidget {
   final ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier;
+  final ScrollController scrollController;
 
   const ImagePreview({
     super.key,
     required this.selectedAssetsNotifier,
+    required this.scrollController,
   });
 
   @override
@@ -37,7 +36,7 @@ class ImagePreview extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   itemCount: imagePathList.length,
                   itemBuilder: (context, index) {
-                    return ImageDisplay(
+                    return ImagePreviewDisplay(
                       selectedAssetsNotifier: selectedAssetsNotifier,
                       index: index,
                     );
@@ -54,21 +53,21 @@ class ImagePreview extends StatelessWidget {
   }
 }
 
-class ImageDisplay extends StatefulWidget {
+class ImagePreviewDisplay extends StatefulWidget {
   final int index;
   final ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier;
 
-  const ImageDisplay({
+  const ImagePreviewDisplay({
     super.key,
     required this.selectedAssetsNotifier,
     required this.index,
   });
 
   @override
-  _ImageDisplayState createState() => _ImageDisplayState();
+  State<ImagePreviewDisplay> createState() => _ImagePreviewDisplayState();
 }
 
-class _ImageDisplayState extends State<ImageDisplay> {
+class _ImagePreviewDisplayState extends State<ImagePreviewDisplay> {
   final ValueNotifier<bool> _isImageLoadedNotifier = ValueNotifier<bool>(false);
 
   late double deviceWidth;
@@ -105,41 +104,49 @@ class _ImageDisplayState extends State<ImageDisplay> {
       width: deviceWidth * 0.32,
       child: Stack(
         children: [
+          // ImageSendStatusWidget(
+          //   scrollController: scrollController,
+          // ),
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: imagePathList[widget.index]['type'] == 'video'
                 ? VideoPlayerWidget(videoData: assetData)
                 : Container(
-              height: 250,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.6),
-                    blurRadius: 15.0,
-                    offset: const Offset(0, 4),
+                    height: 250,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.6),
+                          blurRadius: 15.0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(
+                        assetData,
+                        fit: BoxFit.cover,
+                        frameBuilder: (BuildContext context, Widget child,
+                            int? frame, bool wasSynchronouslyLoaded) {
+                          if (frame != null || wasSynchronouslyLoaded) {
+                            // Defer the update to the ValueNotifier after the current frame is rendered
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!_isImageLoadedNotifier.value) {
+                                _isImageLoadedNotifier.value = true;
+                              }
+                            });
+                          }
+                          return child;
+                        },
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.memory(
-                  assetData,
-                  fit: BoxFit.cover,
-                  frameBuilder: (BuildContext context, Widget child,
-                      int? frame, bool wasSynchronouslyLoaded) {
-                    if (frame != null || wasSynchronouslyLoaded) {
-                      // Defer the update to the ValueNotifier after the current frame is rendered
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!_isImageLoadedNotifier.value) {
-                          _isImageLoadedNotifier.value = true;
-                        }
-                      });
-                    }
-                    return child;
-                  },
-                ),
-              ),
-            ),
+          ),
+          if (imagePathList[widget.index]['isNSFW'])
+          Positioned(
+            left: 10,
+            child: SizedBox(width: 40,child: Image.asset(AppIcons.nsfw,fit: BoxFit.fitWidth,)),
           ),
           ValueListenableBuilder<bool>(
             valueListenable: _isImageLoadedNotifier,
@@ -152,7 +159,7 @@ class _ImageDisplayState extends State<ImageDisplay> {
                 child: CloseIconButton(
                   onTap: () {
                     final List<Map<String, dynamic>> updatedList =
-                    List<Map<String, dynamic>>.from(imagePathList);
+                        List<Map<String, dynamic>>.from(imagePathList);
                     updatedList.removeAt(widget.index);
                     widget.selectedAssetsNotifier.value = updatedList;
                   },
@@ -163,4 +170,5 @@ class _ImageDisplayState extends State<ImageDisplay> {
         ],
       ),
     );
-  }}
+  }
+}

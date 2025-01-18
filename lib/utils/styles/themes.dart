@@ -250,6 +250,9 @@ class AppTheme {
   static TextStyle get signInWhiteText => GoogleFonts.plusJakartaSans(
       color: Colors.white, fontSize: 15, fontWeight: FontWeight.normal);
 
+  static TextStyle get nsfwWhiteText => GoogleFonts.plusJakartaSans(
+      color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold);
+
   static TextStyle get signUpBlackText => GoogleFonts.plusJakartaSans(
       color: Colors.black, fontSize: 15, fontWeight: FontWeight.normal);
 
