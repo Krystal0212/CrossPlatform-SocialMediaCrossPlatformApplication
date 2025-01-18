@@ -13,8 +13,8 @@ class PostBottom extends StatefulWidget {
 }
 
 class _PostBottomState extends State<PostBottom> with FlashMessage {
-  late final UserModel? currentUser;
-  late final ValueNotifier<bool> isUserLiked;
+  late UserModel? currentUser = UserModel.empty();
+  late ValueNotifier<bool> isUserLiked = ValueNotifier<bool>(false);
   late final ValueNotifier<int> likeAmountNotifier;
 
   late int commentAmount, likeAmount;
@@ -24,9 +24,6 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
   @override
   void initState() {
     super.initState();
-    isUserLiked = ValueNotifier<bool>(
-      widget.post.likes.contains(currentUser?.id ?? ''),
-    );
 
     commentAmount = widget.post.commentAmount;
     likeAmount = widget.post.likeAmount;
@@ -39,6 +36,9 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
     super.didChangeDependencies();
 
     currentUser = HomePropertiesProvider.of(context)?.user;
+    isUserLiked = ValueNotifier<bool>(
+      widget.post.likes.contains(currentUser?.id ?? ''),
+    );
   }
 
   @override

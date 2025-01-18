@@ -216,9 +216,9 @@ class PostServiceImpl extends PostService {
   @override
   Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache) async {
     if (likedPostsCache.isEmpty) {
-      if (kDebugMode) {
-        print('No likes to sync.');
-      }
+      // if (kDebugMode) {
+      //   print('No likes to sync.');
+      // }
       return;
     }
 
