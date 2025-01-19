@@ -2,12 +2,10 @@ import 'package:socialapp/utils/import.dart';
 
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
-import 'cubit/tab_cubit.dart';
-import 'cubit/tab_state.dart';
-import 'providers/user_notifier_provider.dart';
+import 'providers/home_properties_provider.dart';
 import 'widgets/post_list_view.dart';
-import 'widgets/search_bar.dart';
-import 'widgets/segmented_tab_controller.dart';
+import 'widgets/home_appbar_search_bar.dart';
+import 'widgets/home_appbar_segmented_tab_controller.dart';
 
 class MobileHomeScreen extends StatefulWidget {
   const MobileHomeScreen({super.key});

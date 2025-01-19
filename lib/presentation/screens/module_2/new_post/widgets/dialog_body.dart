@@ -1,19 +1,16 @@
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:pytorch_lite/pytorch_lite.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/providers/new_post_properties_provider.dart';
 import 'package:socialapp/utils/import.dart';
-import 'package:universal_html/html.dart' as html;
+import '../cubit/new_post_cubit.dart';
 import 'styleable_text_field_controller.dart';
 import 'video_player.dart';
 
 class DialogBody extends StatefulWidget {
   final double avatarSize, insertBoxWidth;
-  final String avatarUrl, username;
 
   const DialogBody({
     super.key,
     required this.avatarSize,
-    required this.avatarUrl,
-    required this.username,
     required this.insertBoxWidth,
   });
 
@@ -24,24 +21,22 @@ class DialogBody extends StatefulWidget {
 class _DialogBodyState extends State<DialogBody> {
   late FlutterSoundRecorder _recorder;
   late double deviceWidth, deviceHeight;
+  late String avatarUrl = "", username = "";
 
   late final TextEditingController textEditingController;
-  late final ClassificationModel classificationModel;
 
   bool _isRecording = false;
-  bool _isModelReady = false;
   late bool isWeb;
 
-  final ValueNotifier<int> maxLinesNotifier = ValueNotifier<int>(2);
+  final ValueNotifier<int> maxLinesNotifier = ValueNotifier<int>(4);
   final ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier =
       ValueNotifier<List<Map<String, dynamic>>>([]);
 
-  final double textFieldHeightFactor = 0.3;
+  final double textFieldHeightFactor = 0.4;
 
   @override
   void initState() {
     super.initState();
-
 
     textEditingController = StyleableTextFieldController(
       styles: TextPartStyleDefinitions(
@@ -59,26 +54,16 @@ class _DialogBodyState extends State<DialogBody> {
     });
 
     _recorder = FlutterSoundRecorder();
-
-    if(kIsWeb) {
-      initNSFWModel();
-    }
   }
 
-  Future<void> initNSFWModel() async {
-    try {
-      classificationModel = await PytorchLite.loadClassificationModel(
-        "assets/models/nsfw-model.pt", 224, 224, 5,
-        labelPath: "assets/labels/labels_nsfw.txt",
-      );
-      print("Model finished");
-        _isModelReady = true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Model initialization error $e');
-      }
-        _isModelReady = false;
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    deviceWidth = MediaQuery.of(context).size.width;
+    deviceHeight = MediaQuery.of(context).size.height;
+
+    username = NewPostPropertiesProvider.of(context)!.user!.name;
+    avatarUrl = NewPostPropertiesProvider.of(context)!.user!.avatar;
   }
 
   @override
@@ -89,18 +74,11 @@ class _DialogBodyState extends State<DialogBody> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    deviceWidth = MediaQuery.of(context).size.width;
-    deviceHeight = MediaQuery.of(context).size.height;
-  }
-
   void _updateMaxLines(double fieldWidth, String text) {
     final TextPainter textPainter = TextPainter(
       text: TextSpan(
         text: text,
-        style: AppTheme.blackUsernameStyle, // Match TextField's font size
+        style: AppTheme.blackUsernameStyle,
       ),
       maxLines: 1,
       textDirection: TextDirection.ltr,
@@ -114,8 +92,8 @@ class _DialogBodyState extends State<DialogBody> {
       }
     }
 
-    if (newMaxLines < 2) {
-      maxLinesNotifier.value = 2;
+    if (newMaxLines < 4) {
+      maxLinesNotifier.value = 4;
     } else if (maxLinesNotifier.value != newMaxLines) {
       maxLinesNotifier.value = newMaxLines;
     }
@@ -171,136 +149,6 @@ class _DialogBodyState extends State<DialogBody> {
     );
   }
 
-  void _uploadImages() async {
-    // Create a file input element
-    final html.FileUploadInputElement uploadInput =
-        html.FileUploadInputElement();
-    uploadInput.accept = 'image/*,video/*'; // Accept images and videos
-    uploadInput.multiple = true; // Allow multiple file selection
-
-    // Trigger file selection dialog
-    uploadInput.click();
-
-    if (kDebugMode) {
-      print("Pick the files");
-    }
-
-    uploadInput.onChange.listen((event) async {
-      final files = uploadInput.files;
-
-      if (files != null && files.isNotEmpty) {
-        final List<Map<String, dynamic>> uploadedFiles = [];
-        for (var file in files) {
-          final reader = html.FileReader();
-          reader.readAsArrayBuffer(file);
-          await reader.onLoad.first;
-          final Map<String, dynamic> uploadedAsset = {};
-          late double imageRatio = 0.5;
-
-          if (file.type.startsWith('image')) {
-            final String imgUrl = html.Url.createObjectUrl(file);
-            final html.ImageElement imageElement = html.ImageElement();
-            imageElement.src = imgUrl;
-
-            imageElement.onLoad.listen((_) {
-              int width = imageElement.width ?? 0;
-              int height = imageElement.height ?? 1;
-              imageRatio = width / height;
-            });
-
-            uploadedAsset['type'] = 'image';
-          } else if (file.type.startsWith('video')) {
-            final String videoUrl = await _getLocalVideoUrl(file);
-            final Map<String, double> videoDimensions =
-                await _getVideoDimensions(videoUrl);
-
-            final double width = videoDimensions['width'] ?? 0;
-            final double height = videoDimensions['height'] ?? 1;
-
-            imageRatio = width / height;
-            uploadedAsset['type'] = 'video';
-          }
-
-          uploadedAsset['ratio'] = imageRatio;
-          uploadedAsset['data'] = reader.result as Uint8List;
-          uploadedAsset['isNSFW'] = await _isNSFWAsset(uploadedAsset['data']);
-
-          print('isNSFW ${uploadedAsset['isNSFW']}');
-
-          uploadedFiles.add(uploadedAsset);
-        }
-
-        imagePathNotifier.value = uploadedFiles;
-      }
-    });
-  }
-
-  Future<bool> _isNSFWAsset(Uint8List image) async {
-    if (image.isEmpty || kIsWeb) return false;
-
-    try {
-      List<double>? imagePrediction = await classificationModel
-          .getImagePredictionListProbabilities(image,
-              mean: [0.5, 0.5, 0.5], std: [0.5, 0.5, 0.5]);
-
-      if (imagePrediction.isNotEmpty) {
-        List<String> labels = [
-          "drawings",
-          "hentai",
-          "neutral",
-          "porn",
-          "sexy"
-        ];
-        List<String> nsfwLabels = ["hentai", "porn", "sexy"];
-
-        String label = '';
-        double maxValue = 0;
-        for (int i = 0; i < labels.length; i++) {
-          double percentage = imagePrediction[i] * 100;
-          if (percentage > maxValue) {
-            maxValue = percentage;
-            label = labels[i];
-          }
-        }
-
-
-        if (nsfwLabels.contains(label)) {
-          return true;
-        }
-      }
-          return false;
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error during classification: $e");
-      }
-      return false;
-    }
-  }
-
-  Future<Map<String, double>> _getVideoDimensions(String videoUrl) async {
-    final completer = Completer<Map<String, double>>();
-    final videoElement = html.VideoElement()
-      ..src = videoUrl
-      ..preload = 'metadata';
-    videoElement.onLoadedMetadata.listen((_) {
-      final double width = videoElement.getBoundingClientRect().width.toDouble();
-      final double height = videoElement.getBoundingClientRect().height.toDouble();
-
-      completer.complete({'width': width, 'height': height});
-    });
-    videoElement.onError.listen((_) {
-      completer.completeError('Failed to load video metadata');
-    });
-    return completer.future;
-  }
-
-  Future<String> _getLocalVideoUrl(html.File file) async {
-    final completer = Completer<String>();
-    String url = html.Url.createObjectUrl(file);
-    completer.complete(url);
-    return completer.future;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -314,14 +162,14 @@ class _DialogBodyState extends State<DialogBody> {
             height: widget.avatarSize,
             child: CircleAvatar(
               radius: 10,
-              backgroundImage: CachedNetworkImageProvider(widget.avatarUrl,
+              backgroundImage: CachedNetworkImageProvider(avatarUrl,
                   maxWidth: 25, maxHeight: 25),
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.username, style: AppTheme.blackUsernameStyle),
+              Text(username, style: AppTheme.blackUsernameStyle),
               SizedBox(
                 width: widget.insertBoxWidth,
                 child: Row(
@@ -342,7 +190,7 @@ class _DialogBodyState extends State<DialogBody> {
                                   autocorrect: false,
                                   enableSuggestions: true,
                                   maxLines: maxLines,
-                                  minLines: 2,
+                                  minLines: 4,
                                   controller: textEditingController,
                                   textAlign: TextAlign.start,
                                   decoration: AppTheme.whiteInputDecoration,
@@ -356,6 +204,7 @@ class _DialogBodyState extends State<DialogBody> {
                   ],
                 ),
               ),
+              const SizedBox(height: 15),
               ValueListenableBuilder<List<Map<String, dynamic>>>(
                 valueListenable: imagePathNotifier,
                 builder: (context, imagePathList, child) {
@@ -363,7 +212,6 @@ class _DialogBodyState extends State<DialogBody> {
                     final bool isSingle = imagePathList.length == 1;
                     final bool isLandscape = imagePathList[0]['ratio'] > 1;
 
-                    // Single item and landscape
                     if (isSingle && isLandscape) {
                       final Uint8List assetData = imagePathList[0]['data'];
                       return SizedBox(
@@ -446,6 +294,11 @@ class _DialogBodyState extends State<DialogBody> {
                                         ),
                                       ),
                               ),
+                              if (imagePathList[index]['isNSFW'])
+                                Positioned(
+                                  left: 10,
+                                  child: SizedBox(width: 45,child: Image.asset(AppIcons.nsfw,fit: BoxFit.fitWidth,)),
+                                ),
                               Positioned(
                                 top: 10,
                                 right: 30,
@@ -474,7 +327,8 @@ class _DialogBodyState extends State<DialogBody> {
           Column(
             children: [
               IconButton(
-                onPressed: () => _uploadImages(),
+                onPressed: () =>
+                    context.read<NewPostCubit>().pickAssets(imagePathNotifier),
                 icon: ShaderMask(
                   shaderCallback: (Rect bounds) {
                     return AppTheme.mainGradient.createShader(bounds);
@@ -493,7 +347,7 @@ class _DialogBodyState extends State<DialogBody> {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () => context.read<NewPostCubit>().sendPost(textEditingController, imagePathNotifier),
                 icon: ShaderMask(
                   shaderCallback: (Rect bounds) {
                     return AppTheme.mainGradient.createShader(bounds);

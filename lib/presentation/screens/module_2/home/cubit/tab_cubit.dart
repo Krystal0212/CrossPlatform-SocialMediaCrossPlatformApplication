@@ -29,7 +29,6 @@ class TabCubit extends Cubit<TabState> {
   }
 
   Future<void> loadPosts({required bool isOffline}) async {
-
     emit(TabLoading());
     try {
       final posts = await postRepository.getPostsData(isOffline: isOffline);

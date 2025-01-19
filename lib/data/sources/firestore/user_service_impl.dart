@@ -13,11 +13,14 @@ abstract class UserService {
   Future<void> updateCurrentUserData(UserModel updateUser);
 
   Future<List<String>> getUserRelatedData(String uid, String dataType);
+
+  Future<String>? uploadAvatar( File image, String uid);
 }
 
 class UserServiceImpl extends UserService{
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   User? get currentUser => _auth.currentUser;
 
@@ -102,6 +105,24 @@ class UserServiceImpl extends UserService{
         .set(userData)
         .then((value) => print("User Added"))
         .catchError((error) => print("Error pushing user data: $error"));
+  }
+
+  @override
+  Future<String>? uploadAvatar( File image, String uid) async {
+    try {
+      final storageReference = _storage.ref().child('/user_avatars/$uid');
+
+      UploadTask uploadTask = storageReference.putFile(image);
+
+      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+
+      String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+      print('Uploaded Image URL: $downloadUrl');
+
+      return downloadUrl;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

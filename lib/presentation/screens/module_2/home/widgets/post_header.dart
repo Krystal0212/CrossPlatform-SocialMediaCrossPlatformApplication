@@ -3,7 +3,7 @@ import 'package:socialapp/utils/import.dart';
 class PostHeader extends StatefulWidget {
   const PostHeader({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   State<PostHeader> createState() => _PostHeaderState();

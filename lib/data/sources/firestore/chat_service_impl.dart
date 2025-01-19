@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:socialapp/utils/import.dart';
 import 'package:image/image.dart' as img;
 
-class ChatService extends ChangeNotifier {
+class ChatService extends ChangeNotifier with ImageAndVideoProcessingHelper{
   // get instance of auth and firestore
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
@@ -123,8 +123,6 @@ class ChatService extends ChangeNotifier {
 
   Future<void> sendImageMessage(bool isUser1, String receiverId, List<Map<String, dynamic>> imageDatas, String message) async {
     final Timestamp timestamp = Timestamp.now();
-    Stopwatch stopwatch = Stopwatch();
-    stopwatch.start();
 
     Map<String, ImageData> mediaMap = {};
     List<String> mediaKeys = [];
@@ -159,9 +157,9 @@ class ChatService extends ChangeNotifier {
       // Compress the image before uploading
       final Uint8List? compressedImage = await _compressImage(imagePath);
       img.Image? imageElement = img.decodeImage(compressedImage!);
-      final String dominantColor = await ImageProcessingHelper.getDominantColorFromImage(compressedImage);
-      final double ratio = ImageProcessingHelper.calculateAspectRatio(imageElement);
-      final List<int> widthAndHeight = ImageProcessingHelper.calculateWidthAndHeight(imageElement);
+      final String dominantColor = await getDominantColorFromImage(compressedImage);
+      final double ratio = calculateAspectRatio(imageElement);
+      final List<int> widthAndHeight = calculateWidthAndHeight(imageElement);
 
       // Create an empty ImageData and push to Firestore as a placeholder
       mediaMap[mediaKey] = ImageData(
@@ -190,11 +188,6 @@ class ChatService extends ChangeNotifier {
       if (kDebugMode) {
         print('Image uploaded and URL updated for $mediaKey: $imageUrl');
       }
-    }
-
-    // Log time for completing the message sending process
-    if (kDebugMode) {
-      print('Message processing completed in: ${stopwatch.elapsedMilliseconds}ms');
     }
   }
 

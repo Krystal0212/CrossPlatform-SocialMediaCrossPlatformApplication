@@ -1,39 +1,47 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:socialapp/utils/import.dart';
+import 'package:universal_html/html.dart' as html;
+
 
 abstract class PostService {
-  Future<List<PostModel>?> getPostsByUserId(String userId);
-
-  Future<void> createPost(String content, File image);
+  Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
 
   Future<String?> getPostImageById(String postId);
 
-  Future<List<PostModel>> getPostsData(
+  Future<List<OnlinePostModel>> getPostsData(
       {required bool isOffline, bool skipLocalFetch = false});
 
-  Future<List<CommentModel>?> getCommentPost(PostModel post);
+  Future<List<CommentModel>?> getCommentPost(OnlinePostModel post);
 
   Future<void> syncLikesToFirestore(
       Map<String, Map<String, bool>> likedPostsCache);
+
+  Future<void> createAssetPost(
+      String content, List<Map<String, dynamic>> imagesAndVideos);
 }
 
-class PostServiceImpl extends PostService {
+class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final StorageService _storage = StorageServiceImpl();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
   final CacheManager cacheManager = DefaultCacheManager();
   Connectivity connectivity = Connectivity();
 
   // ToDo : Reference Define
   User? get currentUser => _auth.currentUser;
 
+  String get currentUserId => currentUser?.uid ?? '';
+
   CollectionReference get _usersRef => _firestoreDB.collection('User');
 
   CollectionReference get _postRef => _firestoreDB.collection('Post');
 
+  CollectionReference get _topicRef => _firestoreDB.collection('Topic');
+
   // ToDo: Offline Service Functions
 
-  Future<List<PostModel>> _getLocalPostsData() async {
+  Future<List<OnlinePostModel>> _getLocalPostsData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? postStrings = prefs.getStringList('offline_posts');
 
@@ -41,10 +49,10 @@ class PostServiceImpl extends PostService {
       return [];
     }
 
-    List<PostModel> posts = postStrings.map((postString) {
+    List<OnlinePostModel> posts = postStrings.map((postString) {
       // Deserialize the string back into a map
       Map<String, dynamic> postMap = jsonDecode(postString);
-      return PostModel.fromMap(postMap);
+      return OnlinePostModel.fromMap(postMap);
     }).toList();
 
     return posts;
@@ -70,8 +78,9 @@ class PostServiceImpl extends PostService {
     }
   }
 
-  Future<List<PostModel>> _fetchPostWithSubCollections(Set<int> randomIndexes) async {
-    List<PostModel> posts = [];
+  Future<List<OnlinePostModel>> _fetchPostWithSubCollections(
+      Set<int> randomIndexes) async {
+    List<OnlinePostModel> posts = [];
 
     try {
       DocumentReference userRef;
@@ -130,24 +139,21 @@ class PostServiceImpl extends PostService {
           Map<String, dynamic> documentMap =
               document.data() as Map<String, dynamic>;
 
-
-
           documentMap['postId'] = document.id;
           documentMap['username'] = username;
           documentMap['userAvatar'] = userAvatar;
-          documentMap['mediaOffline'] = mediaOffline;
           documentMap['comments'] = comments.toSet();
           documentMap['likes'] = likes.toSet();
 
-          PostModel post = PostModel.fromMap(documentMap);
+          OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
 
           posts.add(post);
         }
       }
 
-      List<String> postStrings =
-          posts.map((post) => jsonEncode(post.toMap())).toList();
-      await prefs.setStringList('offline_posts', postStrings);
+      // List<String> postStrings =
+      //     posts.map((post) => jsonEncode(post.toMap())).toList();
+      // await prefs.setStringList('offline_posts', postStrings);
 
       return posts;
     } catch (e) {
@@ -159,9 +165,9 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<List<PostModel>> getPostsData(
+  Future<List<OnlinePostModel>> getPostsData(
       {required bool isOffline, bool skipLocalFetch = false}) async {
-    List<PostModel> posts = [];
+    List<OnlinePostModel> posts = [];
 
     try {
       if (isOffline && !skipLocalFetch) {
@@ -214,7 +220,8 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<void> syncLikesToFirestore(Map<String, Map<String, bool>> likedPostsCache) async {
+  Future<void> syncLikesToFirestore(
+      Map<String, Map<String, bool>> likedPostsCache) async {
     if (likedPostsCache.isEmpty) {
       // if (kDebugMode) {
       //   print('No likes to sync.');
@@ -271,8 +278,8 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<List<PostModel>?> getPostsByUserId(String userId) async {
-    List<PostModel> posts = [];
+  Future<List<OnlinePostModel>?> getPostsByUserId(String userId) async {
+    List<OnlinePostModel> posts = [];
 
     DocumentReference userRef;
     Future<DocumentSnapshot<Object?>> userData;
@@ -300,29 +307,28 @@ class PostServiceImpl extends PostService {
           userAvatar = value['avatar'];
         });
 
-        PostModel post = PostModel(
-          postId: doc.id,
-          username: username,
-          userAvatarUrl: userAvatar,
-          content: doc['content'],
-          likeAmount: doc['likeAmount'],
-          commentAmount: doc['commentAmount'],
-          viewAmount: doc['viewAmount'],
-          media: (doc['media'] as List<dynamic>).map((item) {
-            final mapItem = item as Map<String, dynamic>;
-            return mapItem.map(
-              (key, value) => MapEntry(key, value.toString()),
-            );
-          }).toList(),
-          timestamp: (doc['timestamp'] as Timestamp).toDate(),
-          comments: {},
-          likes: {},
-          topicRefs: (doc['topicRef'] as List<dynamic>)
-              .map((item) => item.toString())
-              .toList(),
-        );
+        // OnlinePostModel post = OnlinePostModel(
+        //   postId: doc.id,
+        //   username: username,
+        //   userAvatarUrl: userAvatar,
+        //   content: doc['content'],
+        //   likeAmount: doc['likeAmount'],
+        //   commentAmount: doc['commentAmount'],
+        //   viewAmount: doc['viewAmount'],
+        //   media: (doc['media'] as List<dynamic>).map((item) {
+        //     return OnlineMediaItem.fromMap(
+        //       item,
+        //     );
+        //   }).toList(),
+        //   timestamp: (doc['timestamp'] as Timestamp).toDate(),
+        //   comments: {},
+        //   likes: {},
+        //   topicRefs: (doc['topicRef'] as List<dynamic>)
+        //       .map((item) => item.toString())
+        //       .toSet(),
+        // );
 
-        posts.add(post);
+        // posts.add(post);
       }
 
       return posts;
@@ -363,7 +369,7 @@ class PostServiceImpl extends PostService {
   }
 
   @override
-  Future<List<CommentModel>?> getCommentPost(PostModel post) async {
+  Future<List<CommentModel>?> getCommentPost(OnlinePostModel post) async {
     if (kDebugMode) {
       print('check');
     }
@@ -479,30 +485,81 @@ class PostServiceImpl extends PostService {
     }
   }
 
+  // Future<String> _uploadAssetAndGetUrl(
+  //     Uint8List compressedImage, DocumentReference newPostRef , String mediaKey) async {
+  //   File tempFile =
+  //       File('${(await getTemporaryDirectory()).path}/$mediaKey.webp');
+  //   tempFile.writeAsBytesSync(compressedImage);
+  //
+  //   // Upload image to Firebase Storage
+  //   Reference storageRef =
+  //       _storage.ref().child('post/${newPostRef.id}/$mediaKey.webp');
+  //   await storageRef.putFile(tempFile);
+  //
+  //   // Get the URL after the upload completes
+  //   String imageUrl = await storageRef.getDownloadURL();
+  //   return imageUrl;
+  // }
+
+
+  Future<String> _uploadAssetAndGetUrl(
+      Uint8List compressedImage, DocumentReference newPostRef, String mediaKey) async {
+    final storageRef = _storage.ref().child('posts/${newPostRef.id}/$mediaKey.jpg');
+
+    final SettableMetadata metadata = SettableMetadata(contentType: 'image/webp');
+
+    await storageRef.putData(compressedImage, metadata);
+
+    String imageUrl = await storageRef.getDownloadURL();
+    return imageUrl;
+  }
+
   @override
-  Future<void> createPost(String content, File image) async {
-    String? imageUrl = await _storage.uploadPostImage('Post', image);
+  Future<void> createAssetPost(
+      String content, List<Map<String, dynamic>> imagesAndVideos) async {
+    final Timestamp timestamp = Timestamp.now();
+    Map<String, OnlineMediaItem> mediaMap = {};
+    List<String> mediaKeys = [];
 
-    if (kDebugMode) {
-      print('imageUrl: $imageUrl');
-      print('content: $content');
-      // print('image: $image');
-      print('currentUser: $currentUser');
-    }
+    NewPostModel newPost = NewPostModel(
+        content: content,
+        timestamp: timestamp,
+        topicRefs: {_topicRef.doc('yhSvhFRcQ2PpXwiVFLFa')},
+        media: {}, userRef: _usersRef.doc(currentUserId));
 
-    if (imageUrl != null) {
-      CollectionReference collectionRef = _firestoreDB.collection('Post');
-      collectionRef.add(
-        {
-          'content': content,
-          'image': imageUrl,
-          'timestamp': FieldValue.serverTimestamp(),
-          'likeAmount': 0,
-          'commentAmount': 0,
-          'viewAmount': 0,
-          'userRef': _usersRef.doc(currentUser!.uid),
-        },
-      );
+    DocumentReference newPostRef = await _postRef.add(newPost.toMap());
+
+    // imagesAndVideos.sort((a, b) => a['index'].compareTo(b['index']));
+
+    for (Map<String, dynamic> asset in imagesAndVideos) {
+      final String assetPath = asset['path'];
+      final String mediaKey = asset['index'].toString();
+      mediaKeys.add(mediaKey);
+
+      if (asset['type'] == 'image') {
+        // final Uint8List? compressedImage =
+        //     await FlutterImageCompress.compressWithFile(
+        //   assetPath,
+        //   format: CompressFormat.webp, // Compress to WebP
+        //   quality: 80,
+        // );
+        Uint8List assetData = asset['data'];
+        final String dominantColor =
+            await getDominantColorFromImage(assetData);
+        final String assetUrl =
+            await _uploadAssetAndGetUrl(assetData, newPostRef,  mediaKey);
+
+        mediaMap[mediaKey] = OnlineMediaItem(
+            dominantColor: dominantColor,
+            height: asset['height'].toDouble(),
+            width: asset['width'].toDouble(),
+            type: 'image',
+            assetUrl: assetUrl);
+      }
+
+      await newPostRef.update({
+        'media.$mediaKey': mediaMap[mediaKey]!.toMap(),
+      });
     }
   }
 }

@@ -270,7 +270,7 @@ class AppTheme {
       const EdgeInsets.only(right: 3);
 
   static EdgeInsets bottomDialogPaddingEdgeInsets(double deviceHeight) {
-    return EdgeInsets.only(bottom: deviceHeight / 2 - 200);
+    return EdgeInsets.symmetric(vertical: deviceHeight / 2 - 280);
   }
 
   static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(

@@ -2,7 +2,7 @@
 
 import 'package:socialapp/utils/import.dart';
 
-import 'cubit/post_cubit.dart';
+import 'cubit/new_post_cubit.dart';
 import 'widgets/action_post.dart';
 import 'widgets/header_new_post.dart';
 import 'widgets/post_content.dart';
@@ -29,7 +29,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PostCubit(),
+      create: (context) => NewPostCubit(),
       child: SafeArea(
         child: Scaffold(
           resizeToAvoidBottomInset: false,
@@ -37,8 +37,8 @@ class _NewPostScreenState extends State<NewPostScreen> {
             children: [
               const Column(
                 children: [
-                  HeaderNewPost(),
-                  PostContent(),
+                  // HeaderNewPost(),
+                  // PostContent(),
                 ],
               ),
               Positioned(
@@ -52,7 +52,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
                       borderRadius: BorderRadius.circular(16),
                       color: AppColors.lavenderBlueShadow,
                     ),
-                    child: const ActionPost(),
+                    // child: const ActionPost(),
                   ),
                 ),
               )

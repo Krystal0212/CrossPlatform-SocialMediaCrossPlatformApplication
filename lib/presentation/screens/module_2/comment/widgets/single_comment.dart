@@ -10,12 +10,12 @@ class SingleComment extends StatefulWidget {
 }
 
 class _SingleCommentState extends State<SingleComment> with Methods {
-  late String timestamp;
+  late String timestamp ='';
 
   @override
   void initState() {
     super.initState();
-    timestamp = calculateTimeFromNow(widget.comment.timestamp);
+    // timestamp = calculateTimeFromNow(widget.comment.timestamp);
   }
 
   @override

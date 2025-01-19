@@ -243,7 +243,6 @@ class _EditProfileState extends State<EditProfile> with Validator {
 
           if (rawAvatar.isNotEmpty && rawAvatar != updatedUser.avatar) {
             try {
-              StorageRepository storageRepository = StorageRepositoryImpl();
 
               File newAvatarFile = File(rawAvatar);
 
@@ -251,7 +250,7 @@ class _EditProfileState extends State<EditProfile> with Validator {
                 throw Exception('"File does not exist at path: $rawAvatar"');
               }
 
-              String? newAvatarUrl = await storageRepository.uploadAvatar(
+              String? newAvatarUrl = await serviceLocator<UserRepository>().uploadAvatar(
                   newAvatarFile, currentUser!.uid);
               if (newAvatarUrl!.isNotEmpty &&
                   newAvatarUrl != updatedUser.avatar) {

@@ -1,13 +1,13 @@
 import 'package:socialapp/utils/import.dart';
 
 import '../cubit/home_state.dart';
-import '../providers/user_notifier_provider.dart';
+import '../providers/home_properties_provider.dart';
 import 'post_header.dart';
 import 'post_bottom.dart';
 import 'post_assets.dart';
 
 class PostListView extends StatefulWidget {
-  final List<PostModel> posts;
+  final List<OnlinePostModel> posts;
   final ViewMode viewMode;
 
   const PostListView({
@@ -22,7 +22,7 @@ class PostListView extends StatefulWidget {
 
 class _PostListViewState extends State<PostListView>
     with AutomaticKeepAliveClientMixin {
-  late final List<PostModel> postList;
+  late final List<OnlinePostModel> postList;
   late double postWidth;
 
   final double horizontalPadding = 125;

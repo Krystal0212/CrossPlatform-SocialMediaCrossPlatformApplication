@@ -1,9 +1,11 @@
 import 'package:socialapp/data/sources/firestore/chat_service_impl.dart';
+import 'package:universal_html/html.dart' as html;
 
 import 'package:socialapp/utils/import.dart';
 import 'cubit/image_cubit.dart';
 import 'cubit/image_state.dart';
 import 'widgets/chat_page_properties.dart';
+
 
 class ChatPage extends StatefulWidget {
   final bool isUser1;
@@ -22,7 +24,6 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> with AppDialogs {
   final TextEditingController _messageController = TextEditingController();
-  final ChatService _chatService = ChatService();
 
   late ScrollController _scrollController;
   late ValueNotifier<List<Map<String, dynamic>>> _selectedAssetsNotifier;

@@ -8,7 +8,7 @@ enum ViewMode { explore, trending, following }
 class HomeLoading extends HomeState{}
 
 class HomeLoadedPostsSuccess extends HomeState {
-  final List<List<PostModel>> postLists; // Example data, replace with your actual model
+  final List<List<OnlinePostModel>> postLists; // Example data, replace with your actual model
 
   HomeLoadedPostsSuccess(this.postLists);
 }

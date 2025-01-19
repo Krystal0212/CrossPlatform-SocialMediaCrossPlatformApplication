@@ -1,4 +1,4 @@
-import '../../entities/user.dart';
+import 'package:socialapp/utils/import.dart';
 
 abstract class UserRepository {
   Future<UserModel?>? getUserData(String userID);
@@ -10,4 +10,6 @@ abstract class UserRepository {
   Future<void> updateCurrentUserData(UserModel updateUserReq);
 
   Future<List<String>> getUserRelatedData(String uid, String datatype);
+
+  Future<String>? uploadAvatar(File image, String uid);
 }

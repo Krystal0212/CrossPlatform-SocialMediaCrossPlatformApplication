@@ -17,9 +17,6 @@ Future<void> initializeDependencies() async {
   serviceLocator.registerSingleton<FirestoreService>(FirestoreServiceImpl());
   serviceLocator.registerSingleton<TopicRepository>(TopicRepositoryImpl());
 
-  serviceLocator.registerSingleton<StorageService>(StorageServiceImpl());
-  serviceLocator.registerSingleton<StorageRepository>(StorageRepositoryImpl());
-
   serviceLocator.registerSingleton<DeepLinkService>(DeepLinkServiceImpl());
   serviceLocator.registerSingleton<DeepLinkRepository>(DeepLinkRepositoryImpl());
 
