@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:socialapp/utils/import.dart';
 
 class PostAsset extends StatefulWidget {
-  final PostModel post;
+  final OnlinePostModel post;
   final double postWidth;
 
   const PostAsset({super.key, required this.post, required this.postWidth});
@@ -17,28 +17,30 @@ class _PostAssetState extends State<PostAsset> {
   late ValueNotifier<double> gridHeightNotifier;
   double gridHeight = 280.0;
   late int mediaLength;
-  late bool isWeb, isCachedData;
+  late bool isWeb, isCachedData = false;
 
-  late List<Map<String, String>>? media;
+  late Map<String, OnlineMediaItem> media;
 
   @override
   void initState() {
     super.initState();
 
-    mediaLength = widget.post.media!.length;
+    mediaLength = widget.post.media.length;
     media = widget.post.media;
 
-    if (widget.post.media != null && widget.post.media!.isNotEmpty) {
-      mediaLength = widget.post.media?.length ?? 0;
+    if (widget.post.media.isNotEmpty) {
+      mediaLength = widget.post.media.length ?? 0;
       media = widget.post.media;
-      isCachedData = widget.post.mediaOffline == null;
-    } else if (widget.post.mediaOffline != null && widget.post.mediaOffline!.isNotEmpty && !isWeb) {
-      mediaLength = widget.post.media?.length ?? 0;
-      media = widget.post.mediaOffline;
-      isCachedData = true;
-    } else {
+      // isCachedData = widget.post.mediaOffline == null;
+    }
+    // else if (widget.post.mediaOffline != null && widget.post.mediaOffline!.isNotEmpty && !isWeb) {
+    //   mediaLength = widget.post.media?.length ?? 0;
+    //   media = widget.post.mediaOffline;
+    //   isCachedData = true;
+    // }
+    else {
       mediaLength = 0;
-      media = null;
+      media = {};
       isCachedData = false;
     }
 
@@ -60,7 +62,10 @@ class _PostAssetState extends State<PostAsset> {
         return const ImageErrorPlaceholder();
       case 1:
         return PostSimpleImage(
-            image: media?[0] ?? {}, postWidth: widget.postWidth, isCachedData: isCachedData,);
+          image: media.values.first,
+          postWidth: widget.postWidth,
+          isCachedData: isCachedData,
+        );
       case 2:
         return GridView.builder(
             itemCount: mediaLength,
@@ -70,9 +75,9 @@ class _PostAssetState extends State<PostAsset> {
               mainAxisSpacing: 4,
             ),
             itemBuilder: (context, index) {
-              return PostSimpleImage(
-                image: media?[index] ?? {},
-                postWidth: widget.postWidth, isCachedData: isCachedData,
+              return PostMultipleImage(
+                image: media[index.toString()]!,
+                isCachedData: isCachedData,
               );
             });
       case 3:
@@ -84,16 +89,17 @@ class _PostAssetState extends State<PostAsset> {
               mainAxisSpacing: 4,
             ),
             itemBuilder: (context, index) {
-              return PostSimpleImage(
-                image: media?[index] ?? {},
-                postWidth: widget.postWidth, isCachedData: isCachedData,
+              return PostMultipleImage(
+                image: media[index.toString()]!,
+                isCachedData: isCachedData,
               );
             });
       default:
-        List<Map<String, String>> allAssets = media ?? [];
-        List<Map<String, String>> collapsedAssets =
-            allAssets.getRange(0, min(4, mediaLength)).toList();
-        return ConstrainedBox(
+        Map<String, OnlineMediaItem> collapsedAssets = Map.fromEntries(
+          media.entries.take(4),
+        );
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           constraints: BoxConstraints(maxHeight: gridHeight, maxWidth: 580.0),
           child: GridView.custom(
             key: _gridKey,
@@ -115,11 +121,12 @@ class _PostAssetState extends State<PostAsset> {
                 int? otherAssets;
                 if (index == collapsedAssets.length - 1 &&
                     index != mediaLength - 1) {
-                  otherAssets = allAssets.length - collapsedAssets.length;
+                  otherAssets = mediaLength - collapsedAssets.length;
                 }
                 return PostMultipleImage(
-                  image: collapsedAssets[index],
-                  otherAssets: otherAssets ?? 0, isCachedData: isCachedData,
+                  image: collapsedAssets[index.toString()]!,
+                  otherAssets: otherAssets ?? 0,
+                  isCachedData: isCachedData,
                 );
               },
               childCount: collapsedAssets.length,
@@ -131,22 +138,22 @@ class _PostAssetState extends State<PostAsset> {
 }
 
 class PostMultipleImage extends StatelessWidget {
-  final Map<String, String> image;
+  final MediaItemBase image;
   final int? otherAssets;
   final bool isCachedData;
 
   const PostMultipleImage({
     super.key,
     this.otherAssets,
-    required this.image, required this.isCachedData,
+    required this.image,
+    required this.isCachedData,
   });
 
   @override
   Widget build(BuildContext context) {
-    final Color dominantColor = Color(
-      int.parse(
-          (image['dominantColor'] ?? '#FFCDD2').replaceFirst('#', '0xFF')),
-    );
+    final Color dominantColor = Color(int.parse('0x${image.dominantColor}'));
+
+    //     child: isCachedData ? Image.file(File((image as OfflineMediaItem).imageData. )):
 
     return InkWell(
       onTap: () {},
@@ -155,8 +162,8 @@ class PostMultipleImage extends StatelessWidget {
           Container(
               color: dominantColor,
               width: double.infinity,
-              child: isCachedData ? Image.file(File(image['uri'] ?? '')):
-          CachedNetworkImage(imageUrl: image['url']?? '')),
+              child: CachedNetworkImage(
+                  imageUrl: (image as OnlineMediaItem).assetUrl, fit: BoxFit.cover,)),
           if (otherAssets != null && otherAssets! > 0)
             Container(
               color: Colors.black.withOpacity(0.5),
@@ -173,7 +180,7 @@ class PostMultipleImage extends StatelessWidget {
 }
 
 class PostSimpleImage extends StatelessWidget {
-  final Map<String, dynamic> image;
+  final MediaItemBase image;
   final double postWidth;
   final bool isCachedData;
 
@@ -188,18 +195,14 @@ class PostSimpleImage extends StatelessWidget {
       required this.isCachedData});
 
   void _updateHeight(ImageProvider imageProvider, double mediaWidth) async {
-    try {
-      final int imageWidth = image['width']!;
-      final int imageHeight = image['height'];
-      final double aspectRatio = imageWidth / imageHeight;
+    final double imageWidth = image.width;
+    final double imageHeight = image.height;
+    final double aspectRatio = imageWidth / imageHeight;
 
-      if (aspectRatio > 1) {
-        containerHeight.value =
-            imageHeight.toDouble() * (mediaWidth / imageWidth);
-      } else {
-        containerHeight.value = maxHeight;
-      }
-    } catch (error) {
+    if (aspectRatio > 1) {
+      containerHeight.value =
+          imageHeight.toDouble() * (mediaWidth / imageWidth);
+    } else {
       containerHeight.value = maxHeight;
     }
   }
@@ -207,20 +210,16 @@ class PostSimpleImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double mediaWidth = postWidth - horizontalPadding * 2;
-    final String imageUrl = isCachedData? (image['uri'] ?? '') : (image['url'] ?? '') ;
+    // final String imageUrl = isCachedData? (image['uri'] ?? '') : (image['url'] ?? '') ;
+    final String imageUrl = (image as OnlineMediaItem).assetUrl;
 
-    final Color dominantColor = Color(
-      int.parse(
-          (image['dominantColor'] ?? '#FFCDD2').replaceFirst('#', '0xFF')),
-    );
+    final Color dominantColor = Color(int.parse('0x${image.dominantColor}'));
 
     final ImageProvider imageProvider = isCachedData
         ? FileImage(File(imageUrl))
         : CachedNetworkImageProvider(imageUrl);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateHeight(imageProvider, mediaWidth);
-    });
+    _updateHeight(imageProvider, mediaWidth);
 
     return Padding(
       padding:

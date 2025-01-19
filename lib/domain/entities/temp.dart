@@ -1,49 +1,18 @@
 import 'package:socialapp/utils/import.dart';
 
-class NewPostModel {
-  final String content;
-  final Map<String, OnlineMediaItem> media;
-  final Timestamp timestamp;
-  final Set<DocumentReference> topicRefs;
-  final DocumentReference userRef;
-
-  const NewPostModel( {
-    required this.content,
-    required this.media,
-    required this.timestamp,
-    required this.topicRefs,
-    required this.userRef,
-  });
-
-
-  Map<String, dynamic> toMap() {
-    return {
-      'content': content,
-      'media': media,
-      'timestamp': timestamp,
-      'likeAmount': 0,
-      'commentAmount': 0,
-      'viewAmount': 0,
-      'topicRefs': topicRefs,
-      'userRef': userRef,
-    };
-  }
-}
-
 class OnlinePostModel {
   final String postId;
   final String username;
   final String userAvatarUrl;
   final String content;
-  final Map<String, OnlineMediaItem> media;
-  final Timestamp timestamp;
+  final List<OnlineMediaItem> media;
+  final DateTime timestamp;
   final int likeAmount;
   final int commentAmount;
   final int viewAmount;
-  final Set<DocumentReference> topicRefs;
+  final Set<String> topicRefs;
   final Set<String> comments;
   final Set<String> likes;
-
 
   OnlinePostModel({
     required this.postId,
@@ -62,9 +31,9 @@ class OnlinePostModel {
 
   factory OnlinePostModel.newPost({
     required String content,
-    required Map<String, OnlineMediaItem> media,
-    required Timestamp timestamp,
-    required Set<DocumentReference> topicRefs,
+    required List<OnlineMediaItem> media,
+    required DateTime timestamp,
+    required Set<String> topicRefs,
   }) {
     return OnlinePostModel(
       postId: '',
@@ -82,6 +51,17 @@ class OnlinePostModel {
     );
   }
 
+  Map<String, dynamic> toMapForNewPost() {
+    return {
+      'content': content,
+      'media': media,
+      'timestamp': timestamp.toIso8601String(),
+      'likeAmount': likeAmount,
+      'commentAmount': commentAmount,
+      'viewAmount': viewAmount,
+      'topicRefs': topicRefs,
+    };
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -90,7 +70,7 @@ class OnlinePostModel {
       'userAvatar': userAvatarUrl,
       'content': content,
       'media': media,
-      'timestamp': timestamp,
+      'timestamp': timestamp.toIso8601String(),
       'likeAmount': likeAmount,
       'commentAmount': commentAmount,
       'viewAmount': viewAmount,
@@ -106,14 +86,12 @@ class OnlinePostModel {
       username: map['username'],
       userAvatarUrl: map['userAvatar'],
       content: map['content'],
-      media: (map['media'] as Map<String, dynamic>).map((key, value) =>
-          MapEntry(
-              key, OnlineMediaItem.fromMap(value as Map<String, dynamic>))),
-      timestamp: (map['timestamp'] as Timestamp),
+      media: (map['media'] as List<dynamic>).map((item)=> OnlineMediaItem.fromMap(item as Map<String, dynamic>)).toList(),
+      timestamp: (map['timestamp'] as Timestamp).toDate(),
       likeAmount: map['likeAmount'] ?? 0,
       commentAmount: map['commentAmount'] ?? 0,
       viewAmount: map['viewAmount'] ?? 0,
-      topicRefs: Set<DocumentReference>.from(map['topicRefs'] ?? []),
+      topicRefs: Set<String>.from(map['topicRefs'] ?? []),
       comments: map['comments'],
       likes: map['likes'],
     );
@@ -167,8 +145,9 @@ class OfflinePostModel {
       username: map['username'],
       userAvatarImageData: map['userAvatarImageData'],
       content: map['content'],
-      mediaOffline: (map['mediaOffline'] as List<dynamic>)
-          .map((item) => OfflineMediaItem.fromMap(item as Map<String, dynamic>))
+      mediaOffline:  (map['mediaOffline'] as List<dynamic>)
+          .map((item) =>
+          OfflineMediaItem.fromMap(item as Map<String, dynamic>))
           .toList(),
       timestamp: (map['timestamp'] as Timestamp).toDate(),
       likeAmount: map['likeAmount'] ?? 0,
@@ -180,6 +159,7 @@ class OfflinePostModel {
     );
   }
 }
+
 
 abstract class MediaItemBase {
   final String dominantColor;
@@ -206,14 +186,14 @@ abstract class MediaItemBase {
 }
 
 class OnlineMediaItem extends MediaItemBase {
-  final String assetUrl;
+  final String imageUrl;
 
   OnlineMediaItem({
     required super.dominantColor,
     required super.height,
     required super.width,
     required super.type,
-    required this.assetUrl,
+    required this.imageUrl,
   });
 
   @override
@@ -223,17 +203,17 @@ class OnlineMediaItem extends MediaItemBase {
       'height': height,
       'width': width,
       'type': type,
-      'imageUrl': assetUrl,
+      'imageUrl': imageUrl,
     };
   }
 
   factory OnlineMediaItem.fromMap(Map<String, dynamic> map) {
     return OnlineMediaItem(
-      dominantColor: map['dominantColor'],
-      height: map['height'],
-      width: map['width'],
-      type: map['type'],
-      assetUrl: map['imageUrl'],
+      dominantColor: map['dominantColor'] as String,
+      height: (map['height'] as num).toDouble(),
+      width: (map['width'] as num).toDouble(),
+      type: map['type'] as String,
+      imageUrl: map['imageUrl'] as String,
     );
   }
 }

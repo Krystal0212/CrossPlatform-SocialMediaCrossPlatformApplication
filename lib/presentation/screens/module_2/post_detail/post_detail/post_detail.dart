@@ -1,11 +1,12 @@
 import 'package:socialapp/utils/import.dart';
 
+
 import '../../comment/comment_screen.dart';
 
 class PostDetail extends StatelessWidget {
   const PostDetail({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +53,7 @@ class PostDetail extends StatelessWidget {
 class PostUserInfo extends StatefulWidget {
   const PostUserInfo({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   State<PostUserInfo> createState() => _PostUserInfoState();
@@ -60,6 +61,7 @@ class PostUserInfo extends StatefulWidget {
 
 class _PostUserInfoState extends State<PostUserInfo> with Methods {
   late String timeAgo;
+
 
   @override
   void initState() {
@@ -104,7 +106,7 @@ class _PostUserInfoState extends State<PostUserInfo> with Methods {
 class PostImage extends StatelessWidget {
   const PostImage({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +131,7 @@ class PostImage extends StatelessWidget {
 class PostStatsBar extends StatelessWidget {
   const PostStatsBar({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +200,7 @@ class PostStatsBar extends StatelessWidget {
 class PostContent extends StatelessWidget {
   const PostContent({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   Widget build(BuildContext context) {

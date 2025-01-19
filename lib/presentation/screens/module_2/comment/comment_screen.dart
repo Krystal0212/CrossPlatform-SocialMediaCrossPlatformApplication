@@ -6,7 +6,7 @@ import 'widgets/single_comment.dart';
 class CommentScreen extends StatelessWidget {
   const CommentScreen({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
 
   @override
   Widget build(BuildContext context) {

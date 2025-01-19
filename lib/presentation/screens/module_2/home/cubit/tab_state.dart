@@ -5,7 +5,7 @@ class TabState {}
 class TabLoading extends TabState {}
 
 class TabLoaded extends TabState {
-  final List<PostModel> posts;
+  final List<OnlinePostModel> posts;
 
   TabLoaded(this.posts);
 }

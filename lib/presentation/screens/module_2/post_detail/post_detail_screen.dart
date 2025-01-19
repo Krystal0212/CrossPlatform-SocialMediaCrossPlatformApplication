@@ -7,7 +7,7 @@ import 'post_detail/post_detail.dart';
 class PostDetailScreen extends StatelessWidget {
   const PostDetailScreen({super.key, required this.post});
 
-  final PostModel post;
+  final OnlinePostModel post;
  
   // CollectionReference<Map<String, dynamic>> postCollection = FirebaseFirestore.instance.collection('NewPost').doc('');
   

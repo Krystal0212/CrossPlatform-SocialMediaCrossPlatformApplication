@@ -4,7 +4,7 @@ import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
 import 'cubit/tab_cubit.dart';
 import 'cubit/tab_state.dart';
-import 'providers/user_notifier_provider.dart';
+import 'providers/home_properties_provider.dart';
 import 'widgets/home_appbar.dart';
 import 'widgets/post_list_view.dart';
 

@@ -99,7 +99,7 @@ class _ProfilePartState extends State<ProfilePart>
 
   Future<List<String>> getImageUrlsForUserPosts(String userId) async {
     PostRepository postRepository = PostRepositoryImpl();
-    List<PostModel>? posts = await postRepository.getPostsByUserId(userId);
+    List<OnlinePostModel>? posts = await postRepository.getPostsByUserId(userId);
     List<String> imageUrls = [];
 
     if (posts != null) {

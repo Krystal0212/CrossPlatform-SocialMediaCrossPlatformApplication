@@ -3,9 +3,8 @@ import 'package:socialapp/utils/import.dart';
 import '../../new_post/new_post_dialog.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
-import 'search_bar.dart';
-import 'segmented_tab_controller.dart';
-import 'icon_elevated_button.dart';
+import 'home_appbar_search_bar.dart';
+import 'home_appbar_segmented_tab_controller.dart';
 
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double deviceWidth;
@@ -377,6 +376,41 @@ class HomeAppBarActionButtons extends StatelessWidget {
           // ),
         ],
       ),
+    );
+  }
+}
+
+class IconElevatedButton extends StatelessWidget {
+  final ButtonStyle? style;
+  final Widget? icon;
+  final String label;
+  final TextStyle? textStyle;
+  final void Function()? onPressed;
+  final EdgeInsets padding;
+
+  const IconElevatedButton(
+      {super.key,
+        required this.style,
+        required this.icon,
+        required this.label,
+        this.textStyle,
+        required this.onPressed,
+        this.padding = const EdgeInsets.only(bottom: 2)});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      style: style,
+      icon: icon,
+      label: Padding(
+        padding: padding,
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: textStyle,
+        ),
+      ),
+      onPressed: onPressed,
     );
   }
 }

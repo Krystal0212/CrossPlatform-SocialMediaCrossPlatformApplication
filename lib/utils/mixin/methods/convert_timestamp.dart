@@ -1,6 +1,11 @@
 
+import 'package:socialapp/utils/import.dart';
+
 mixin Methods {
-  String calculateTimeFromNow(DateTime time) {
+  String calculateTimeFromNow(Timestamp timestamp) {
+    // Convert the Timestamp to DateTime
+    DateTime time = timestamp.toDate();
+
     var now = DateTime.now();
     var diff = now.difference(time);
     var timeString = '';
@@ -21,4 +26,5 @@ mixin Methods {
 
     return timeString;
   }
+
 }

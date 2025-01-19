@@ -25,4 +25,9 @@ class UserRepositoryImpl extends UserRepository {
   Future<List<String>> getUserRelatedData(String uid, String datatype) {
     return serviceLocator<UserService>().getUserRelatedData(uid, datatype);
   }
+
+  @override
+  Future<String>? uploadAvatar(File image, String uid) {
+    return serviceLocator<UserService>().uploadAvatar(image, uid);
+  }
 }

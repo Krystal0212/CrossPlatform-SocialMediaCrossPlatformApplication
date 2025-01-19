@@ -64,7 +64,9 @@ export 'package:socialapp/utils/constants/image_path.dart';
 export 'package:socialapp/utils/mixin/validators/validators.dart';
 export 'package:socialapp/utils/mixin/methods/alert_dialog.dart';
 export 'package:socialapp/utils/mixin/methods/convert_timestamp.dart';
-export 'package:socialapp/utils/mixin/methods/image_picker.dart';
+export 'package:socialapp/utils/mixin/methods/image_and_video_processing_helper.dart';
+export 'package:socialapp/utils/mixin/methods/classification_model.dart';
+
 
 // Data and Repositories
 export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
@@ -79,7 +81,6 @@ export 'package:socialapp/data/repository/deep_link/deep_link_repository_impl.da
 export 'package:socialapp/data/sources/auth/auth_firebase_service.dart';
 export 'package:socialapp/data/sources/firestore/firestore_service.dart';
 export 'package:socialapp/data/sources/firestore/user_service_impl.dart';
-export 'package:socialapp/data/sources/storage/storage_service.dart';
 export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/post_service_impl.dart';

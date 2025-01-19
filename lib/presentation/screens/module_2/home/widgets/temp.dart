@@ -2,8 +2,8 @@ import 'package:socialapp/utils/import.dart';
 
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
-import 'search_bar.dart';
-import 'segmented_tab_controller.dart';
+import 'home_appbar_search_bar.dart';
+import 'home_appbar_segmented_tab_controller.dart';
 
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double deviceWidth;

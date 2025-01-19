@@ -1,10 +1,10 @@
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
-import 'package:socialapp/presentation/screens/module_2/home/providers/user_notifier_provider.dart';
+import 'package:socialapp/presentation/screens/module_2/home/providers/home_properties_provider.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:socialapp/utils/mixin/methods/flash_message.dart';
 
 class PostBottom extends StatefulWidget {
-  final PostModel post;
+  final OnlinePostModel post;
 
   const PostBottom({super.key, required this.post});
 

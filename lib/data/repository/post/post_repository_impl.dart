@@ -2,22 +2,23 @@ import 'package:socialapp/utils/import.dart';
 
 class PostRepositoryImpl extends PostRepository {
   @override
-  Future<List<PostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false}) {
+  Future<List<OnlinePostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false}) {
     return serviceLocator.get<PostService>().getPostsData(isOffline: isOffline, skipLocalFetch: skipLocalFetch);
   }
 
   @override
-  Future<List<CommentModel>?> getCommentPost(PostModel post) {
+  Future<List<CommentModel>?> getCommentPost(OnlinePostModel post) {
     return serviceLocator.get<PostService>().getCommentPost(post);
   }
 
   @override
-  Future<void> createPost(String content, File image) {
-    return serviceLocator.get<PostService>().createPost(content, image);
+  Future<void> createAssetPost(
+      String content, List<Map<String, dynamic>> imagesAndVideos)async {
+    return serviceLocator.get<PostService>().createAssetPost(content, imagesAndVideos);
   }
 
   @override
-  Future<List<PostModel>?> getPostsByUserId(String userId) {
+  Future<List<OnlinePostModel>?> getPostsByUserId(String userId) {
     return serviceLocator.get<PostService>().getPostsByUserId(userId);
   }
 

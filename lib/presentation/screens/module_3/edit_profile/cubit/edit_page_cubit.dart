@@ -7,7 +7,6 @@ import 'edit_page_state.dart';
 class EditPageCubit extends Cubit<EditPageState> {
   final AuthRepository authRepository = AuthRepositoryImpl();
   final UserRepository userRepository = UserRepositoryImpl();
-  final StorageRepository storageRepository = StorageRepositoryImpl();
 
   EditPageCubit() : super(EditPageInitial()) {
     loadCurrentUserData();
