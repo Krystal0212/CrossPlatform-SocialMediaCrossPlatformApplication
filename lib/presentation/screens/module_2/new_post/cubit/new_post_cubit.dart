@@ -1,6 +1,11 @@
+import 'dart:ui' as ui;
+
 import 'package:socialapp/utils/import.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:path/path.dart' as path;
+import 'package:flutter_quick_video_encoder/flutter_quick_video_encoder.dart';
 
+import 'package:video_player/video_player.dart';
 import '../widgets/video_dimensions_helper.dart';
 import 'new_post_state.dart';
 
@@ -35,7 +40,7 @@ class NewPostCubit extends Cubit<NewPostState>
     return completer.future;
   }
 
-  Future<Uint8List> _resizeAndConvertToWebP(html.File file) async {
+  Future<Uint8List> _resizeAndConvertToWebPWebsite(html.File file) async {
     final completer = Completer<Uint8List>();
 
     final reader = html.FileReader();
@@ -101,9 +106,6 @@ class NewPostCubit extends Cubit<NewPostState>
           return;
         }
 
-        Stopwatch stopwatch = Stopwatch();
-        stopwatch.start();
-
         for (int index = 0; index < files.length; index++) {
           final html.File file = files[index];
           final html.FileReader reader = html.FileReader();
@@ -124,7 +126,7 @@ class NewPostCubit extends Cubit<NewPostState>
           uploadedAsset['name'] = file.name;
 
           if (file.type.startsWith('image')) {
-            final resizedWebP = await _resizeAndConvertToWebP(file);
+            final resizedWebP = await _resizeAndConvertToWebPWebsite(file);
 
             uploadedAsset['data'] = resizedWebP;
             uploadedAsset['isNSFW'] = false;
@@ -155,31 +157,23 @@ class NewPostCubit extends Cubit<NewPostState>
             Map<String, double> videoDimensions = {};
 
             try {
-              final dimensions = await getVideoDimensions(assetPath);
-              print('Video Dimensions: $dimensions');
+              videoDimensions = await getVideoDimensions(assetPath);
             } catch (e) {
-              print('Error fetching video dimensions: $e');
+              if (kDebugMode) {
+                print('Error fetching video dimensions: $e');
+              }
             }
-            // if(PlatformConfig.of(context)!.isWeb) {
-            //   videoDimensions = await getVideoDimensionsForWebsite(assetPath);
-            // } else {
-            //   videoDimensions = await getVideoDimensionsForMobile(assetPath);
-            // }
+
             uploadedAsset['isNSFW'] = false;
 
             uploadedAsset['data'] = reader.result as Uint8List;
-            ;
             uploadedAsset['width'] = videoDimensions['width'] ?? 0;
             uploadedAsset['height'] = videoDimensions['height'] ?? 1;
             uploadedAsset['type'] = 'video';
           }
 
-          uploadedAsset['ratio'] = (uploadedAsset['width'] as double? ?? 0) /
-              (uploadedAsset['height'] as double? ?? 1);
-          uploadedAsset['nextAsset'] = false;
-          if (index < files.length - 1) {
-            uploadedAsset['nextAsset'] = true;
-          }
+          // uploadedAsset['ratio'] = (uploadedAsset['width'] as double? ?? 0) /
+          //     (uploadedAsset['height'] as double? ?? 1);
 
           int currentIndex = 0;
           for (var i = 0; i < uploadedFiles.length; i++) {
@@ -216,17 +210,47 @@ class NewPostCubit extends Cubit<NewPostState>
         }
 
         await Future.wait(classifyTasks);
-
-        if (kDebugMode) {
-          print("Time for processing : ${stopwatch.elapsedMilliseconds}");
-        }
-        stopwatch.stop();
       } catch (error) {
         if (kDebugMode) {
           print("Error during pick assets : $error");
         }
       }
     });
+  }
+
+  Future<Uint8List> _resizeAndConvertToWebPForMobile(File file) async {
+    // Maximum dimension
+    const maxDimension = 1200;
+
+    // Get the original dimensions of the image
+    final decodedImage = await decodeImageFromList(await file.readAsBytes());
+    final originalWidth = decodedImage.width;
+    final originalHeight = decodedImage.height;
+
+    // Calculate the target dimensions
+    late int targetWidth, targetHeight;
+    if (originalWidth > originalHeight) {
+      targetWidth = maxDimension;
+      targetHeight = (originalHeight * maxDimension / originalWidth).round();
+    } else {
+      targetHeight = maxDimension;
+      targetWidth = (originalWidth * maxDimension / originalHeight).round();
+    }
+
+    // Compress and convert the image to WebP format
+    final compressedImage = await FlutterImageCompress.compressWithFile(
+      file.absolute.path,
+      minWidth: targetWidth,
+      minHeight: targetHeight,
+      quality: 90, // Adjust quality as needed
+      format: CompressFormat.webp,
+    );
+
+    if (compressedImage == null) {
+      throw Exception("Failed to compress image");
+    }
+
+    return Uint8List.fromList(compressedImage);
   }
 
   void pickImagesMobile(
@@ -239,43 +263,101 @@ class NewPostCubit extends Cubit<NewPostState>
 
     try {
       final ImagePicker picker = ImagePicker();
-      final List<XFile> images = await picker.pickMultiImage(
-        limit: 5,
-        maxWidth: 1000,
-        maxHeight: 1000,
+      List<XFile> images = [];
+
+      final String? choice = await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Choose an option"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text("Camera"),
+                  onTap: () {
+                    Navigator.of(context).pop("camera");
+                  },
+                ),
+                ListTile(
+                  title: Text("Gallery"),
+                  onTap: () {
+                    Navigator.of(context).pop("gallery");
+                  },
+                ),
+              ],
+            ),
+          );
+        },
       );
 
-      if (images.isEmpty) {
-        throw ("No images selected");
+      if (choice == null) return;
+
+      if (choice == "camera") {
+        final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.camera);
+        if (pickedFile != null) {
+          images.add(pickedFile);
+        }
+      } else if (choice == "gallery") {
+        final List<XFile>? pickedFiles = await picker.pickMultiImage();
+        if (pickedFiles != null) {
+          images.addAll(pickedFiles);
+        }
       }
 
-      List<Map<String, dynamic>> selectedAssetsList =
+      if (images.isEmpty) return;
+
+      List<Map<String, dynamic>> uploadedFiles =
       List.from(selectedAssetsNotifier.value);
 
-      for (XFile image in images) {
-        bool isNSFW = await classifyNSFW(File(image.path).readAsBytesSync());
+      if (uploadedFiles.length + images.length > 8 &&
+          uploadedFiles.isNotEmpty) {
+        showUploadLimitExceededMassage(context: context);
+        return;
+      }
+
+      for (int index = 0; index < images.length; index++) {
+        final XFile image = images[index];
+
+        bool isDuplicate = uploadedFiles.any((uploadedAsset) {
+          return uploadedAsset['name'] == image.name;
+        });
+
+        if (isDuplicate) {
+          continue;
+        }
+
+        Uint8List resizedWebP =
+        await _resizeAndConvertToWebPForMobile(File(image.path));
+        ui.Image decodedImage = await decodeImageFromList(resizedWebP);
+        int imageWidth = decodedImage.width;
+        int imageHeight = decodedImage.height;
+
+        bool isNSFW = await classifyNSFW(resizedWebP);
         // bool isNSFW = false;
 
-        bool exists = selectedAssetsList.any(
-                (map) =>
-            map['path']
-                .split('/')
-                .last == image.path
-                .split('/')
-                .last);
+        uploadedFiles.add({
+          'name': image.name,
+          'data': File(image.path).readAsBytesSync(),
+          // 'path': image.path,
+          'type': 'image',
+          'index': (uploadedFiles.isNotEmpty) ? uploadedFiles.length : index,
+          'isNSFW': isNSFW,
+          'width': imageWidth,
+          'height': imageHeight,
+        });
 
-        if (!exists && selectedAssetsList.length <= 5) {
-          selectedAssetsList.add({
-            'data': File(image.path).readAsBytesSync(),
-            'path': image.path,
-            'type': 'image',
-            'index': selectedAssetsList.length,
-            'isNSFW': isNSFW
-          });
-
-          selectedAssetsNotifier.value = List.from(selectedAssetsList);
-          ;
+        int currentIndex = 0;
+        for (int i = 0; i < uploadedFiles.length; i++) {
+          final uploadedElement = uploadedFiles[i];
+          if (uploadedElement['index'] != currentIndex) {
+            uploadedElement['index'] = currentIndex;
+          }
+          currentIndex++;
         }
+
+        selectedAssetsNotifier.value = List.from(uploadedFiles);
       }
 
       _isImagePickerActive = false;
@@ -287,59 +369,76 @@ class NewPostCubit extends Cubit<NewPostState>
     }
   }
 
-  Future<void> pickVideoMobile(
-      ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier,
+  void pickVideoMobile(ValueNotifier<List<Map<String, dynamic>>> assetPathNotifier,
       BuildContext context,) async {
     final ImagePicker picker = ImagePicker();
 
-    // Pick a video from gallery
     final pickedVideo = await picker.pickVideo(source: ImageSource.gallery);
 
-    if (pickedVideo == null) return; // If no video is selected, return early
+    if (pickedVideo == null) return;
+
+    final List<Map<String, dynamic>> uploadedFiles = assetPathNotifier.value;
 
     final file = File(pickedVideo.path);
+    final fileName = path.basename(file.path).split('.').first;
 
-    // Check if the video file exceeds 60 MB (60 * 1024 * 1024 bytes)
+    bool isDuplicate = uploadedFiles.any((uploadedAsset) {
+      return uploadedAsset['name'] == fileName;
+    });
+
+    if (isDuplicate) {
+      return;
+    }
+
     if (file.lengthSync() > 60 * 1024 * 1024) {
+      if (!context.mounted) return;
       showAttentionMessage(
         context: context,
         description: 'The video file is too large. Maximum size is 60MB.',
       );
-      return; // Return if file exceeds the size limit
+      return;
     }
 
-    // Check if the uploaded files exceed the limit (e.g., 8 files)
-    if ((imagePathNotifier.value.length) > 8 ||
-        (imagePathNotifier.value.length + 1) > 8) {
+    if (assetPathNotifier.value.length + 1 > 8) {
+      if (!context.mounted) return;
       showUploadLimitExceededMassage(context: context);
       return;
     }
 
-    // Process the selected video
     final uploadedAsset = <String, dynamic>{};
-    uploadedAsset['name'] = pickedVideo.name;
+
+    final videoPlayerController = VideoPlayerController.file(file);
+
+    await videoPlayerController.initialize();
+
+    // Get the width and height after the controller is initialized
+    final videoWidth = videoPlayerController.value.size.width;
+    final videoHeight = videoPlayerController.value.size.height;
+    videoPlayerController.dispose();
+
 
     if (file.existsSync()) {
+      uploadedAsset['name'] = pickedVideo.name;
       uploadedAsset['data'] = await file.readAsBytes();
       uploadedAsset['type'] = 'video';
-
-      // Get the dimensions if needed
-      // For example, you can use video player or any other method to extract dimensions
-      // final videoPlayerController = VideoPlayerController.file(file);
-      // await videoPlayerController.initialize();
-      // uploadedAsset['width'] = videoPlayerController.value.size.width;
-      // uploadedAsset['height'] = videoPlayerController.value.size.height;
+      uploadedAsset['index'] = uploadedFiles.length;
+      uploadedAsset['isNSFW'] = false;
+      uploadedAsset['width'] = videoWidth;
+      uploadedAsset['height'] = videoHeight;
     }
 
-    // Add the uploaded video to the list
-    final uploadedFiles = List<Map<String, dynamic>>.from(
-        imagePathNotifier.value);
+    int currentIndex = 0;
+    for (int i = 0; i < uploadedFiles.length; i++) {
+      final uploadedElement = uploadedFiles[i];
+      if (uploadedElement['index'] != currentIndex) {
+        uploadedElement['index'] = currentIndex;
+      }
+      currentIndex++;
+    }
+
     uploadedFiles.add(uploadedAsset);
-    imagePathNotifier.value = uploadedFiles;
-
-    // You can add further functionality like processing, categorizing, etc.
+    assetPathNotifier.value = List.from(uploadedFiles);
   }
-
 
   void sendPost(BuildContext homeContext,
       BuildContext context,
@@ -359,6 +458,7 @@ class NewPostCubit extends Cubit<NewPostState>
       }
 
       Navigator.of(context).pop();
+
       if (!homeContext.mounted) return;
 
       Future.microtask(() {
@@ -367,9 +467,19 @@ class NewPostCubit extends Cubit<NewPostState>
               context: homeContext, description: AppStrings.uploading);
         }
       });
+      // Future.microtask(() {
+      //   if (homeContext.mounted) {
+      //     showSuccessMessage(
+      //       context: homeContext,
+      //       description: AppStrings.sendSuccess,
+      //     );
+      //   }
+      // });
 
       await serviceLocator<PostRepository>()
           .createAssetPost(content, imagesAndVideos, topics);
+
+      assetDataNotifier.value = [];
 
       Future.microtask(() {
         if (homeContext.mounted) {

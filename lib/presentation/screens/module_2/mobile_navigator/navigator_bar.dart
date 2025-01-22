@@ -38,8 +38,12 @@ class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
         floatingActionButton: FloatingActionButton(
           backgroundColor: AppColors.lavenderBlueShadow,
           onPressed: () {
-
-            context.go('/new-post');
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return NewPostScreen(
+                parentContext: context,
+              );
+            }));
+            // context.go('/new-post');
           },
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(30.0)),

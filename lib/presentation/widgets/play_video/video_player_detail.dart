@@ -71,7 +71,8 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
     _controller.addListener(() {
       if (_controller.value.isInitialized) {
         if (mounted) {
-          currentPosition.value = _controller.value.position.inSeconds.toDouble();
+          currentPosition.value =
+              _controller.value.position.inSeconds.toDouble();
         }
       }
     });
@@ -91,7 +92,6 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
       isTimeout.value = false;
     }
   }
-
 
   void _togglePlayPause() {
     if (isPlaying.value) {
@@ -135,7 +135,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
                   // Use the dominant color as background
                   child: const Center(
                     child:
-                    CircularProgressIndicator(), // Optional: Show a loading indicator
+                        CircularProgressIndicator(), // Optional: Show a loading indicator
                   ),
                 ),
               );
@@ -156,17 +156,16 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
                       onVisibilityChanged: (visibilityInfo) {
                         double visibleFraction = visibilityInfo.visibleFraction;
                         if (visibleFraction == 1) {
-                          _controller.play();
-                          if (!isPlaying.value) {
-                            if (mounted) {
+                          if (mounted) {
+                            _controller.play();
+                            if (!isPlaying.value) {
                               isPlaying.value = true;
                             }
                           }
-                        }
-                        else {
-                          _controller.pause();
-                          if (isPlaying.value) {
-                            if (mounted) {
+                        } else {
+                          if (mounted) {
+                            _controller.pause();
+                            if (isPlaying.value) {
                               isPlaying.value = false;
                             }
                           }

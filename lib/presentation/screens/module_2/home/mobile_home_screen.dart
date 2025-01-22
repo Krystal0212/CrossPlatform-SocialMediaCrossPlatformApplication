@@ -24,8 +24,10 @@ class MobileHomeScreen extends StatelessWidget {
             create: (context) => TrendingCubit(serviceLocator<PostRepository>(),
                 context.read<HomeCubit>(), ViewMode.trending)),
         BlocProvider(
-            create: (context) => FollowingCubit(serviceLocator<PostRepository>(),
-                context.read<HomeCubit>(), ViewMode.following)),
+            create: (context) => FollowingCubit(
+                serviceLocator<PostRepository>(),
+                context.read<HomeCubit>(),
+                ViewMode.following)),
       ], child: const MobileHomeBase()),
     );
   }
@@ -48,7 +50,6 @@ class _HomeScreenState extends State<MobileHomeBase>
   late UserModel? currentUser = UserModel.empty();
   late double listBodyWidth = 490;
 
-  final ValueNotifier<bool> isLoading = ValueNotifier(true);
   final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
 
   @override
@@ -67,26 +68,23 @@ class _HomeScreenState extends State<MobileHomeBase>
 
     compactActionButtonsWidth = deviceWidth * 0.075;
 
-    if (isLoading.value) {
-      try {
-        final isUserSignedIn =
-            await context.read<HomeCubit>().checkCurrentUser();
-        if (isUserSignedIn) {
-          if (!context.mounted) return;
-          final currentUser = context.read<HomeCubit>().getCurrentUser();
-          currentUserNotifier.value = currentUser;
-
-          context.read<FollowingCubit>().loadPosts(isOffline: false);
-        }
+    try {
+      final isUserSignedIn =
+          context.read<HomeCubit>().checkCurrentUserSignedIn();
+      if (isUserSignedIn) {
         if (!context.mounted) return;
-        context.read<ExploreCubit>().loadPosts(isOffline: false);
-        context.read<TrendingCubit>().loadPosts(isOffline: false);
-      } catch (e) {
-        if (kDebugMode) {
-          print("Error fetching user: $e");
-        }
-      } finally {
-        isLoading.value = false; // Notify listeners that loading is complete
+        await context.read<HomeCubit>().checkCurrentUser();
+        final currentUser = context.read<HomeCubit>().getCurrentUser();
+        currentUserNotifier.value = currentUser;
+
+        context.read<FollowingCubit>().loadPosts(isOffline: false);
+      }
+      if (!context.mounted) return;
+      context.read<ExploreCubit>().loadPosts(isOffline: false);
+      context.read<TrendingCubit>().loadPosts(isOffline: false);
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error fetching user: $e");
       }
     }
   }
@@ -94,7 +92,6 @@ class _HomeScreenState extends State<MobileHomeBase>
   @override
   void dispose() {
     tabController.dispose();
-    isLoading.dispose();
     currentUserNotifier.dispose();
     super.dispose();
   }
@@ -128,36 +125,42 @@ class _HomeScreenState extends State<MobileHomeBase>
                     CustomSearchBar(
                       searchBarWidth: deviceWidth * 0.8,
                       searchBarHeight: 46,
-                      onSearchDebounce: (String) {},
+                      onSearchDebounce: (text) {},
                     ),
                     const Spacer(),
-                    if (currentUserNotifier.value != null)
-                      SizedBox(
-                          width: 38,
-                          height: 38,
-                          child: CircleAvatar(
-                            radius: 17,
-                            backgroundImage: CachedNetworkImageProvider(
-                                currentUserNotifier.value!.avatar,
-                                maxWidth: 20,
-                                maxHeight: 20),
-                          ))
-                    else
-                      SizedBox(
-                        height: compactActionButtonsWidth,
-                        width: compactActionButtonsWidth,
-                        child: ElevatedButton(
-                          onPressed: () => context.push('/sign-in'),
-                          style: AppTheme.actionNoEffectCircleButtonStyle
-                              .copyWith(
-                            backgroundColor: const WidgetStatePropertyAll(
-                              AppColors.systemShockBlue,
-                            ),
-                          ),
-                          child: Image.asset(AppIcons.userSignIn,
-                              width: 25, height: 25),
-                        ),
-                      )
+
+                    ValueListenableBuilder(
+                        valueListenable: currentUserNotifier,
+                        builder: (context, value, _) {
+                          if (value != null) {
+                            return SizedBox(
+                                width: 38,
+                                height: 38,
+                                child: CircleAvatar(
+                                  radius: 17,
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      currentUserNotifier.value!.avatar,
+                                      maxWidth: 20,
+                                      maxHeight: 20),
+                                ));
+                          } else {
+                            return SizedBox(
+                              height: compactActionButtonsWidth,
+                              width: compactActionButtonsWidth,
+                              child: ElevatedButton(
+                                onPressed: () => context.push('/sign-in'),
+                                style: AppTheme.actionNoEffectCircleButtonStyle
+                                    .copyWith(
+                                  backgroundColor: const WidgetStatePropertyAll(
+                                    AppColors.systemShockBlue,
+                                  ),
+                                ),
+                                child: Image.asset(AppIcons.userSignIn,
+                                    width: 25, height: 25),
+                              ),
+                            );
+                          }
+                        }),
                   ],
                 ),
               );
@@ -189,8 +192,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                           indicatorPadding: EdgeInsets.zero,
                           barDecoration: const BoxDecoration(
                             color: AppColors.tropicalBreeze,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10)),
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                           tabs: [
                             SegmentTab(
@@ -232,8 +234,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                   BlocBuilder<ExploreCubit, TabState>(
                     builder: (context, state) {
                       if (state is TabLoading) {
-                        return const Center(
-                            child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       } else if (state is TabLoaded) {
                         return PostListView(
                           posts: state.posts,
@@ -250,8 +251,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                   BlocBuilder<TrendingCubit, TabState>(
                     builder: (context, state) {
                       if (state is TabLoading) {
-                        return const Center(
-                            child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       } else if (state is TabLoaded) {
                         return PostListView(
                           posts: state.posts,
@@ -268,12 +268,12 @@ class _HomeScreenState extends State<MobileHomeBase>
                   BlocBuilder<FollowingCubit, TabState>(
                     builder: (context, state) {
                       if (state is TabLoading) {
-                        return const Center(
-                            child: CircularProgressIndicator());
-                      }else if(state is TabNotSignIn){
-                        return SignInPagePlaceholder(width: listBodyWidth,);
-                      }
-                      else if (state is TabLoaded) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is TabNotSignIn) {
+                        return SignInPagePlaceholder(
+                          width: listBodyWidth,
+                        );
+                      } else if (state is TabLoaded) {
                         return PostListView(
                           posts: state.posts,
                           viewMode: ViewMode.following,

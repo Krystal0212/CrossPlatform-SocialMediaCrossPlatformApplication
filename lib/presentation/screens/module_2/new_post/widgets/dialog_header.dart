@@ -70,7 +70,7 @@ class MobileDialogHeader extends StatelessWidget {
                 height: sideWidth,
                 width: sideWidth,
                 child: ElevatedButton(
-                  onPressed: () => context.go('/home'),
+                  onPressed: () => Navigator.of(context).pop(),
                   style: AppTheme.actionNoEffectCircleButtonStyle.copyWith(
                     backgroundColor: const WidgetStatePropertyAll(
                       Colors.transparent,

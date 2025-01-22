@@ -4,7 +4,6 @@ import 'package:universal_html/html.dart' as html;
 
 import '../../../presentation/screens/module_2/new_post/widgets/video_dimensions_helper.dart';
 
-
 abstract class PostService {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
 
@@ -18,11 +17,12 @@ abstract class PostService {
   Future<void> syncLikesToFirestore(
       Map<String, Map<String, bool>> likedPostsCache);
 
-  Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
+  Future<void> createAssetPost(String content,
+      List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
 }
 
-class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper, ClassificationMixin {
+class PostServiceImpl extends PostService
+    with ImageAndVideoProcessingHelper, ClassificationMixin {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -487,12 +487,13 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper, Cl
     }
   }
 
+  Future<String> _uploadAssetAndGetUrl(Uint8List compressedImage,
+      DocumentReference newPostRef, String mediaKey) async {
+    final storageRef =
+        _storage.ref().child('posts/${newPostRef.id}/$mediaKey.webp');
 
-  Future<String> _uploadAssetAndGetUrl(
-      Uint8List compressedImage, DocumentReference newPostRef, String mediaKey) async {
-    final storageRef = _storage.ref().child('posts/${newPostRef.id}/$mediaKey.webp');
-
-    final SettableMetadata metadata = SettableMetadata(contentType: 'image/webp');
+    final SettableMetadata metadata =
+        SettableMetadata(contentType: 'image/webp');
 
     await storageRef.putData(compressedImage, metadata);
 
@@ -500,11 +501,13 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper, Cl
     return imageUrl;
   }
 
-  Future<String> _uploadVideoAndGetUrlForVideo(
-      Uint8List videoData, DocumentReference newPostRef, String mediaKey) async {
-    final storageRef = _storage.ref().child('posts/${newPostRef.id}/$mediaKey.mp4');
+  Future<String> _uploadVideoAndGetUrlForVideo(Uint8List videoData,
+      DocumentReference newPostRef, String mediaKey) async {
+    final storageRef =
+        _storage.ref().child('posts/${newPostRef.id}/$mediaKey.webm');
 
-    final SettableMetadata metadata = SettableMetadata(contentType: 'video/mp4');
+    final SettableMetadata metadata =
+        SettableMetadata(contentType: 'video/mp4');
 
     await storageRef.putData(videoData, metadata);
 
@@ -512,20 +515,24 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper, Cl
     return videoUrl;
   }
 
-
   @override
   Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics) async {
+      String content,
+      List<Map<String, dynamic>> imagesAndVideos,
+      List<TopicModel> topics) async {
     final Timestamp timestamp = Timestamp.now();
     Map<String, OnlineMediaItem> mediaMap = {};
     List<String> mediaKeys = [];
 
-
     NewPostModel newPost = NewPostModel(
         content: content,
         timestamp: timestamp,
-        topicRefs: topics.map((topics)=>_topicRef.doc(topics.topicId)).toList().toSet(),
-        media: {}, userRef: _usersRef.doc(currentUserId));
+        topicRefs: topics
+            .map((topics) => _topicRef.doc(topics.topicId))
+            .toList()
+            .toSet(),
+        media: {},
+        userRef: _usersRef.doc(currentUserId));
 
     DocumentReference newPostRef = await _postRef.add(newPost.toMap());
 
@@ -535,33 +542,33 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper, Cl
 
       if (asset['type'] == 'image') {
         Uint8List assetData = asset['data'];
-        final String dominantColor =
-            await getDominantColorFromImage(assetData);
+        final String dominantColor = await getDominantColorFromImage(assetData);
         final String assetUrl =
-            await _uploadAssetAndGetUrl(assetData, newPostRef,  mediaKey);
+            await _uploadAssetAndGetUrl(assetData, newPostRef, mediaKey);
 
         mediaMap[mediaKey] = OnlineMediaItem(
             dominantColor: dominantColor,
             height: asset['height'].toDouble(),
             width: asset['width'].toDouble(),
             type: 'image',
-            assetUrl: assetUrl, isNSFW: await classifyNSFW(assetData));
-      }
-      else if (asset['type'] == 'video') {
-        if (kIsWeb) {
-        final String videoUrl = await _uploadVideoAndGetUrlForVideo(asset['data'], newPostRef, mediaKey);
+            assetUrl: assetUrl,
+            isNSFW: await classifyNSFW(assetData));
+      } else if (asset['type'] == 'video') {
+          final String videoUrl = await _uploadVideoAndGetUrlForVideo(
+              asset['data'], newPostRef, mediaKey);
 
-        final dimensions = await getVideoDimensions(videoUrl);
+          final dimensions = await getVideoDimensions(videoUrl);
 
-        mediaMap[mediaKey] = OnlineMediaItem(
-          dominantColor: 'ff000000', // Default color for videos
-          height: dimensions['height']!,
-          width: dimensions['width']!,
-          type: 'video',
-          assetUrl: videoUrl,
-          isNSFW: false, // You can add a video NSFW classifier if needed
-        );
-      }
+          mediaMap[mediaKey] = OnlineMediaItem(
+            dominantColor: 'ff000000',
+            // Default color for videos
+            height: dimensions['height']!,
+            width: dimensions['width']!,
+            type: 'video',
+            assetUrl: videoUrl,
+            isNSFW: false, // You can add a video NSFW classifier if needed
+          );
+
       }
 
       await newPostRef.update({
