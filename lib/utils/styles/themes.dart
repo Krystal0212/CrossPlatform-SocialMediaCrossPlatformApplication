@@ -172,6 +172,13 @@ class AppTheme {
         letterSpacing: 0.60,
       );
 
+  static TextStyle get newPostTitleStyle => GoogleFonts.plusJakartaSans(
+    color: AppColors.iris,
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.60,
+  );
+
   static TextStyle get profileCasualStyle => GoogleFonts.plusJakartaSans(
       color: hintTextColor, fontSize: 16, fontWeight: FontWeight.bold);
 
@@ -270,7 +277,8 @@ class AppTheme {
       const EdgeInsets.only(right: 3);
 
   static EdgeInsets bottomDialogPaddingEdgeInsets(double deviceHeight) {
-    return EdgeInsets.symmetric(vertical: deviceHeight / 2 - 280);
+    double verticalPadding = max(0, deviceHeight / 2 - 320);
+    return EdgeInsets.symmetric(vertical: verticalPadding);
   }
 
   static EdgeInsets preferredTopicWebsitePaddingEdgeInsets(
@@ -349,6 +357,13 @@ class AppTheme {
         minimumSize: const Size(50, 45),
       );
 
+  static ButtonStyle get actionSignInCircleButtonStyle => TextButton.styleFrom(
+    backgroundColor: AppColors.systemShockBlue,
+    foregroundColor: AppTheme.white,
+    minimumSize: const Size(50, 45),
+    shape: const CircleBorder(),
+  );
+
   static ButtonStyle get actionSignUpButtonStyle => TextButton.styleFrom(
         backgroundColor: AppColors.pinkSpyro,
         foregroundColor: AppTheme.white,
@@ -408,6 +423,28 @@ class AppTheme {
         ),
         hintText: AppStrings.whatNew,
       );
+
+  static InputDecoration get whiteInputDecorationMobile => InputDecoration(
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+    fillColor: AppTheme.white,
+    filled: true,
+    hoverColor: AppTheme.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(color: AppTheme.white),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(color: AppTheme.white),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(color: AppTheme.white),
+    ),
+    hintText: AppStrings.whatNew,
+    hintStyle: const TextStyle(fontSize: 20)
+  );
 
   //ToDo: Theme
   static final ThemeData lightTheme = ThemeData(

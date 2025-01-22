@@ -18,4 +18,14 @@ class TopicRepositoryImpl extends TopicRepository {
   Future<List<Map<TopicModel, bool>>> fetchPreferredTopicsData() {
     return serviceLocator<FirestoreService>().fetchPreferredTopicsData();
   }
+
+  @override
+  Future<List<TopicModel>> getRandomTopics() async {
+     return serviceLocator<FirestoreService>().getRandomTopics();
+  }
+
+  @override
+  Future<List<TopicModel>> fetchTopicsByField(List<TopicModel> selectedTopics, String matchValue) {
+    return serviceLocator<FirestoreService>().fetchTopicsByField(selectedTopics, matchValue);
+  }
 }

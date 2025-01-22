@@ -2,35 +2,59 @@ import 'package:socialapp/utils/import.dart';
 
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
+import 'cubit/tab_cubit.dart';
+import 'cubit/tab_state.dart';
 import 'providers/home_properties_provider.dart';
 import 'widgets/post_list_view.dart';
-import 'widgets/home_appbar_search_bar.dart';
+import '../../../widgets/general/custom_search_bar.dart';
 import 'widgets/home_appbar_segmented_tab_controller.dart';
 
-class MobileHomeScreen extends StatefulWidget {
+class MobileHomeScreen extends StatelessWidget {
   const MobileHomeScreen({super.key});
 
   @override
-  State<MobileHomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => HomeCubit(),
+      child: MultiBlocProvider(providers: [
+        BlocProvider(
+            create: (context) => ExploreCubit(serviceLocator<PostRepository>(),
+                context.read<HomeCubit>(), ViewMode.explore)),
+        BlocProvider(
+            create: (context) => TrendingCubit(serviceLocator<PostRepository>(),
+                context.read<HomeCubit>(), ViewMode.trending)),
+        BlocProvider(
+            create: (context) => FollowingCubit(serviceLocator<PostRepository>(),
+                context.read<HomeCubit>(), ViewMode.following)),
+      ], child: const MobileHomeBase()),
+    );
+  }
 }
 
-class _HomeScreenState extends State<MobileHomeScreen>
+class MobileHomeBase extends StatefulWidget {
+  const MobileHomeBase({super.key});
+
+  @override
+  State<MobileHomeBase> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<MobileHomeBase>
     with SingleTickerProviderStateMixin {
   late List<dynamic> posts;
   late CollectionReference<Map<String, dynamic>> postCollection;
   late double deviceWidth, deviceHeight;
-  late TabController _tabController;
+  late TabController tabController;
   late double compactActionButtonsWidth;
   late UserModel? currentUser = UserModel.empty();
-
   late double listBodyWidth = 490;
 
+  final ValueNotifier<bool> isLoading = ValueNotifier(true);
   final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 3, vsync: this);
     FlutterNativeSplash.remove();
   }
 
@@ -43,177 +67,227 @@ class _HomeScreenState extends State<MobileHomeScreen>
 
     compactActionButtonsWidth = deviceWidth * 0.075;
 
-    try {
-      final isUserSignedIn = await context.read<HomeCubit>().checkCurrentUser();
-      if (isUserSignedIn) {
+    if (isLoading.value) {
+      try {
+        final isUserSignedIn =
+            await context.read<HomeCubit>().checkCurrentUser();
+        if (isUserSignedIn) {
+          if (!context.mounted) return;
+          final currentUser = context.read<HomeCubit>().getCurrentUser();
+          currentUserNotifier.value = currentUser;
+
+          context.read<FollowingCubit>().loadPosts(isOffline: false);
+        }
         if (!context.mounted) return;
-        currentUser = context.read<HomeCubit>().getCurrentUser() ?? null;
-        currentUserNotifier.value = currentUser;
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error fetching user: $e");
+        context.read<ExploreCubit>().loadPosts(isOffline: false);
+        context.read<TrendingCubit>().loadPosts(isOffline: false);
+      } catch (e) {
+        if (kDebugMode) {
+          print("Error fetching user: $e");
+        }
+      } finally {
+        isLoading.value = false; // Notify listeners that loading is complete
       }
     }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    tabController.dispose();
+    isLoading.dispose();
+    currentUserNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => HomeCubit(),
-      child: UserNotifierProvider(
-        notifier: currentUserNotifier,
-        child: DefaultTabController(
-          length: 3,
-          child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: AppColors.white,
-              automaticallyImplyLeading: false,
-              flexibleSpace:
-                  BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  height: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomSearchBar(
-                        searchBarWidth: deviceWidth * 0.8,
-                      ),
-                      const Spacer(),
-                      if (currentUserNotifier.value != null)
-                        SizedBox(
-                            width: 38,
-                            height: 38,
-                            child: CircleAvatar(
-                              radius: 17,
-                              backgroundImage: CachedNetworkImageProvider(
-                                  currentUserNotifier.value!.avatar,
-                                  maxWidth: 20,
-                                  maxHeight: 20),
-                            ))
-                      else
-                        SizedBox(
-                          height: compactActionButtonsWidth,
-                          width: compactActionButtonsWidth,
-                          child: ElevatedButton(
-                            onPressed: () => context.push('/sign-in'),
-                            style: AppTheme.actionNoEffectCircleButtonStyle
-                                .copyWith(
-                              backgroundColor: const WidgetStatePropertyAll(
-                                AppColors.systemShockBlue,
-                              ),
+    return PopScope(
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (!kIsWeb) {
+          SystemNavigator.pop();
+        }
+      },
+      child: HomePropertiesProvider(
+        homeProperties: HomeProperties(
+            currentUserNotifier: currentUserNotifier,
+            user: currentUserNotifier.value,
+            listBodyWidth: listBodyWidth),
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: AppColors.white,
+            automaticallyImplyLeading: false,
+            flexibleSpace:
+                BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                height: 60,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Left Section
+                    CustomSearchBar(
+                      searchBarWidth: deviceWidth * 0.8,
+                      searchBarHeight: 46,
+                      onSearchDebounce: (String) {},
+                    ),
+                    const Spacer(),
+                    if (currentUserNotifier.value != null)
+                      SizedBox(
+                          width: 38,
+                          height: 38,
+                          child: CircleAvatar(
+                            radius: 17,
+                            backgroundImage: CachedNetworkImageProvider(
+                                currentUserNotifier.value!.avatar,
+                                maxWidth: 20,
+                                maxHeight: 20),
+                          ))
+                    else
+                      SizedBox(
+                        height: compactActionButtonsWidth,
+                        width: compactActionButtonsWidth,
+                        child: ElevatedButton(
+                          onPressed: () => context.push('/sign-in'),
+                          style: AppTheme.actionNoEffectCircleButtonStyle
+                              .copyWith(
+                            backgroundColor: const WidgetStatePropertyAll(
+                              AppColors.systemShockBlue,
                             ),
-                            child: Image.asset(AppIcons.userSignIn,
-                                width: 25, height: 25),
                           ),
-                        )
-                    ],
+                          child: Image.asset(AppIcons.userSignIn,
+                              width: 25, height: 25),
+                        ),
+                      )
+                  ],
+                ),
+              );
+            }),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                child: Container(
+                  width: deviceWidth, // Ensure bottom also takes full width
+                  height: 50,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
-                );
-              }),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(50),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  child: Container(
-                    width: deviceWidth, // Ensure bottom also takes full width
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: BlocBuilder<HomeCubit, HomeState>(
-                        builder: (context, state) {
-                          return Container(
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: AppColors.tropicalBreeze,
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: SegmentedTabControl(
-                                splashColor: Colors.transparent,
-                                tabTextColor: AppColors.iris,
-                                selectedTabTextColor: AppColors.white,
-                                squeezeIntensity: 2.0,
-                                indicatorPadding: EdgeInsets.zero,
-                                barDecoration: const BoxDecoration(
-                                  color: AppColors.tropicalBreeze,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10)),
-                                ),
-                                tabs: [
-                                  SegmentTab(
-                                    label: 'Explore',
-                                    color: AppColors.bneiBrakBay,
-                                    backgroundColor:
-                                        AppColors.bneiBrakBay.withOpacity(0.1),
-                                  ),
-                                  SegmentTab(
-                                    label: 'Trending',
-                                    color: AppColors.officeNeonLight,
-                                    backgroundColor: AppColors.officeNeonLight
-                                        .withOpacity(0.1),
-                                  ),
-                                  SegmentTab(
-                                    label: 'Following',
-                                    color: AppColors.limeShot,
-                                    backgroundColor:
-                                        AppColors.limeShot.withOpacity(0.1),
-                                  ),
-                                ],
-                              ));
-                        },
-                      ),
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: AppColors.tropicalBreeze,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: SegmentedTabControl(
+                          controller: tabController,
+                          splashColor: Colors.transparent,
+                          tabTextColor: AppColors.iris,
+                          selectedTabTextColor: AppColors.white,
+                          squeezeIntensity: 2.0,
+                          indicatorPadding: EdgeInsets.zero,
+                          barDecoration: const BoxDecoration(
+                            color: AppColors.tropicalBreeze,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10)),
+                          ),
+                          tabs: [
+                            SegmentTab(
+                              label: 'Explore',
+                              color: AppColors.bneiBrakBay,
+                              backgroundColor:
+                                  AppColors.bneiBrakBay.withOpacity(0.1),
+                            ),
+                            SegmentTab(
+                              label: 'Trending',
+                              color: AppColors.officeNeonLight,
+                              backgroundColor:
+                                  AppColors.officeNeonLight.withOpacity(0.1),
+                            ),
+                            SegmentTab(
+                              label: 'Following',
+                              color: AppColors.limeShot,
+                              backgroundColor:
+                                  AppColors.limeShot.withOpacity(0.1),
+                            ),
+                          ],
+                        )),
                   ),
                 ),
               ),
             ),
-            body: BlocBuilder<HomeCubit, HomeState>(
-              builder: (context, state) {
-                if (state is HomeLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is HomeLoadedPostsSuccess) {
-                  return Container(
-                    padding: const EdgeInsets.only(bottom: 40),
-                    color: AppColors.lynxWhite,
-                    child: Center(
-                        child: Container(
-                      padding: const EdgeInsets.only(top: 20),
-                      width: listBodyWidth,
-                      child: TabBarView(
-                        children: [
-                          PostListView(
-                            posts: state.postLists[0],
-                            viewMode: ViewMode.explore,
-                          ),
-                          PostListView(
-                            posts: state.postLists[1],
-                            viewMode: ViewMode.trending,
-                          ),
-                          PostListView(
-                            posts: state.postLists[2],
-                            viewMode: ViewMode.following,
-                          ),
-                        ],
-                      ),
-                    )),
-                  );
-                } else if (state is HomeFailure) {
-                  return const Center(child: Text("Error"));
-                } else {
-                  return const Center(child: Text('Fetching data'));
-                }
-              },
-            ),
+          ),
+          body: Container(
+            padding: const EdgeInsets.only(bottom: 40),
+            color: AppColors.lynxWhite,
+            child: Center(
+                child: Container(
+              padding: const EdgeInsets.only(top: 20),
+              width: listBodyWidth,
+              child: TabBarView(
+                controller: tabController,
+                children: [
+                  // Explore Tab
+                  BlocBuilder<ExploreCubit, TabState>(
+                    builder: (context, state) {
+                      if (state is TabLoading) {
+                        return const Center(
+                            child: CircularProgressIndicator());
+                      } else if (state is TabLoaded) {
+                        return PostListView(
+                          posts: state.posts,
+                          viewMode: ViewMode.explore,
+                        );
+                      } else if (state is TabError) {
+                        return Center(child: Text(state.error));
+                      } else {
+                        return const Center(child: Text('Fetching data'));
+                      }
+                    },
+                  ),
+                  // Trending Tab
+                  BlocBuilder<TrendingCubit, TabState>(
+                    builder: (context, state) {
+                      if (state is TabLoading) {
+                        return const Center(
+                            child: CircularProgressIndicator());
+                      } else if (state is TabLoaded) {
+                        return PostListView(
+                          posts: state.posts,
+                          viewMode: ViewMode.trending,
+                        );
+                      } else if (state is TabError) {
+                        return Center(child: Text(state.error));
+                      } else {
+                        return const Center(child: Text('Fetching data'));
+                      }
+                    },
+                  ),
+                  // Following Tab
+                  BlocBuilder<FollowingCubit, TabState>(
+                    builder: (context, state) {
+                      if (state is TabLoading) {
+                        return const Center(
+                            child: CircularProgressIndicator());
+                      }else if(state is TabNotSignIn){
+                        return SignInPagePlaceholder(width: listBodyWidth,);
+                      }
+                      else if (state is TabLoaded) {
+                        return PostListView(
+                          posts: state.posts,
+                          viewMode: ViewMode.following,
+                        );
+                      } else if (state is TabError) {
+                        return Center(child: Text(state.error));
+                      } else {
+                        return const Center(child: Text('Fetching data'));
+                      }
+                    },
+                  ),
+                ],
+              ),
+            )),
           ),
         ),
       ),
@@ -221,7 +295,7 @@ class _HomeScreenState extends State<MobileHomeScreen>
   }
 }
 
-// class _HomeScreenState extends State<MobileHomeScreen>
+// class _HomeScreenState extends State<MobileHomeBase>
 //     with SingleTickerProviderStateMixin {
 //   late double deviceWidth, deviceHeight;
 //   late TabController _tabController;

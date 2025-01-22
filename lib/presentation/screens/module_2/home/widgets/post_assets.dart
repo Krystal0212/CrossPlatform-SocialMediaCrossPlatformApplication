@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:ui' as ui;
+import 'package:socialapp/presentation/widgets/play_video/video_player.dart';
+import 'package:socialapp/presentation/widgets/play_video/video_player_detail.dart';
 import 'package:socialapp/utils/import.dart';
+import 'package:video_player/video_player.dart';
 
 class PostAsset extends StatefulWidget {
   final OnlinePostModel post;
@@ -61,39 +64,56 @@ class _PostAssetState extends State<PostAsset> {
       case 0:
         return const ImageErrorPlaceholder();
       case 1:
-        return PostSimpleImage(
+        return PostSimpleAsset(
           image: media.values.first,
           postWidth: widget.postWidth,
           isCachedData: isCachedData,
         );
       case 2:
-        return GridView.builder(
-            itemCount: mediaLength,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-            ),
-            itemBuilder: (context, index) {
-              return PostMultipleImage(
-                image: media[index.toString()]!,
-                isCachedData: isCachedData,
-              );
-            });
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          constraints: BoxConstraints(maxHeight: gridHeight, maxWidth: 580.0),
+          child: GridView.builder(
+              itemCount: mediaLength,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+              ),
+              itemBuilder: (context, index) {
+                return PostMultipleAsset(
+                  image: media[index.toString()]!,
+                  isCachedData: isCachedData,
+                );
+              }),
+        );
       case 3:
-        return GridView.builder(
-            itemCount: mediaLength,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 4,
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          constraints: BoxConstraints(maxHeight: gridHeight, maxWidth: 580.0),
+          child: GridView.custom(
+            gridDelegate: SliverQuiltedGridDelegate(
+              crossAxisCount: 4,
               mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+              repeatPattern: QuiltedGridRepeatPattern.inverted,
+              pattern: [
+                const QuiltedGridTile(2, 2),
+                const QuiltedGridTile(1, 2),
+                const QuiltedGridTile(1, 2),
+              ],
             ),
-            itemBuilder: (context, index) {
-              return PostMultipleImage(
-                image: media[index.toString()]!,
-                isCachedData: isCachedData,
-              );
-            });
+            childrenDelegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                return PostMultipleAsset(
+                  image: media[index.toString()]!,
+                  otherAssets:  0,
+                  isCachedData: isCachedData,
+                );
+              },
+              childCount: media.length,
+            ),),
+        );
       default:
         Map<String, OnlineMediaItem> collapsedAssets = Map.fromEntries(
           media.entries.take(4),
@@ -123,7 +143,7 @@ class _PostAssetState extends State<PostAsset> {
                     index != mediaLength - 1) {
                   otherAssets = mediaLength - collapsedAssets.length;
                 }
-                return PostMultipleImage(
+                return PostMultipleAsset(
                   image: collapsedAssets[index.toString()]!,
                   otherAssets: otherAssets ?? 0,
                   isCachedData: isCachedData,
@@ -137,12 +157,12 @@ class _PostAssetState extends State<PostAsset> {
   }
 }
 
-class PostMultipleImage extends StatelessWidget {
+class PostMultipleAsset extends StatelessWidget {
   final MediaItemBase image;
   final int? otherAssets;
   final bool isCachedData;
 
-  const PostMultipleImage({
+  const PostMultipleAsset({
     super.key,
     this.otherAssets,
     required this.image,
@@ -152,18 +172,26 @@ class PostMultipleImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color dominantColor = Color(int.parse('0x${image.dominantColor}'));
-
     //     child: isCachedData ? Image.file(File((image as OfflineMediaItem).imageData. )):
 
     return InkWell(
       onTap: () {},
-      child: Stack(
+      child: (image.type == 'video') ? VideoPlayerDetailWidget(
+        videoUrl: (image as OnlineMediaItem).assetUrl,
+        height: image.height,
+        width: image.width, dominantColor: dominantColor,
+      ) :
+      Stack(
         children: [
-          Container(
-              color: dominantColor,
-              width: double.infinity,
-              child: CachedNetworkImage(
-                  imageUrl: (image as OnlineMediaItem).assetUrl, fit: BoxFit.cover,)),
+          Center(
+            child: Container(
+                color: dominantColor,
+                width: double.infinity,
+                height: double.infinity,
+                child: CachedNetworkImage(
+                    imageUrl: (image as OnlineMediaItem).assetUrl, fit: BoxFit.cover ,
+                  errorWidget: (context, url, error) => const ImageErrorPlaceholder(),)
+          ),),
           if (otherAssets != null && otherAssets! > 0)
             Container(
               color: Colors.black.withOpacity(0.5),
@@ -179,7 +207,7 @@ class PostMultipleImage extends StatelessWidget {
   }
 }
 
-class PostSimpleImage extends StatelessWidget {
+class PostSimpleAsset extends StatelessWidget {
   final MediaItemBase image;
   final double postWidth;
   final bool isCachedData;
@@ -188,7 +216,7 @@ class PostSimpleImage extends StatelessWidget {
   final double maxHeight = 370;
   final double horizontalPadding = 10;
 
-  PostSimpleImage(
+  PostSimpleAsset(
       {super.key,
       required this.image,
       required this.postWidth,
@@ -224,12 +252,16 @@ class PostSimpleImage extends StatelessWidget {
     return Padding(
       padding:
           AppTheme.horizontalPostContentPaddingEdgeInsets(horizontalPadding),
-      child: InkWell(
-        onTap: () {},
-        child: ValueListenableBuilder<double>(
-          valueListenable: containerHeight,
-          builder: (context, height, child) {
-            return Container(
+      child: ValueListenableBuilder<double>(
+        valueListenable: containerHeight,
+        builder: (context, height, child) {
+          return (image.type == 'video') ?  VideoPlayerDetailWidget(
+            videoUrl: (image as OnlineMediaItem).assetUrl,
+            height: height,
+            width: double.infinity, dominantColor: dominantColor,
+          ):InkWell(
+            onTap: (){},
+            child: Container(
               color: dominantColor,
               height: height,
               width: double.infinity,
@@ -239,9 +271,9 @@ class PostSimpleImage extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) =>
                     const Icon(Icons.error),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

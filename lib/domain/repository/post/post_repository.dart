@@ -1,7 +1,4 @@
-import 'dart:io';
-
-import 'package:socialapp/domain/entities/comment.dart';
-import 'package:socialapp/domain/entities/post.dart';
+import 'package:socialapp/utils/import.dart';
 
 abstract class PostRepository {
   Future<List<OnlinePostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false});
@@ -13,7 +10,7 @@ abstract class PostRepository {
   Future<String?> getPostImageById(String postId);
 
   Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos);
+      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
 
   // Future<void> deletePost(PostModel post);
   // Future<

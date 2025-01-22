@@ -7,13 +7,15 @@ import 'cubit/sign_in_cubit.dart';
 import 'cubit/sign_in_state.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  final bool? isNotSignedIn;
+
+  const SignInScreen({super.key, this.isNotSignedIn});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> with Validator {
+class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessage {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
@@ -24,12 +26,13 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
 
   @override
   void initState() {
-    FlutterNativeSplash.remove();
+
     _formKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _obscureText = ValueNotifier<bool>(true);
     super.initState();
+    FlutterNativeSplash.remove();
   }
 
   @override
@@ -38,6 +41,17 @@ class _SignInScreenState extends State<SignInScreen> with Validator {
     _isWeb = PlatformConfig.of(context)?.isWeb ?? false;
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
+    if (widget.isNotSignedIn ?? false) {
+      // Defer the call to after the current frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showNotSignedInMassage(
+          context: context,
+          description: AppStrings.notSignedInTitle,
+        );
+      });
+
+    }
+
   }
 
   @override

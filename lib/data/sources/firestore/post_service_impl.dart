@@ -2,6 +2,8 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:universal_html/html.dart' as html;
 
+import '../../../presentation/screens/module_2/new_post/widgets/video_dimensions_helper.dart';
+
 
 abstract class PostService {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
@@ -17,10 +19,10 @@ abstract class PostService {
       Map<String, Map<String, bool>> likedPostsCache);
 
   Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos);
+      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
 }
 
-class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper {
+class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper, ClassificationMixin {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -116,24 +118,24 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper {
           List<Map<String, String>> mediaOffline = [];
 
           if (!kIsWeb) {
-            for (var item in document['media']) {
-              String mediaUrl = item['url'];
-
-              String? cachedFilePath = prefs.getString(mediaUrl);
-
-              if (cachedFilePath == null ||
-                  !File(cachedFilePath).existsSync()) {
-                File cachedFile = await _downloadAndSaveLocalImage(mediaUrl);
-                await prefs.setString(mediaUrl, cachedFile.path);
-                cachedFilePath = cachedFile.path;
-              }
-
-              mediaOffline.add({
-                'uri': cachedFilePath,
-                'dominantColor': item['dominantColor'],
-                'type': item['type'],
-              });
-            }
+            // for (var item in document['media']) {
+            //   String mediaUrl = item['url'];
+            //
+            //   String? cachedFilePath = prefs.getString(mediaUrl);
+            //
+            //   if (cachedFilePath == null ||
+            //       !File(cachedFilePath).existsSync()) {
+            //     File cachedFile = await _downloadAndSaveLocalImage(mediaUrl);
+            //     await prefs.setString(mediaUrl, cachedFile.path);
+            //     cachedFilePath = cachedFile.path;
+            //   }
+            //
+            //   mediaOffline.add({
+            //     'uri': cachedFilePath,
+            //     'dominantColor': item['dominantColor'],
+            //     'type': item['type'],
+            //   });
+            // }
           }
 
           Map<String, dynamic> documentMap =
@@ -485,26 +487,10 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper {
     }
   }
 
-  // Future<String> _uploadAssetAndGetUrl(
-  //     Uint8List compressedImage, DocumentReference newPostRef , String mediaKey) async {
-  //   File tempFile =
-  //       File('${(await getTemporaryDirectory()).path}/$mediaKey.webp');
-  //   tempFile.writeAsBytesSync(compressedImage);
-  //
-  //   // Upload image to Firebase Storage
-  //   Reference storageRef =
-  //       _storage.ref().child('post/${newPostRef.id}/$mediaKey.webp');
-  //   await storageRef.putFile(tempFile);
-  //
-  //   // Get the URL after the upload completes
-  //   String imageUrl = await storageRef.getDownloadURL();
-  //   return imageUrl;
-  // }
-
 
   Future<String> _uploadAssetAndGetUrl(
       Uint8List compressedImage, DocumentReference newPostRef, String mediaKey) async {
-    final storageRef = _storage.ref().child('posts/${newPostRef.id}/$mediaKey.jpg');
+    final storageRef = _storage.ref().child('posts/${newPostRef.id}/$mediaKey.webp');
 
     final SettableMetadata metadata = SettableMetadata(contentType: 'image/webp');
 
@@ -514,35 +500,40 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper {
     return imageUrl;
   }
 
+  Future<String> _uploadVideoAndGetUrlForVideo(
+      Uint8List videoData, DocumentReference newPostRef, String mediaKey) async {
+    final storageRef = _storage.ref().child('posts/${newPostRef.id}/$mediaKey.mp4');
+
+    final SettableMetadata metadata = SettableMetadata(contentType: 'video/mp4');
+
+    await storageRef.putData(videoData, metadata);
+
+    String videoUrl = await storageRef.getDownloadURL();
+    return videoUrl;
+  }
+
+
   @override
   Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos) async {
+      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics) async {
     final Timestamp timestamp = Timestamp.now();
     Map<String, OnlineMediaItem> mediaMap = {};
     List<String> mediaKeys = [];
 
+
     NewPostModel newPost = NewPostModel(
         content: content,
         timestamp: timestamp,
-        topicRefs: {_topicRef.doc('yhSvhFRcQ2PpXwiVFLFa')},
+        topicRefs: topics.map((topics)=>_topicRef.doc(topics.topicId)).toList().toSet(),
         media: {}, userRef: _usersRef.doc(currentUserId));
 
     DocumentReference newPostRef = await _postRef.add(newPost.toMap());
 
-    // imagesAndVideos.sort((a, b) => a['index'].compareTo(b['index']));
-
     for (Map<String, dynamic> asset in imagesAndVideos) {
-      final String assetPath = asset['path'];
       final String mediaKey = asset['index'].toString();
       mediaKeys.add(mediaKey);
 
       if (asset['type'] == 'image') {
-        // final Uint8List? compressedImage =
-        //     await FlutterImageCompress.compressWithFile(
-        //   assetPath,
-        //   format: CompressFormat.webp, // Compress to WebP
-        //   quality: 80,
-        // );
         Uint8List assetData = asset['data'];
         final String dominantColor =
             await getDominantColorFromImage(assetData);
@@ -554,7 +545,23 @@ class PostServiceImpl extends PostService with ImageAndVideoProcessingHelper {
             height: asset['height'].toDouble(),
             width: asset['width'].toDouble(),
             type: 'image',
-            assetUrl: assetUrl);
+            assetUrl: assetUrl, isNSFW: await classifyNSFW(assetData));
+      }
+      else if (asset['type'] == 'video') {
+        if (kIsWeb) {
+        final String videoUrl = await _uploadVideoAndGetUrlForVideo(asset['data'], newPostRef, mediaKey);
+
+        final dimensions = await getVideoDimensions(videoUrl);
+
+        mediaMap[mediaKey] = OnlineMediaItem(
+          dominantColor: 'ff000000', // Default color for videos
+          height: dimensions['height']!,
+          width: dimensions['width']!,
+          type: 'video',
+          assetUrl: videoUrl,
+          isNSFW: false, // You can add a video NSFW classifier if needed
+        );
+      }
       }
 
       await newPostRef.update({

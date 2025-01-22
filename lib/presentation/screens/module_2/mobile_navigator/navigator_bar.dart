@@ -4,6 +4,8 @@ import 'package:socialapp/presentation/screens/module_2/discover/discover_screen
 import 'package:socialapp/presentation/screens/module_2/home/mobile_home_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
+import '../new_post/mobile_new_post_screen.dart';
+
 class CustomNavigatorBar extends StatefulWidget {
   const CustomNavigatorBar({super.key});
 
@@ -25,7 +27,6 @@ class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
         backgroundColor: Colors.transparent,
         extendBody: true,
         resizeToAvoidBottomInset: false,
@@ -37,6 +38,7 @@ class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
         floatingActionButton: FloatingActionButton(
           backgroundColor: AppColors.lavenderBlueShadow,
           onPressed: () {
+
             context.go('/new-post');
           },
           shape: const RoundedRectangleBorder(

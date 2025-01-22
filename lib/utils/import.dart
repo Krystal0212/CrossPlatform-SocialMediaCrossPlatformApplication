@@ -42,7 +42,6 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         SetOptions;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 export 'package:like_button/like_button.dart';
-export 'package:pulp_flash/pulp_flash.dart';
 export 'package:shimmer/shimmer.dart';
 export 'package:palette_generator/palette_generator.dart';
 export 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -66,6 +65,7 @@ export 'package:socialapp/utils/mixin/methods/alert_dialog.dart';
 export 'package:socialapp/utils/mixin/methods/convert_timestamp.dart';
 export 'package:socialapp/utils/mixin/methods/image_and_video_processing_helper.dart';
 export 'package:socialapp/utils/mixin/methods/classification_model.dart';
+export 'package:socialapp/utils/mixin/methods/flash_message.dart';
 
 
 // Data and Repositories
@@ -111,6 +111,8 @@ export 'package:socialapp/presentation/widgets/general/custom_container.dart';
 export 'package:socialapp/presentation/widgets/general/custom_sized_box.dart';
 export 'package:socialapp/presentation/widgets/general/custom_placeholder.dart';
 export 'package:socialapp/presentation/widgets/general/custom_alert_dialog.dart';
+export 'package:socialapp/presentation/widgets/general/custom_search_bar.dart';
+export 'package:socialapp/presentation/widgets/general/pulp_flash.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_body.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_elevated_button.dart';
 export 'package:socialapp/presentation/widgets/auth/auth_header_image.dart';

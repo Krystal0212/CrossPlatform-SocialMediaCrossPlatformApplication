@@ -7,6 +7,10 @@ abstract class TopicRepository {
 
   Future<List<Map<TopicModel, bool>>> fetchPreferredTopicsData();
 
+  Future<List<TopicModel>> getRandomTopics();
+
+  Future<List<TopicModel>> fetchTopicsByField(List<TopicModel> selectedTopics, String matchValue);
+
 // Future<void> addTopicData(AddTopicReq addTopicReq);
 
 // Future<void> updateTopicData(UpdateTopicReq updateTopicReq);

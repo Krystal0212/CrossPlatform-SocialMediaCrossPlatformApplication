@@ -14,10 +14,10 @@ abstract class UserService {
 
   Future<List<String>> getUserRelatedData(String uid, String dataType);
 
-  Future<String>? uploadAvatar( File image, String uid);
+  Future<String>? uploadAvatar(File image, String uid);
 }
 
-class UserServiceImpl extends UserService{
+class UserServiceImpl extends UserService {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -108,7 +108,7 @@ class UserServiceImpl extends UserService{
   }
 
   @override
-  Future<String>? uploadAvatar( File image, String uid) async {
+  Future<String>? uploadAvatar(File image, String uid) async {
     try {
       final storageReference = _storage.ref().child('/user_avatars/$uid');
 
@@ -150,13 +150,16 @@ class UserServiceImpl extends UserService{
 
     switch (dataType) {
       case 'followers':
-        snapshot = await _usersFollowersRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+        snapshot = await _usersFollowersRef(uid).get()
+            as QuerySnapshot<Map<String, dynamic>>;
         break;
       case 'followings':
-        snapshot = await _usersFollowingsRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+        snapshot = await _usersFollowingsRef(uid).get()
+            as QuerySnapshot<Map<String, dynamic>>;
         break;
       case 'collections':
-        snapshot = await _usersCollectionsRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+        snapshot = await _usersCollectionsRef(uid).get()
+            as QuerySnapshot<Map<String, dynamic>>;
         break;
       default:
         throw ArgumentError('Invalid data type: $dataType');
@@ -172,5 +175,4 @@ class UserServiceImpl extends UserService{
 
     return data;
   }
-
 }

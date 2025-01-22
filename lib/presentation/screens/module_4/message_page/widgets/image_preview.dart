@@ -1,6 +1,8 @@
-import 'package:socialapp/presentation/screens/module_2/new_post/widgets/dialog_body.dart';
-import 'package:socialapp/presentation/screens/module_2/new_post/widgets/video_player.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/widgets/mobile_dialog_body.dart';
+import 'package:socialapp/presentation/widgets/play_video/video_player.dart';
 import 'package:socialapp/utils/import.dart';
+
+import '../../../../widgets/general/nsfw_and_close_icons.dart';
 
 class ImagePreview extends StatelessWidget {
   final ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier;
@@ -110,7 +112,7 @@ class _ImagePreviewDisplayState extends State<ImagePreviewDisplay> {
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: imagePathList[widget.index]['type'] == 'video'
-                ? VideoPlayerWidget(videoData: assetData)
+                ? VideoPlayerPreviewWidget(videoData: assetData, height: 250, width:250*imagePathList[widget.index]['width']/imagePathList[widget.index]['height'])
                 : Container(
                     height: 250,
                     decoration: BoxDecoration(

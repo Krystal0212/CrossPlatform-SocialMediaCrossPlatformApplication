@@ -70,7 +70,7 @@ dependencies:
   rich_field_controller: ^0.2.1
 #  image_picker_web: ^4.0.0
   like_button: ^2.0.5
-  pulp_flash: ^0.0.6
+#  pulp_flash: ^0.0.6
   universal_html: ^2.2.4
   flutter_sound: ^9.17.8
   video_player: ^2.9.2
@@ -80,6 +80,8 @@ dependencies:
   shimmer: ^3.0.0
   flutter_image_compress: ^2.4.0
   multi_image_picker_plus: ^0.0.6
+  visibility_detector: ^0.4.0+2
+  sizer: ^3.0.4
 #  firebase_app_check: ^0.3.2
 #  uuid: ^4.5.1
 #  photo_manager: ^3.6.3

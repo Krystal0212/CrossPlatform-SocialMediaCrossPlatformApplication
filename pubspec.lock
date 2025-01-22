@@ -1088,14 +1088,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
-  pulp_flash:
-    dependency: "direct main"
-    description:
-      name: pulp_flash
-      sha256: f77e9bc90f4ea884381c8656218a92d3650d9d9fbafbe073efcd2a95e7010f55
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.6"
   pytorch_lite:
     dependency: "direct main"
     description:
@@ -1192,6 +1184,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  sizer:
+    dependency: "direct main"
+    description:
+      name: sizer
+      sha256: "4694472b5d64ac317a6dc4b00868822e38db802269ee791d1f486772deda56c7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.4"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1485,6 +1485,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.3"
+  visibility_detector:
+    dependency: "direct main"
+    description:
+      name: visibility_detector
+      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
   vm_service:
     dependency: transitive
     description:

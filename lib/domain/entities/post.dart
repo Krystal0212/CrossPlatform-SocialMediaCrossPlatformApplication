@@ -7,14 +7,13 @@ class NewPostModel {
   final Set<DocumentReference> topicRefs;
   final DocumentReference userRef;
 
-  const NewPostModel( {
+  const NewPostModel({
     required this.content,
     required this.media,
     required this.timestamp,
     required this.topicRefs,
     required this.userRef,
   });
-
 
   Map<String, dynamic> toMap() {
     return {
@@ -43,7 +42,6 @@ class OnlinePostModel {
   final Set<DocumentReference> topicRefs;
   final Set<String> comments;
   final Set<String> likes;
-
 
   OnlinePostModel({
     required this.postId,
@@ -81,7 +79,6 @@ class OnlinePostModel {
       topicRefs: topicRefs,
     );
   }
-
 
   Map<String, dynamic> toMap() {
     return {
@@ -186,12 +183,14 @@ abstract class MediaItemBase {
   final double height;
   final double width;
   final String type;
+  final bool isNSFW;
 
   MediaItemBase({
     required this.dominantColor,
     required this.height,
     required this.width,
     required this.type,
+    required this.isNSFW,
   });
 
   Map<String, dynamic> toMap();
@@ -214,6 +213,7 @@ class OnlineMediaItem extends MediaItemBase {
     required super.width,
     required super.type,
     required this.assetUrl,
+    required super.isNSFW,
   });
 
   @override
@@ -224,16 +224,18 @@ class OnlineMediaItem extends MediaItemBase {
       'width': width,
       'type': type,
       'imageUrl': assetUrl,
+      'isNSFW': isNSFW
     };
   }
 
   factory OnlineMediaItem.fromMap(Map<String, dynamic> map) {
     return OnlineMediaItem(
       dominantColor: map['dominantColor'],
-      height: map['height'],
-      width: map['width'],
+      height: map['height'].toDouble(),
+      width: map['width'].toDouble(),
       type: map['type'],
       assetUrl: map['imageUrl'],
+      isNSFW: map['isNSFW'],
     );
   }
 }
@@ -247,6 +249,7 @@ class OfflineMediaItem extends MediaItemBase {
     required super.width,
     required super.type,
     required this.imageData,
+    required super.isNSFW,
   });
 
   @override
@@ -257,6 +260,7 @@ class OfflineMediaItem extends MediaItemBase {
       'width': width,
       'type': type,
       'imageData': imageData,
+      'isNSFW': isNSFW
     };
   }
 
@@ -267,6 +271,7 @@ class OfflineMediaItem extends MediaItemBase {
       width: (map['width'] as num).toDouble(),
       type: map['type'] as String,
       imageData: map['imageData'] as Uint8List,
+      isNSFW: map['isNSFW'],
     );
   }
 }

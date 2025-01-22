@@ -3,11 +3,11 @@ import 'package:socialapp/presentation/screens/module_1/reset_password/cubit/res
 import 'package:socialapp/presentation/screens/module_1/reset_password/reset_password_screen.dart';
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/mobile_navigator/navigator_bar.dart';
-import 'package:socialapp/presentation/screens/module_2/new_post/new_post_screen.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/mobile_new_post_screen.dart';
 import 'package:socialapp/presentation/widgets/general/custom_placeholder.dart';
 import 'package:socialapp/utils/import.dart';
 
-class AppRoutes {
+class AppRoutes with FlashMessage {
   static final GoRouter router = GoRouter(
     debugLogDiagnostics: true,
     initialLocation: '/',
@@ -28,7 +28,10 @@ class AppRoutes {
       ),
       GoRoute(
         path: '/sign-in',
-        pageBuilder: (context, state) => _buildPageRoute(const SignInScreen()),
+        pageBuilder: (context, state) {
+          final isNotSignedIn = state.extra as bool?;
+          return _buildPageRoute(SignInScreen(isNotSignedIn: isNotSignedIn));
+        },
       ),
       GoRoute(
         path: '/sign-up',
@@ -81,20 +84,24 @@ class AppRoutes {
           pageBuilder: (context, state) {
             final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
 
-            return _buildPageRoute(BlocProvider(
-                create: (context) => HomeCubit(),
-                child: (isWeb) ? const WebsiteHomeScreen() : const CustomNavigatorBar()));
+            return _buildPageRoute((isWeb)
+                ? const WebsiteHomeScreen()
+                : const CustomNavigatorBar());
           }),
       GoRoute(
           path: '/new-post',
           pageBuilder: (context, state) {
             final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
+            AuthFirebaseService authService = AuthFirebaseServiceImpl();
 
             if (isWeb) {
               return _buildPageRoute(BlocProvider(
-                  create: (context) => HomeCubit(), child: const WebsiteHomeScreen()));
+                  create: (context) => HomeCubit(),
+                  child: const WebsiteHomeScreen()));
             } else {
-              return _buildPageRoute(const NewPostScreen());
+                return _buildPageRoute(NewPostScreen(
+                  parentContext: context,
+                ));
             }
           })
     ],

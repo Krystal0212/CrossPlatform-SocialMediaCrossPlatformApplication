@@ -92,6 +92,7 @@ class _PostHeaderState extends State<PostHeader> with Methods {
             ],
           ),
           const SizedBox(height: 5),
+          if(postContent.isNotEmpty)
           ValueListenableBuilder<bool>(
             valueListenable: isExpandedNotifier,
             builder: (context, isExpanded, child) {

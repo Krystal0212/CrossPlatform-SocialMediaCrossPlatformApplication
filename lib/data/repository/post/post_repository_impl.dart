@@ -13,8 +13,8 @@ class PostRepositoryImpl extends PostRepository {
 
   @override
   Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos)async {
-    return serviceLocator.get<PostService>().createAssetPost(content, imagesAndVideos);
+      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics)async {
+    return serviceLocator.get<PostService>().createAssetPost(content, imagesAndVideos, topics);
   }
 
   @override

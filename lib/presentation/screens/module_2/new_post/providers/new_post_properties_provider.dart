@@ -4,9 +4,12 @@ import '../cubit/new_post_cubit.dart';
 
 class NewPostProperties {
   final UserModel? user;
+  final BuildContext homeContext;
+  final bool? isCompactView, isMediumView, isLargeView;
+  List<TopicModel>? topics;
 
-  NewPostProperties( {
-    required this.user,
+  NewPostProperties( {required this.homeContext,   this.isCompactView, this.isMediumView,  this.isLargeView,
+    required this.user, this.topics,
   });
 }
 

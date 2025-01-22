@@ -64,6 +64,20 @@ class StyleableTextFieldController extends TextEditingController {
       ),
     );
   }
+
+  void insertNewline() {
+    final currentText = text;
+    final cursorPosition = selection.baseOffset;
+
+    // Insert newline at the cursor position
+    final newText = currentText.substring(0, cursorPosition) + '\n' + currentText.substring(cursorPosition);
+
+    // Update the text and move the cursor after the newline
+    value = value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: cursorPosition + 1),
+    );
+  }
 }
 
 class TextPartStyleDefinition {

@@ -1,9 +1,8 @@
 import 'package:socialapp/utils/import.dart';
 
-import '../../new_post/new_post_dialog.dart';
+import '../../new_post/website_new_post_dialog.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
-import 'home_appbar_search_bar.dart';
 import 'home_appbar_segmented_tab_controller.dart';
 
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -14,7 +13,8 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeScreenAppBar({
     required this.deviceWidth,
     super.key,
-    required this.currentUserNotifier, required this.tabController,
+    required this.currentUserNotifier,
+    required this.tabController,
   });
 
   bool get isCompactView => deviceWidth < 680;
@@ -27,8 +27,8 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final double sidePartWidth = deviceWidth * 0.27;
 
-    final double compactSearchBarWidth = deviceWidth * 0.77;
-    final double compactActionButtonsWidth = deviceWidth * 0.08;
+    final double compactSearchBarWidth = deviceWidth * 0.65;
+    final double compactActionButtonsWidth = deviceWidth * 0.25;
 
     double paddingHorizontal, controlWidth;
     double controlHeight = kToolbarHeight - 15;
@@ -37,7 +37,7 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
       paddingHorizontal = 30;
       controlWidth = 230;
     } else if (isCompactView) {
-      paddingHorizontal = 25;
+      paddingHorizontal = 18;
       controlWidth = deviceWidth;
       controlHeight = 35;
     } else {
@@ -46,19 +46,21 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
 
     return ValueListenableBuilder<UserModel?>(
-        valueListenable: currentUserNotifier,
-        builder: (context, currentUser, _) {
-          return AppBar(
-            backgroundColor: AppColors.white,
-            automaticallyImplyLeading: false,
-            flexibleSpace: BlocBuilder<HomeCubit, HomeState>(
-              builder: (context, state) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      LeftSection(
+      valueListenable: currentUserNotifier,
+      builder: (context, currentUser, _) {
+        return AppBar(
+          backgroundColor: AppColors.white,
+          automaticallyImplyLeading: false,
+          flexibleSpace: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                child: Stack(
+                  children: [
+                    // Left Section (centered horizontally at the top)
+                    Align(
+                      alignment: isCompactView? Alignment.topLeft : Alignment.center,
+                      child: LeftSection(
                         deviceWidth: deviceWidth,
                         sidePartWidth: sidePartWidth,
                         searchBarWidth: compactSearchBarWidth,
@@ -68,14 +70,25 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                         isCompactView: isCompactView,
                         isLargeView: isLargeView,
                       ),
-                      if (isMediumView || isLargeView)
-                        HomeAppBarSegmentedTabControl(
+                    ),
+
+                    // Segmented Tab Control (centered horizontally)
+                    if (isMediumView || isLargeView)
+                      Align(
+                        alignment: Alignment.center,
+                        child: HomeAppBarSegmentedTabControl(
                           deviceWidth: deviceWidth,
                           controlWidth: controlWidth,
                           controlHeight: controlHeight,
-                          isCompactView: isCompactView, tabController: tabController,
+                          isCompactView: isCompactView,
+                          tabController: tabController,
                         ),
-                      HomeAppBarActionButtons(
+                      ),
+
+                    // Action Buttons (centered horizontally at the bottom)
+                    Align(
+                      alignment: isCompactView? Alignment.topRight : Alignment.center,
+                      child: HomeAppBarActionButtons(
                         rightWidth: isCompactView
                             ? compactActionButtonsWidth
                             : sidePartWidth,
@@ -84,24 +97,28 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                         currentUser: currentUser,
                         isLargeView: isLargeView,
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            bottom: isCompactView
-                ? PreferredSize(
-                    preferredSize: const Size.fromHeight(40),
-                    child: HomeAppBarSegmentedTabControl(
-                      deviceWidth: deviceWidth,
-                      controlWidth: controlWidth,
-                      controlHeight: controlHeight,
-                      isCompactView: isCompactView, tabController: tabController,
                     ),
-                  )
-                : null,
-          );
-        });
+                  ],
+                ),
+              );
+            },
+          ),
+          bottom: isCompactView
+              ? PreferredSize(
+            preferredSize: const Size.fromHeight(40),
+            child: HomeAppBarSegmentedTabControl(
+              deviceWidth: deviceWidth,
+              controlWidth: controlWidth,
+              controlHeight: controlHeight,
+              isCompactView: isCompactView,
+              tabController: tabController,
+            ),
+          )
+              : null,
+        );
+      },
+    );
+
   }
 
   @override
@@ -125,34 +142,33 @@ class LeftSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: sectionWidth,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          if (isLargeView)
-            Row(
-              children: [
-                SizedBox(
-                  width: 55,
-                  child: ElevatedButton(
-                    onPressed: () => context.go('/home'),
-                    style: AppTheme.navigationLogoButtonStyle,
-                    child: Image.asset(AppImages.logo, fit: BoxFit.cover),
-                  ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        if (isLargeView)
+          Row(
+            children: [
+              SizedBox(
+                width: 55,
+                child: ElevatedButton(
+                  onPressed: () => context.go('/home'),
+                  style: AppTheme.navigationLogoButtonStyle,
+                  child: Image.asset(AppImages.logo, fit: BoxFit.cover),
                 ),
-                SizedBox(width: deviceWidth * 0.015),
-              ],
-            ),
-          CustomSearchBar(
-            searchBarWidth: isCompactView
-                ? searchBarWidth
-                : !isLargeView
-                    ? sidePartWidth
-                    : sidePartWidth - 55 - deviceWidth * 0.015,
+              ),
+              SizedBox(width: deviceWidth * 0.015),
+            ],
           ),
-        ],
-      ),
+        CustomSearchBar(
+          searchBarHeight: 46,
+          searchBarWidth: isCompactView
+              ? searchBarWidth
+              : !isLargeView
+                  ? sidePartWidth
+                  : sidePartWidth - 55 - deviceWidth * 0.015,
+          onSearchDebounce: (String ) {  },
+        ),
+      ],
     );
   }
 }
@@ -167,7 +183,8 @@ class HomeAppBarSegmentedTabControl extends StatelessWidget {
     required this.deviceWidth,
     required this.controlWidth,
     required this.controlHeight,
-    required this.isCompactView, required this.tabController,
+    required this.isCompactView,
+    required this.tabController,
   });
 
   @override
@@ -236,29 +253,17 @@ class HomeAppBarActionButtons extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext homeContext) {
     final bool showSignUp = isLargeView && currentUser == null;
     final bool showSignInFull = currentUser == null && !isCompactView;
 
-    return SizedBox(
-      width: rightWidth,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           if (currentUser != null) ...[
-            SizedBox(
-              width: 38,
-              height: 38,
-              child: CircleAvatar(
-                radius: 17,
-                backgroundImage: CachedNetworkImageProvider(currentUser!.avatar,
-                    maxWidth: 20, maxHeight: 20),
-              ),
-            ),
             if (isLargeView) ...[
-              const SizedBox(
-                width: 20,
-              ),
               IconElevatedButton(
                 style: AppTheme.actionSignInButtonStyle,
                 icon: SvgPicture.asset(AppIcons.createNewPost,
@@ -267,14 +272,42 @@ class HomeAppBarActionButtons extends StatelessWidget {
                 textStyle: AppTheme.signInWhiteText,
                 onPressed: () {
                   showDialog(
-                    context: context,
+                    context: homeContext,
                     builder: (BuildContext context) {
-                      return CreateNewPostDialogContent(currentUser: currentUser!,);
+                      return CreateNewPostDialogContent(
+                        
+                        currentUser: currentUser!, homeContext: context,
+                      );
                     },
                   );
                 },
               ),
+              const SizedBox(
+                width: 20,
+              ),
+            ] else ...[
+              CircularIconButton(
+                  icon: SvgPicture.asset(AppIcons.createNewPost, width: 46),
+                  onPressed: () {
+                    showDialog(
+                      context: homeContext,
+                      builder: (BuildContext context) {
+                        return CreateNewPostDialogContent(
+                          currentUser: currentUser!, homeContext: homeContext,
+                        );
+                      },
+                    );
+                  },),
             ],
+            SizedBox(
+              width: 46,
+              height: 46,
+              child: CircleAvatar(
+                radius: 17,
+                backgroundImage: CachedNetworkImageProvider(currentUser!.avatar,
+                    maxWidth: 46, maxHeight: 46),
+              ),
+            ),
           ],
           if (showSignUp)
             ElevatedButton.icon(
@@ -288,7 +321,7 @@ class HomeAppBarActionButtons extends StatelessWidget {
                   style: AppTheme.signInWhiteText,
                 ),
               ),
-              onPressed: () => context.go('/sign-up'),
+              onPressed: () => homeContext.go('/sign-up'),
             ),
           if (showSignInFull) SizedBox(width: deviceWidth * 0.01),
           if (currentUser == null)
@@ -297,7 +330,7 @@ class HomeAppBarActionButtons extends StatelessWidget {
                     height: rightWidth,
                     width: rightWidth,
                     child: ElevatedButton(
-                      onPressed: () => context.go('/sign-in'),
+                      onPressed: () => homeContext.go('/sign-in'),
                       style: AppTheme.actionNoEffectCircleButtonStyle.copyWith(
                         backgroundColor: const WidgetStatePropertyAll(
                           AppColors.systemShockBlue,
@@ -312,7 +345,7 @@ class HomeAppBarActionButtons extends StatelessWidget {
                     icon: Image.asset(AppIcons.signIn, width: 20, height: 20),
                     label: AppStrings.signIn,
                     textStyle: AppTheme.signInWhiteText,
-                    onPressed: () => context.go('/sign-in'),
+                    onPressed: () => homeContext.go('/sign-in'),
                   ),
           if (!isCompactView) const SizedBox(width: 10),
           if (isLargeView)
@@ -369,11 +402,6 @@ class HomeAppBarActionButtons extends StatelessWidget {
                   ),
               ],
             ),
-          // ElevatedButton(
-          //   onPressed: () {},
-          //   style: AppTheme.actionNoEffectCircleButtonStyle,
-          //   child: SvgPicture.asset(AppIcons.threeDots, height: 30),
-          // ),
         ],
       ),
     );
@@ -390,12 +418,12 @@ class IconElevatedButton extends StatelessWidget {
 
   const IconElevatedButton(
       {super.key,
-        required this.style,
-        required this.icon,
-        required this.label,
-        this.textStyle,
-        required this.onPressed,
-        this.padding = const EdgeInsets.only(bottom: 2)});
+      required this.style,
+      required this.icon,
+      required this.label,
+      this.textStyle,
+      required this.onPressed,
+      this.padding = const EdgeInsets.only(bottom: 2)});
 
   @override
   Widget build(BuildContext context) {
@@ -411,6 +439,30 @@ class IconElevatedButton extends StatelessWidget {
         ),
       ),
       onPressed: onPressed,
+    );
+  }
+}
+
+class CircularIconButton extends StatelessWidget {
+  final Widget icon;
+  final void Function()? onPressed;
+  final Color backgroundColor;
+
+  const CircularIconButton({
+    super.key,
+    required this.icon,
+    this.onPressed,
+    this.backgroundColor = Colors.blue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return
+      ElevatedButton(
+        style: AppTheme.actionSignInCircleButtonStyle,
+        onPressed: onPressed,
+        child: icon,
+
     );
   }
 }

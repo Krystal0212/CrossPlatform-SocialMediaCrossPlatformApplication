@@ -8,19 +8,20 @@ class AppStrings {
   static const String needSignIn = 'You need to sign in to browse this section';
   static const String alertNSFW =
       'This content may not be suitable for all audiences. Proceed with NSFW label.';
+  static const String limitUploadExceed = 'File upload limit exceeded';
 
   // For flash message
-  static const String blankSpace = '    ';
-  static const String successTitle = '${blankSpace}Hurayyyy!';
+  static const String successTitle = 'Hurayyyy!';
   static const String successPushDescription =
       'Your file successfully uploaded. You can change whenever you want in the profile section.';
-  static const String notSignedInTitle = '${blankSpace}You\'re not sign in';
+  static const String notSignedInTitle = 'You\'re not sign in';
   static const String notSignedInLikedDescription =
-      '${blankSpace}Sign in to do this action';
+      'Sign in to do this action';
   static const String notSignedInMessageDescription =
-      '${blankSpace}Sign in to join the discussion';
+      'Sign in to join the discussion';
   static const String notSignedInCollectionDescription =
-      '${blankSpace}Can not add to your collection';
+      'Can not add to your collection';
+  static const String videoTooLarge = 'Video size is too large, should be under 60Mb';
 
   // For sign in section
   static const String welcome = "WELCOME";
@@ -85,7 +86,17 @@ class AppStrings {
   static const String about = "About Zineround";
   static const String term = "Terms & Privacy";
   static const String signOut = "Sign Out";
-  static const String whatNew = 'What\'s new ?';
+  static const String whatNew = 'What\'s new ? Typing something here';
+
+  // Fow create new post
+  static const String chooseTopic ='Choose your topic';
+  static const String searchTopics = 'Search other topics';
+  static const String noAssets ='No images or videos selected';
+  static const String noTopics = 'Choose at least 1 topic';
+  static const String sendSuccess = 'Post sent successfully!';
+  static const String uploading = 'Uploading...';
+  static const String videoNotSupported = 'Your file type are not supported by using web application';
+  static const String enterText = "Enter your text here";
 
   // For collection section
   static const String createCollection = "Create collection";

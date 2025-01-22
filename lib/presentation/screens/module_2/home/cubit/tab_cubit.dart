@@ -32,8 +32,10 @@ class TabCubit extends Cubit<TabState> {
     emit(TabLoading());
     try {
       final posts = await postRepository.getPostsData(isOffline: isOffline);
+      if (isClosed) return;
       emit(TabLoaded(posts));
     } catch (e) {
+      if (isClosed) return;
       emit(TabError('Failed to load posts: $e'));
     }
   }
