@@ -3,16 +3,18 @@ import 'dart:ui' as ui;
 import 'package:socialapp/utils/import.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:path/path.dart' as path;
-import 'package:flutter_quick_video_encoder/flutter_quick_video_encoder.dart';
+
+import 'package:video_compress/video_compress.dart';
 
 import 'package:video_player/video_player.dart';
-import '../widgets/video_dimensions_helper.dart';
+import '../widgets/video_dimensions_helper_web.dart';
 import 'new_post_state.dart';
 
 class NewPostCubit extends Cubit<NewPostState>
     with ClassificationMixin, ImageAndVideoProcessingHelper, FlashMessage {
-  NewPostCubit() : super(PostInitial());
   bool _isImagePickerActive = false;
+
+  NewPostCubit() : super(PostInitial());
 
   Future<List<TopicModel>> getRandomTopics() {
     return serviceLocator<TopicRepository>().getRandomTopics();
@@ -33,57 +35,8 @@ class NewPostCubit extends Cubit<NewPostState>
     }
   }
 
-  Future<String> _getLocalVideoUrl(html.File file) async {
-    final completer = Completer<String>();
-    String url = html.Url.createObjectUrl(file);
-    completer.complete(url);
-    return completer.future;
-  }
-
-  Future<Uint8List> _resizeAndConvertToWebPWebsite(html.File file) async {
-    final completer = Completer<Uint8List>();
-
-    final reader = html.FileReader();
-    reader.readAsDataUrl(file);
-    await reader.onLoad.first;
-
-    final imageElement = html.ImageElement();
-    imageElement.src = reader.result as String;
-    await imageElement.onLoad.first;
-
-    final originalWidth = imageElement.width!;
-    final originalHeight = imageElement.height!;
-
-    const maxDimension = 1200;
-
-    late int targetWidth, targetHeight;
-    if (originalWidth > originalHeight) {
-      targetWidth = maxDimension;
-      targetHeight = (originalHeight * maxDimension / originalWidth).round();
-    } else {
-      targetHeight = maxDimension;
-      targetWidth = (originalWidth * maxDimension / originalHeight).round();
-    }
-
-    final canvas = html.CanvasElement(width: targetWidth, height: targetHeight);
-    final ctx = canvas.context2D;
-
-    // Enable high-quality rendering
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.drawImageScaled(imageElement, 0, 0, targetWidth, targetHeight);
-
-    final blob = await canvas.toBlob('image/webp', 8.0); // Maximum quality
-    final readerForBlob = html.FileReader();
-    readerForBlob.readAsArrayBuffer(blob);
-    await readerForBlob.onLoad.first;
-
-    completer.complete(readerForBlob.result as Uint8List);
-    return completer.future;
-  }
-
-  void pickAssets(ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier,
+  void pickAssetsByWeb(
+      ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier,
       BuildContext context) async {
     final uploadInput = html.FileUploadInputElement()
       ..accept = 'image/*,video/*'
@@ -122,11 +75,11 @@ class NewPostCubit extends Cubit<NewPostState>
 
           final uploadedAsset = <String, dynamic>{};
           uploadedAsset['index'] =
-          (uploadedFiles.isNotEmpty) ? uploadedFiles.length : index;
+              (uploadedFiles.isNotEmpty) ? uploadedFiles.length : index;
           uploadedAsset['name'] = file.name;
 
           if (file.type.startsWith('image')) {
-            final resizedWebP = await _resizeAndConvertToWebPWebsite(file);
+            final resizedWebP = await resizeAndConvertToWebPForWebsite(file);
 
             uploadedAsset['data'] = resizedWebP;
             uploadedAsset['isNSFW'] = false;
@@ -152,12 +105,12 @@ class NewPostCubit extends Cubit<NewPostState>
               return;
             }
 
-            final assetPath = await _getLocalVideoUrl(file);
+            final assetPath = await getLocalVideoUrlForWebsite(file);
             if (!context.mounted) return;
             Map<String, double> videoDimensions = {};
 
             try {
-              videoDimensions = await getVideoDimensions(assetPath);
+              videoDimensions = await getVideoDimensions(assetPath); // Fow web
             } catch (e) {
               if (kDebugMode) {
                 print('Error fetching video dimensions: $e');
@@ -199,7 +152,7 @@ class NewPostCubit extends Cubit<NewPostState>
               compute<Uint8List, bool>(classifyNSFWInIsolate, resizedWebP)
                   .then((isNSFW) {
                 final assetIndex = uploadedFiles.indexWhere(
-                        (asset) => asset['name'] == uploadedAsset['name']);
+                    (asset) => asset['name'] == uploadedAsset['name']);
                 if (assetIndex != -1) {
                   uploadedFiles[assetIndex]['isNSFW'] = isNSFW;
                 }
@@ -218,44 +171,10 @@ class NewPostCubit extends Cubit<NewPostState>
     });
   }
 
-  Future<Uint8List> _resizeAndConvertToWebPForMobile(File file) async {
-    // Maximum dimension
-    const maxDimension = 1200;
-
-    // Get the original dimensions of the image
-    final decodedImage = await decodeImageFromList(await file.readAsBytes());
-    final originalWidth = decodedImage.width;
-    final originalHeight = decodedImage.height;
-
-    // Calculate the target dimensions
-    late int targetWidth, targetHeight;
-    if (originalWidth > originalHeight) {
-      targetWidth = maxDimension;
-      targetHeight = (originalHeight * maxDimension / originalWidth).round();
-    } else {
-      targetHeight = maxDimension;
-      targetWidth = (originalWidth * maxDimension / originalHeight).round();
-    }
-
-    // Compress and convert the image to WebP format
-    final compressedImage = await FlutterImageCompress.compressWithFile(
-      file.absolute.path,
-      minWidth: targetWidth,
-      minHeight: targetHeight,
-      quality: 90, // Adjust quality as needed
-      format: CompressFormat.webp,
-    );
-
-    if (compressedImage == null) {
-      throw Exception("Failed to compress image");
-    }
-
-    return Uint8List.fromList(compressedImage);
-  }
-
-  void pickImagesMobile(
-      ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier,
-      BuildContext context,) async {
+  void pickImagesByMobile(
+    ValueNotifier<List<Map<String, dynamic>>> selectedAssetsNotifier,
+    BuildContext context,
+  ) async {
     if (_isImagePickerActive) {
       return;
     }
@@ -269,18 +188,19 @@ class NewPostCubit extends Cubit<NewPostState>
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Choose an option"),
+            backgroundColor: AppTheme.white,
+            title: Text("Choose an option", style: AppTheme.newPostTitleStyle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  title: Text("Camera"),
+                  title: const Text("Camera"),
                   onTap: () {
                     Navigator.of(context).pop("camera");
                   },
                 ),
                 ListTile(
-                  title: Text("Gallery"),
+                  title: const Text("Gallery"),
                   onTap: () {
                     Navigator.of(context).pop("gallery");
                   },
@@ -295,13 +215,13 @@ class NewPostCubit extends Cubit<NewPostState>
 
       if (choice == "camera") {
         final XFile? pickedFile =
-        await picker.pickImage(source: ImageSource.camera);
+            await picker.pickImage(source: ImageSource.camera);
         if (pickedFile != null) {
           images.add(pickedFile);
         }
       } else if (choice == "gallery") {
-        final List<XFile>? pickedFiles = await picker.pickMultiImage();
-        if (pickedFiles != null) {
+        final List<XFile> pickedFiles = await picker.pickMultiImage();
+        if (pickedFiles.isNotEmpty) {
           images.addAll(pickedFiles);
         }
       }
@@ -309,7 +229,7 @@ class NewPostCubit extends Cubit<NewPostState>
       if (images.isEmpty) return;
 
       List<Map<String, dynamic>> uploadedFiles =
-      List.from(selectedAssetsNotifier.value);
+          List.from(selectedAssetsNotifier.value);
 
       if (uploadedFiles.length + images.length > 8 &&
           uploadedFiles.isNotEmpty) {
@@ -329,7 +249,7 @@ class NewPostCubit extends Cubit<NewPostState>
         }
 
         Uint8List resizedWebP =
-        await _resizeAndConvertToWebPForMobile(File(image.path));
+            await resizeAndConvertToWebPForMobile(File(image.path));
         ui.Image decodedImage = await decodeImageFromList(resizedWebP);
         int imageWidth = decodedImage.width;
         int imageHeight = decodedImage.height;
@@ -359,18 +279,19 @@ class NewPostCubit extends Cubit<NewPostState>
 
         selectedAssetsNotifier.value = List.from(uploadedFiles);
       }
-
-      _isImagePickerActive = false;
     } catch (error) {
       if (kDebugMode) {
         print("Error during pick image: $error");
       }
-      _isImagePickerActive = false;
+    } finally {
+      _isImagePickerActive = false; // Always reset here
     }
   }
 
-  void pickVideoMobile(ValueNotifier<List<Map<String, dynamic>>> assetPathNotifier,
-      BuildContext context,) async {
+  void pickVideoByMobile(
+    ValueNotifier<List<Map<String, dynamic>>> assetPathNotifier,
+    BuildContext context,
+  ) async {
     final ImagePicker picker = ImagePicker();
 
     final pickedVideo = await picker.pickVideo(source: ImageSource.gallery);
@@ -379,9 +300,10 @@ class NewPostCubit extends Cubit<NewPostState>
 
     final List<Map<String, dynamic>> uploadedFiles = assetPathNotifier.value;
 
-    final file = File(pickedVideo.path);
-    final fileName = path.basename(file.path).split('.').first;
+    final File file = File(pickedVideo.path);
+    final String fileName = path.basename(file.path);
 
+    // Check if video exist in the selected list
     bool isDuplicate = uploadedFiles.any((uploadedAsset) {
       return uploadedAsset['name'] == fileName;
     });
@@ -390,6 +312,7 @@ class NewPostCubit extends Cubit<NewPostState>
       return;
     }
 
+    // Prevent clip above 60Mb
     if (file.lengthSync() > 60 * 1024 * 1024) {
       if (!context.mounted) return;
       showAttentionMessage(
@@ -399,27 +322,31 @@ class NewPostCubit extends Cubit<NewPostState>
       return;
     }
 
+    // Prevent the clip go over length of 8
     if (assetPathNotifier.value.length + 1 > 8) {
       if (!context.mounted) return;
       showUploadLimitExceededMassage(context: context);
       return;
     }
 
+    // prepare new element of the list
     final uploadedAsset = <String, dynamic>{};
-
     final videoPlayerController = VideoPlayerController.file(file);
 
     await videoPlayerController.initialize();
-
-    // Get the width and height after the controller is initialized
     final videoWidth = videoPlayerController.value.size.width;
     final videoHeight = videoPlayerController.value.size.height;
     videoPlayerController.dispose();
 
+    Uint8List? thumbnail = await generateVideoThumbnail(file);
+
+    // Uint8List videoDate = await compressVideo(file.readAsBytesSync(),'1') ?? file.readAsBytesSync();
 
     if (file.existsSync()) {
       uploadedAsset['name'] = pickedVideo.name;
       uploadedAsset['data'] = await file.readAsBytes();
+      // uploadedAsset['data'] = videoDate;
+      uploadedAsset['thumbnail'] = thumbnail;
       uploadedAsset['type'] = 'video';
       uploadedAsset['index'] = uploadedFiles.length;
       uploadedAsset['isNSFW'] = false;
@@ -440,11 +367,17 @@ class NewPostCubit extends Cubit<NewPostState>
     assetPathNotifier.value = List.from(uploadedFiles);
   }
 
-  void sendPost(BuildContext homeContext,
-      BuildContext context,
-      TextEditingController textEditingController,
-      ValueNotifier<List<Map<String, dynamic>>> assetDataNotifier,
-      ValueNotifier<List<TopicModel>> topicSelectedNotifier,) async {
+  Future<Uint8List?> generateVideoThumbnail(File file) async {
+    return await VideoCompress.getByteThumbnail(file.path);
+  }
+
+  void sendPost(
+    BuildContext homeContext,
+    BuildContext context,
+    TextEditingController textEditingController,
+    ValueNotifier<List<Map<String, dynamic>>> assetDataNotifier,
+    ValueNotifier<List<TopicModel>> topicSelectedNotifier,
+  ) async {
     final String content = textEditingController.text;
     final List<Map<String, dynamic>> imagesAndVideos = assetDataNotifier.value;
     final List<TopicModel> topics = topicSelectedNotifier.value;
@@ -467,14 +400,6 @@ class NewPostCubit extends Cubit<NewPostState>
               context: homeContext, description: AppStrings.uploading);
         }
       });
-      // Future.microtask(() {
-      //   if (homeContext.mounted) {
-      //     showSuccessMessage(
-      //       context: homeContext,
-      //       description: AppStrings.sendSuccess,
-      //     );
-      //   }
-      // });
 
       await serviceLocator<PostRepository>()
           .createAssetPost(content, imagesAndVideos, topics);

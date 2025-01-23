@@ -1,11 +1,11 @@
 import 'package:socialapp/presentation/screens/module_2/new_post/cubit/new_post_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/new_post/providers/new_post_properties_provider.dart';
-import 'package:socialapp/presentation/screens/module_2/new_post/widgets/mobile_dialog_body.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/widgets/dialog_body_mobile_layout.dart';
 import 'package:socialapp/presentation/screens/module_2/new_post/widgets/dialog_header.dart';
 
 import 'package:socialapp/utils/import.dart';
 
-import 'widgets/website_dialog_body.dart';
+import 'widgets/dialog_body_website_layout.dart';
 
 class CreateNewPostDialogContent extends StatefulWidget {
   final UserModel currentUser;

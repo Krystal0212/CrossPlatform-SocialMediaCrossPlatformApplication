@@ -144,6 +144,12 @@ class AppTheme {
         color: AppColors.blueDeFrance,
       );
 
+  static TextStyle get highlightedHashtagStyleMobile => GoogleFonts.plusJakartaSans(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: AppColors.blueDeFrance,
+  );
+
   static TextStyle get gradientShowMoreContentTextStyle =>
       GoogleFonts.plusJakartaSans(
         fontSize: 15,

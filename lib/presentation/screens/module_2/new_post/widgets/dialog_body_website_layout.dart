@@ -1,10 +1,10 @@
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/widgets/record_box.dart';
 import 'package:socialapp/utils/import.dart';
 import '../cubit/new_post_cubit.dart';
 import '../providers/new_post_properties_provider.dart';
 import 'dialog_body_box.dart';
 import 'styleable_text_field_controller.dart';
-import '../../../../widgets/play_video/video_player.dart';
+import '../../../../widgets/play_video/video_player_preview.dart';
 
 class WebsiteDialogBody extends StatefulWidget {
   final double avatarSize, insertBoxWidth, topicBoxWidth;
@@ -20,22 +20,21 @@ class WebsiteDialogBody extends StatefulWidget {
   State<WebsiteDialogBody> createState() => _WebsiteDialogBodyState();
 }
 
-class _WebsiteDialogBodyState extends State<WebsiteDialogBody> with FlashMessage {
-  late FlutterSoundRecorder _recorder;
+class _WebsiteDialogBodyState extends State<WebsiteDialogBody>
+    with FlashMessage {
   late double deviceWidth, deviceHeight, previewImageHeight;
-  late int maxLine, minLine;
+  late int maxLine, minLine, maxLineMicro;
   late String avatarUrl = "", username = "";
 
   late final TextEditingController styleableTextFieldController;
+  late final ValueNotifier<bool> isRecordingMode = ValueNotifier<bool>(false);
 
-  bool _isRecording = false;
   late bool isWeb;
 
   final ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier =
-  ValueNotifier<List<Map<String, dynamic>>>([]);
+      ValueNotifier<List<Map<String, dynamic>>>([]);
   final ValueNotifier<List<TopicModel>> topicSelectedNotifier =
-  ValueNotifier<List<TopicModel>>([]);
-
+      ValueNotifier<List<TopicModel>>([]);
 
   final double textFieldHeightFactor = 0.4;
 
@@ -53,8 +52,6 @@ class _WebsiteDialogBodyState extends State<WebsiteDialogBody> with FlashMessage
         ],
       ),
     );
-
-    _recorder = FlutterSoundRecorder();
   }
 
   @override
@@ -84,56 +81,6 @@ class _WebsiteDialogBodyState extends State<WebsiteDialogBody> with FlashMessage
     topicSelectedNotifier.dispose();
 
     super.dispose();
-  }
-
-  Future<void> _toggleRecording() async {
-    if (_isRecording) {
-      await _recorder.stopRecorder();
-    } else {
-      await _recorder.startRecorder(toFile: 'audio.aac');
-    }
-    setState(() {
-      _isRecording = !_isRecording;
-    });
-  }
-
-  void _showRecordingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Scaffold(
-          appBar: AppBar(title: const Text("Voice Recording")),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Center(
-                child: _isRecording
-                    ? IconButton(
-                  icon: const Icon(Icons.stop),
-                  onPressed: _toggleRecording,
-                  iconSize: 60,
-                  color: Colors.red,
-                )
-                    : IconButton(
-                  icon: const Icon(Icons.mic),
-                  onPressed: _toggleRecording,
-                  iconSize: 60,
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _isRecording ? "Recording..." : "Tap to Record",
-                style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              if (_isRecording) const SizedBox(height: 20),
-              if (_isRecording) const CircularProgressIndicator(),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -288,7 +235,7 @@ class _WebsiteDialogBodyState extends State<WebsiteDialogBody> with FlashMessage
                 onPressed: () {
                   context
                       .read<NewPostCubit>()
-                      .pickAssets(imagePathNotifier, context);
+                      .pickAssetsByWeb(imagePathNotifier, context);
                 },
                 icon: ShaderMask(
                   shaderCallback: (Rect bounds) {
@@ -296,15 +243,6 @@ class _WebsiteDialogBodyState extends State<WebsiteDialogBody> with FlashMessage
                   },
                   child: const Icon(Icons.perm_media_outlined,
                       color: Colors.white),
-                ),
-              ),
-              IconButton(
-                onPressed: () => _showRecordingDialog(context),
-                icon: ShaderMask(
-                  shaderCallback: (Rect bounds) {
-                    return AppTheme.mainGradient.createShader(bounds);
-                  },
-                  child: const Icon(Icons.mic_rounded, color: Colors.white),
                 ),
               ),
               IconButton(

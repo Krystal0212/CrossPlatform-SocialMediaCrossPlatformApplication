@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'package:socialapp/presentation/widgets/play_video/video_player.dart';
+import 'package:socialapp/presentation/widgets/play_video/video_player_preview.dart';
 import 'package:socialapp/presentation/widgets/play_video/video_player_detail.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:video_player/video_player.dart';

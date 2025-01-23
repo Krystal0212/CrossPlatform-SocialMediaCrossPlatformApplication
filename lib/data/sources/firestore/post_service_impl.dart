@@ -2,8 +2,6 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:universal_html/html.dart' as html;
 
-import '../../../presentation/screens/module_2/new_post/widgets/video_dimensions_helper.dart';
-
 abstract class PostService {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
 
@@ -487,7 +485,7 @@ class PostServiceImpl extends PostService
     }
   }
 
-  Future<String> _uploadAssetAndGetUrl(Uint8List compressedImage,
+  Future<String> _uploadImageAndGetUrl(Uint8List compressedImage,
       DocumentReference newPostRef, String mediaKey) async {
     final storageRef =
         _storage.ref().child('posts/${newPostRef.id}/$mediaKey.webp');
@@ -501,7 +499,7 @@ class PostServiceImpl extends PostService
     return imageUrl;
   }
 
-  Future<String> _uploadVideoAndGetUrlForVideo(Uint8List videoData,
+  Future<String> _uploadVideoAndGetUrl(Uint8List videoData,
       DocumentReference newPostRef, String mediaKey) async {
     final storageRef =
         _storage.ref().child('posts/${newPostRef.id}/$mediaKey.webm');
@@ -524,56 +522,64 @@ class PostServiceImpl extends PostService
     Map<String, OnlineMediaItem> mediaMap = {};
     List<String> mediaKeys = [];
 
-    NewPostModel newPost = NewPostModel(
-        content: content,
-        timestamp: timestamp,
-        topicRefs: topics
-            .map((topics) => _topicRef.doc(topics.topicId))
-            .toList()
-            .toSet(),
-        media: {},
-        userRef: _usersRef.doc(currentUserId));
+    try {
+      NewPostModel newPost = NewPostModel(
+          content: content,
+          timestamp: timestamp,
+          topicRefs: topics
+              .map((topics) => _topicRef.doc(topics.topicId))
+              .toList()
+              .toSet(),
+          media: {},
+          userRef: _usersRef.doc(currentUserId));
 
-    DocumentReference newPostRef = await _postRef.add(newPost.toMap());
+      DocumentReference newPostRef = await _postRef.add(newPost.toMap());
 
-    for (Map<String, dynamic> asset in imagesAndVideos) {
-      final String mediaKey = asset['index'].toString();
-      mediaKeys.add(mediaKey);
+      for (Map<String, dynamic> asset in imagesAndVideos) {
+        final String mediaKey = asset['index'].toString();
+        mediaKeys.add(mediaKey);
 
-      if (asset['type'] == 'image') {
-        Uint8List assetData = asset['data'];
-        final String dominantColor = await getDominantColorFromImage(assetData);
-        final String assetUrl =
-            await _uploadAssetAndGetUrl(assetData, newPostRef, mediaKey);
+        if (asset['type'] == 'image') {
+          Uint8List assetData = asset['data'];
+          final String dominantColor =
+              await getDominantColorFromImage(assetData);
+          final String assetUrl =
+              await _uploadImageAndGetUrl(assetData, newPostRef, mediaKey);
 
-        mediaMap[mediaKey] = OnlineMediaItem(
-            dominantColor: dominantColor,
-            height: asset['height'].toDouble(),
-            width: asset['width'].toDouble(),
-            type: 'image',
-            assetUrl: assetUrl,
-            isNSFW: await classifyNSFW(assetData));
-      } else if (asset['type'] == 'video') {
-          final String videoUrl = await _uploadVideoAndGetUrlForVideo(
-              asset['data'], newPostRef, mediaKey);
+          mediaMap[mediaKey] = OnlineMediaItem(
+              dominantColor: dominantColor,
+              height: asset['height'].toDouble(),
+              width: asset['width'].toDouble(),
+              type: 'image',
+              assetUrl: assetUrl,
+              isNSFW: await classifyNSFW(assetData));
+        } else if (asset['type'] == 'video') {
+          Uint8List videoDate =
+              await compressVideo(asset['data'], asset['index'].toString()) ??
+                  asset['data'];
 
-          final dimensions = await getVideoDimensions(videoUrl);
+          final String videoUrl =
+              await _uploadVideoAndGetUrl(videoDate, newPostRef, mediaKey);
 
           mediaMap[mediaKey] = OnlineMediaItem(
             dominantColor: 'ff000000',
             // Default color for videos
-            height: dimensions['height']!,
-            width: dimensions['width']!,
+            height: asset['height'].toDouble(),
+            width: asset['width'].toDouble(),
             type: 'video',
             assetUrl: videoUrl,
             isNSFW: false, // You can add a video NSFW classifier if needed
           );
+        }
 
+        await newPostRef.update({
+          'media.$mediaKey': mediaMap[mediaKey]!.toMap(),
+        });
       }
-
-      await newPostRef.update({
-        'media.$mediaKey': mediaMap[mediaKey]!.toMap(),
-      });
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error uploading media: $error');
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
-import 'package:socialapp/presentation/screens/module_2/new_post/widgets/mobile_dialog_body.dart';
-import 'package:socialapp/presentation/widgets/play_video/video_player.dart';
+import 'package:socialapp/presentation/screens/module_2/new_post/widgets/dialog_body_mobile_layout.dart';
+import 'package:socialapp/presentation/widgets/play_video/video_player_preview.dart';
 import 'package:socialapp/utils/import.dart';
 
 import '../../../../widgets/general/nsfw_and_close_icons.dart';

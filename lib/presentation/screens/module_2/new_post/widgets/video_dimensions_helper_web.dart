@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:universal_html/html.dart' as html;
 
-// Future<Map<String, double>> getVideoDimensions(String videoUrl) async {
-//   final completer = Completer<Map<String, double>>();
+Future<Map<String, double>> getVideoDimensions(String videoUrl) async {
+  final completer = Completer<Map<String, double>>();
 //   final videoElement = html.VideoElement()
 //     ..src = videoUrl
 //     ..preload = 'metadata';
@@ -21,5 +21,5 @@ import 'package:universal_html/html.dart' as html;
 //     completer.completeError('Failed to load video metadata');
 //   });
 //
-//   return completer.future;
-// }
+  return completer.future;
+}

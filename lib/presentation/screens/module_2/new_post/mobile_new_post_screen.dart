@@ -1,8 +1,9 @@
 import 'package:socialapp/utils/import.dart';
+import 'package:video_compress/video_compress.dart';
 
 import 'cubit/new_post_cubit.dart';
 import 'providers/new_post_properties_provider.dart';
-import 'widgets/mobile_dialog_body.dart';
+import 'widgets/dialog_body_mobile_layout.dart';
 import 'widgets/dialog_header.dart';
 import 'widgets/styleable_text_field_controller.dart';
 
@@ -41,7 +42,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
     styles: TextPartStyleDefinitions(
       definitionList: <TextPartStyleDefinition>[
         TextPartStyleDefinition(
-          style: AppTheme.highlightedHashtagStyle,
+          style: AppTheme.highlightedHashtagStyleMobile,
           pattern: r'(#[a-zA-Z0-9_]+)',
         ),
       ],
@@ -52,6 +53,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
       ValueNotifier([]);
   late ValueNotifier<List<TopicModel>> topicSelectedNotifier =
       ValueNotifier([]);
+  late ValueNotifier<bool> isRecordingMode = ValueNotifier<bool>(false);
 
   @override
   void initState() {
@@ -64,7 +66,10 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
     currentUser = (await context.read<NewPostCubit>().getCurrentUser())!;
 
     if (currentUser.id == null && context.mounted) {
-      context.go('/sign-in', extra: true, );
+      context.go(
+        '/sign-in',
+        extra: true,
+      );
     }
   }
 
@@ -73,12 +78,12 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
     topicSelectedNotifier.dispose();
     imagePathNotifier.dispose();
     styleableTextFieldController.dispose();
+    isRecordingMode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return NewPostPropertiesProvider(
       newPostProperties: NewPostProperties(
         user: currentUser,
@@ -87,7 +92,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
       ),
       child: SafeArea(
         child: Scaffold(
-          resizeToAvoidBottomInset:false,
+          resizeToAvoidBottomInset: false,
           body: Container(
             decoration: AppTheme.whiteDialogDecoration,
             child: SingleChildScrollView(
@@ -99,6 +104,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
                     imagePathNotifier: imagePathNotifier,
                     styleableTextFieldController: styleableTextFieldController,
                     topicSelectedNotifier: topicSelectedNotifier,
+                    isRecordingMode: isRecordingMode,
                   ),
                   const Divider(
                     color: AppColors.iris,
@@ -109,14 +115,11 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: MobileDialogBody(
                       avatarSize: avatarSize,
-                      // insertBoxWidth: deviceWidth * 0.9,
-                      // topicBoxWidth: deviceWidth * 0.9,
-                      // bodyHeight: deviceHeight * 0.93,
-                      // insertBoxHeight: deviceHeight * 0.15,
                       styleableTextFieldController:
                           styleableTextFieldController,
                       imagePathNotifier: imagePathNotifier,
                       topicSelectedNotifier: topicSelectedNotifier,
+                      isRecordingMode: isRecordingMode,
                     ),
                   ),
                   // Add more widgets as necessary

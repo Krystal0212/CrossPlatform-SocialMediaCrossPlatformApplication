@@ -2,6 +2,10 @@ import 'package:socialapp/utils/import.dart';
 import 'package:video_player/video_player.dart';
 import 'package:universal_html/html.dart' as html_web;
 
+import 'package:socialapp/utils/import.dart';
+import 'package:video_player/video_player.dart';
+import 'package:universal_html/html.dart' as html_web;
+
 class VideoPlayerPreviewWidget extends StatefulWidget {
   final Uint8List? videoData;
   final String? videoUrl;
@@ -25,6 +29,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
   final ValueNotifier<bool> isInitialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isTimeout = ValueNotifier<bool>(false);
   final ValueNotifier<double> currentPosition = ValueNotifier<double>(0.0);
+  final ValueNotifier<bool> isSeeking = ValueNotifier<bool>(false);
   Timer? _timeoutTimer;
   bool isPlaying = false;
   bool isMuted = false;
@@ -41,6 +46,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
     _controller.dispose();
     isInitialized.dispose();
     isTimeout.dispose();
+    isSeeking.dispose();
     _timeoutTimer?.cancel();
     currentPosition.dispose();
     super.dispose();
@@ -68,7 +74,6 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
       }
     } else if (widget.videoUrl != null) {
       _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
-
     } else {
       throw ArgumentError('Either videoData or videoUrl must be provided.');
     }
@@ -92,7 +97,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
   }
 
   void _startTimeout() {
-    _timeoutTimer = Timer(const Duration(seconds: 10), () {
+    _timeoutTimer = Timer(const Duration(seconds: 20), () {
       isTimeout.value = true;
     });
   }
@@ -114,8 +119,13 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
   }
 
   void _seekTo(double value) {
+    isSeeking.value = true;
     final position = Duration(seconds: value.toInt());
-    _controller.seekTo(position);
+    _controller.seekTo(position).then((_) {
+      Future.delayed(const Duration(milliseconds: 600), () {
+        isSeeking.value = false;
+      });
+    });
   }
 
   void _toggleMute() {
@@ -154,6 +164,22 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
                       child: VideoPlayer(_controller),
                     ),
                   ),
+                  // Seeking Indicator
+                  ValueListenableBuilder<bool>(
+                    valueListenable: isSeeking,
+                    builder: (context, seeking, _) {
+                      if (seeking) {
+                        return const Center(
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.iris,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                   // Play/Pause Button
                   Positioned(
                     left: 10,
@@ -162,7 +188,6 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
                       onPressed: _togglePlayPause,
                     ),
                   ),
-                  // Mute/Unmute Button
                   Positioned(
                     left: 60,
                     child: IconButton(
@@ -176,15 +201,17 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
                     left: 0,
                     right: 0,
                     child: ValueListenableBuilder<double>(
-                        valueListenable: currentPosition,
-                        builder: (context, positionSelected, _) {
-                          return Slider(
-                            min: 0.0,
-                            max: _controller.value.duration.inSeconds.toDouble(),
-                            value: positionSelected,
-                            onChanged: _seekTo,
-                          );
-                        }),
+                      valueListenable: currentPosition,
+                      builder: (context, positionSelected, _) {
+                        return Slider(
+                          min: 0.0,
+                          max: _controller.value.duration.inSeconds.toDouble(),
+                          value: positionSelected,
+                          onChanged: _seekTo,
+                          activeColor: AppColors.iris,
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),

@@ -35,17 +35,19 @@ class WebsiteDialogHeader extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-
       ],
     );
   }
 }
+
+const double iconSize = 25;
 
 class MobileDialogHeader extends StatelessWidget {
   final double sideWidth;
   final ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier;
   final TextEditingController styleableTextFieldController;
   final ValueNotifier<List<TopicModel>> topicSelectedNotifier;
+  final ValueNotifier<bool> isRecordingMode;
 
   const MobileDialogHeader({
     super.key,
@@ -53,7 +55,13 @@ class MobileDialogHeader extends StatelessWidget {
     required this.imagePathNotifier,
     required this.styleableTextFieldController,
     required this.topicSelectedNotifier,
+    required this.isRecordingMode,
   });
+
+
+  void _toggleRecordingMode(bool isRecording) {
+    isRecordingMode.value = isRecording;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,12 +84,13 @@ class MobileDialogHeader extends StatelessWidget {
                       Colors.transparent,
                     ),
                   ),
-                  child: SvgPicture.asset(AppIcons.cross, width: 20, height: 20),
+                  child:
+                      SvgPicture.asset(AppIcons.cross, width: 20, height: 20),
                 ),
               ),
             ),
             Align(
-              alignment: const Alignment(-0.5,0),
+              alignment: const Alignment(-0.5, 0),
               child: Text(
                 'Create New Post',
                 style: AppTheme.newPostTitleStyle,
@@ -89,83 +98,97 @@ class MobileDialogHeader extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      context.read<NewPostCubit>().pickImagesMobile(imagePathNotifier, context);
-                    },
-                    icon: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return AppTheme.mainGradient.createShader(bounds);
-                      },
-                      child: const Icon(
-                        Icons.perm_media_outlined,
-                        color: Colors.white,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      context.read<NewPostCubit>().pickVideoMobile(
-                        imagePathNotifier,
-                        NewPostPropertiesProvider.of(context)!.homeContext,
-                      );
-                    },
-                    icon: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return AppTheme.mainGradient.createShader(bounds);
-                      },
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      // _showRecordingDialog(context)
-                    },
-                    icon: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return AppTheme.mainGradient.createShader(bounds);
-                      },
-                      child: const Icon(
-                        Icons.mic_rounded,
-                        color: Colors.white,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      context.read<NewPostCubit>().sendPost(
-                          NewPostPropertiesProvider.of(context)!.homeContext,
-                          context,
-                          styleableTextFieldController,
-                          imagePathNotifier,
-                          topicSelectedNotifier);
-                    },
-                    icon: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return AppTheme.mainGradient.createShader(bounds);
-                      },
-                      child: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-
-
-                ],
-              ),
+              child: ValueListenableBuilder<bool>(
+                  valueListenable: isRecordingMode,
+                  builder: (context, isRecordModeChosen, _) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              _toggleRecordingMode(false);
+                              context.read<NewPostCubit>().pickImagesByMobile(
+                                  imagePathNotifier, context);
+                            },
+                            icon: (!isRecordModeChosen)
+                                ? ShaderMask(
+                                    shaderCallback: (Rect bounds) {
+                                      return AppTheme.mainGradient
+                                          .createShader(bounds);
+                                    },
+                                    child: const Icon(Icons.perm_media_outlined,
+                                        size: iconSize, color: Colors.white),
+                                  )
+                                : const Icon(
+                                    Icons.perm_media_outlined,
+                                    size: iconSize,
+                                    color: AppColors.moreThanAWeek,
+                                  )),
+                        IconButton(
+                          onPressed: () {
+                            _toggleRecordingMode(false);
+                            context.read<NewPostCubit>().pickVideoByMobile(
+                                  imagePathNotifier,
+                                  NewPostPropertiesProvider.of(context)!
+                                      .homeContext,
+                                );
+                          },
+                          icon: (!isRecordModeChosen)
+                              ?ShaderMask(
+                            shaderCallback: (Rect bounds) {
+                              return AppTheme.mainGradient.createShader(bounds);
+                            },
+                            child: const Icon(
+                              Icons.video_collection,
+                              color: Colors.white,
+                              size: iconSize,
+                            ),
+                          ):const Icon(
+                            Icons.video_collection,
+                            color: AppColors.moreThanAWeek,
+                            size: iconSize,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            _toggleRecordingMode(true);
+                          },
+                          icon: (isRecordModeChosen)
+                              ? ShaderMask(
+                            shaderCallback: (Rect bounds) {
+                              return AppTheme.mainGradient.createShader(bounds);
+                            },
+                            child: const Icon(Icons.mic_rounded, size: iconSize,
+                                color: Colors.white),
+                          )
+                              : const Icon(Icons.mic_rounded,size: iconSize,
+                              color: AppColors.moreThanAWeek),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            context.read<NewPostCubit>().sendPost(
+                                NewPostPropertiesProvider.of(context)!
+                                    .homeContext,
+                                context,
+                                styleableTextFieldController,
+                                imagePathNotifier,
+                                topicSelectedNotifier);
+                          },
+                          icon: ShaderMask(
+                            shaderCallback: (Rect bounds) {
+                              return AppTheme.mainGradient.createShader(bounds);
+                            },
+                            child: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
             ),
-
           ],
         ),
       ),

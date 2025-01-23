@@ -79,7 +79,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
   }
 
   void _startTimeout() {
-    _timeoutTimer = Timer(const Duration(seconds: 10), () {
+    _timeoutTimer = Timer(const Duration(seconds: 20), () {
       if (mounted) {
         isTimeout.value = true;
       }

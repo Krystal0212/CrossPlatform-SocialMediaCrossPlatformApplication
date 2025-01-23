@@ -6,7 +6,7 @@ import 'package:image_size_getter/image_size_getter.dart';
 
 import '../../../../utils/import.dart';
 import '../../../widgets/general/nsfw_and_close_icons.dart';
-import '../../module_2/new_post/widgets/mobile_dialog_body.dart';
+import '../../module_2/new_post/widgets/dialog_body_mobile_layout.dart';
 
 class ImagePreview extends StatelessWidget {
   final ValueNotifier<XFile?> selectedImageNotifier;
