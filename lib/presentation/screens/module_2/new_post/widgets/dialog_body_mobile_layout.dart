@@ -175,7 +175,7 @@ class _MobileDialogBodyState extends State<MobileDialogBody> with FlashMessage {
                     color: Colors.redAccent,
                     child: const RecordBox(
                       topicBoxWidth: 490,
-                      topicBoxHeight: 490,
+                      topicBoxHeight: 650,
                     ),
                   );
                 }

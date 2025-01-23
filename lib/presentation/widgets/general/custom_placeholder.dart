@@ -129,3 +129,34 @@ class ImageErrorPlaceholder extends StatelessWidget {
     );
   }
 }
+
+class NoMorePostsPlaceholder extends StatelessWidget {
+  final double width;
+
+  const NoMorePostsPlaceholder({super.key, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+             Text(
+              AppStrings.noMorePosts,
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}

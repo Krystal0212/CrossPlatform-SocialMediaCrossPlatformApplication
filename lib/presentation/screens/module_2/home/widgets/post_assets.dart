@@ -18,7 +18,7 @@ class PostAsset extends StatefulWidget {
 class _PostAssetState extends State<PostAsset> {
   late GlobalKey _gridKey;
   late ValueNotifier<double> gridHeightNotifier;
-  double gridHeight = 280.0;
+  late double gridHeight = 280.0;
   late int mediaLength;
   late bool isWeb, isCachedData = false;
 
@@ -53,9 +53,9 @@ class _PostAssetState extends State<PostAsset> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     isWeb = PlatformConfig.of(context)?.isWeb ?? false;
-    gridHeight = isWeb ? gridHeight : 178;
+
+    gridHeight = isWeb ? gridHeight : 250;
   }
 
   @override

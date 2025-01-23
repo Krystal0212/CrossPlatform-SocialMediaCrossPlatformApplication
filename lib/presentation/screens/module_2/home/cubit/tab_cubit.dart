@@ -4,7 +4,7 @@ import 'package:socialapp/utils/import.dart';
 import 'home_cubit.dart';
 import 'tab_state.dart';
 
-class TabCubit extends Cubit<TabState> {
+abstract class TabCubit extends Cubit<TabState> {
   final PostRepository postRepository;
   final HomeCubit homeCubit;
   final ViewMode viewMode;
@@ -28,7 +28,31 @@ class TabCubit extends Cubit<TabState> {
     }
   }
 
-  Future<void> loadPosts({required bool isOffline}) async {
+  Future<List<OnlinePostModel>> loadMorePosts();
+
+  Future<void> refresh() async{
+    await initialLoadPosts(isOffline: false);
+  }
+
+  Future<void> initialLoadPosts({required bool isOffline}) async {}
+}
+
+class ExploreCubit extends TabCubit {
+  ExploreCubit(super.postRepository, super.homeCubit, super.viewMode);
+
+  @override
+  Future<List<OnlinePostModel>> loadMorePosts() async {
+    try {
+      final List<OnlinePostModel> posts = await postRepository.loadMorePostsData();
+      return posts;
+    } catch (e) {
+      debugPrint("Error loading more posts: $e");
+      return [];
+    }
+  }
+
+  @override
+  Future<void> initialLoadPosts({required bool isOffline}) async {
     emit(TabLoading());
     try {
       final posts = await postRepository.getPostsData(isOffline: isOffline);
@@ -41,14 +65,58 @@ class TabCubit extends Cubit<TabState> {
   }
 }
 
-class ExploreCubit extends TabCubit {
-  ExploreCubit(super.postRepository, super.homeCubit, super.viewMode);
-}
-
 class TrendingCubit extends TabCubit {
   TrendingCubit(super.postRepository, super.homeCubit, super.viewMode);
+
+  @override
+  Future<List<OnlinePostModel>> loadMorePosts() async {
+    try {
+      final List<OnlinePostModel> posts = await postRepository.loadMorePostsData();
+      return posts;
+    } catch (e) {
+      debugPrint("Error loading more posts: $e");
+      return [];
+    }
+  }
+
+  @override
+  Future<void> initialLoadPosts({required bool isOffline}) async {
+    emit(TabLoading());
+    try {
+      final posts = await postRepository.getPostsData(isOffline: isOffline);
+      if (isClosed) return;
+      emit(TabLoaded(posts));
+    } catch (e) {
+      if (isClosed) return;
+      emit(TabError('Failed to load posts: $e'));
+    }
+  }
 }
 
 class FollowingCubit extends TabCubit {
   FollowingCubit(super.postRepository, super.homeCubit, super.viewMode);
+
+  @override
+  Future<List<OnlinePostModel>> loadMorePosts() async {
+    try {
+      final List<OnlinePostModel> posts = await postRepository.loadMorePostsData();
+      return posts;
+    } catch (e) {
+      debugPrint("Error loading more posts: $e");
+      return [];
+    }
+  }
+
+  @override
+  Future<void> initialLoadPosts({required bool isOffline}) async {
+    emit(TabLoading());
+    try {
+      final posts = await postRepository.getPostsData(isOffline: isOffline);
+      if (isClosed) return;
+      emit(TabLoaded(posts));
+    } catch (e) {
+      if (isClosed) return;
+      emit(TabError('Failed to load posts: $e'));
+    }
+  }
 }

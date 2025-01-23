@@ -10,6 +10,8 @@ abstract class PostService {
   Future<List<OnlinePostModel>> getPostsData(
       {required bool isOffline, bool skipLocalFetch = false});
 
+  Future<List<OnlinePostModel>> loadMorePostsData();
+
   Future<List<CommentModel>?> getCommentPost(OnlinePostModel post);
 
   Future<void> syncLikesToFirestore(
@@ -27,6 +29,8 @@ class PostServiceImpl extends PostService
 
   final CacheManager cacheManager = DefaultCacheManager();
   Connectivity connectivity = Connectivity();
+  Set<int> randomIndexes = {};
+  Random random = Random();
 
   // ToDo : Reference Define
   User? get currentUser => _auth.currentUser;
@@ -38,6 +42,9 @@ class PostServiceImpl extends PostService
   CollectionReference get _postRef => _firestoreDB.collection('Post');
 
   CollectionReference get _topicRef => _firestoreDB.collection('Topic');
+
+  Query<Object?> get _postsQuery => _postRef.orderBy('timestamp', descending: true);
+
 
   // ToDo: Offline Service Functions
 
@@ -189,15 +196,50 @@ class PostServiceImpl extends PostService
           );
         }
 
-        Random random = Random();
-        Set<int> randomIndexes = {};
-
-        while (randomIndexes.length < 3) {
+        while (randomIndexes.length < 2) {
           randomIndexes.add(random.nextInt(count));
         }
 
         posts = await _fetchPostWithSubCollections(randomIndexes);
       }
+      return posts;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<OnlinePostModel>> loadMorePostsData() async {
+    List<OnlinePostModel> posts = [];
+
+    try {
+      AggregateQuerySnapshot aggregateSnapshot = await _postsQuery.count().get();
+      int? count = aggregateSnapshot.count ?? 0;
+
+      if (count == 0) {
+        throw CustomFirestoreException(
+          code: 'no-posts',
+          message: 'No posts exist in Firestore',
+        );
+      }
+      Set<int> newRandomIndexes = {};
+
+      if (randomIndexes.length != count) {
+        while (newRandomIndexes.length < 2 &&
+            randomIndexes.length + newRandomIndexes.length < count) {
+          int newIndex = random.nextInt(count);
+          if (!randomIndexes.contains(newIndex)) {
+            newRandomIndexes.add(newIndex);
+          }
+        }
+
+        randomIndexes.addAll(newRandomIndexes);
+        posts = await _fetchPostWithSubCollections(newRandomIndexes);
+      }
+      else{
+        throw CustomFirestoreException(code: 'no-more', message: 'No more posts');
+      }
+
       return posts;
     } catch (e) {
       rethrow;

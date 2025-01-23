@@ -33,5 +33,7 @@ class AppImages {
 
   static const String empty = '${svgPath}empty$svgFormat';
 
+  static const String noMorePosts = '${imagePath}no-more-posts$svgFormat';
+
 
 }

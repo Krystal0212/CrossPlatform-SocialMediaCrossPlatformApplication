@@ -72,16 +72,18 @@ class _HomeScreenState extends State<MobileHomeBase>
       final isUserSignedIn =
           context.read<HomeCubit>().checkCurrentUserSignedIn();
       if (isUserSignedIn) {
-        if (!context.mounted) return;
-        await context.read<HomeCubit>().checkCurrentUser();
-        final currentUser = context.read<HomeCubit>().getCurrentUser();
-        currentUserNotifier.value = currentUser;
+        if (context.mounted) {
+          await context.read<HomeCubit>().checkCurrentUser();
+          final UserModel? currentUser =
+              context.read<HomeCubit>().getCurrentUser();
+          currentUserNotifier.value = currentUser;
 
-        context.read<FollowingCubit>().loadPosts(isOffline: false);
+          context.read<FollowingCubit>().initialLoadPosts(isOffline: false);
+        }
       }
       if (!context.mounted) return;
-      context.read<ExploreCubit>().loadPosts(isOffline: false);
-      context.read<TrendingCubit>().loadPosts(isOffline: false);
+      context.read<ExploreCubit>().initialLoadPosts(isOffline: false);
+      context.read<TrendingCubit>().initialLoadPosts(isOffline: false);
     } catch (e) {
       if (kDebugMode) {
         print("Error fetching user: $e");
@@ -94,6 +96,10 @@ class _HomeScreenState extends State<MobileHomeBase>
     tabController.dispose();
     currentUserNotifier.dispose();
     super.dispose();
+  }
+
+  Future<void> refresh() async {
+    await context.read<ExploreCubit>().refresh();
   }
 
   @override
@@ -236,9 +242,13 @@ class _HomeScreenState extends State<MobileHomeBase>
                       if (state is TabLoading) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is TabLoaded) {
-                        return PostListView(
-                          posts: state.posts,
-                          viewMode: ViewMode.explore,
+                        return RefreshIndicator(
+                          onRefresh: () => refresh(),
+                          child: PostListView(
+                            posts: state.posts,
+                            viewMode: ViewMode.explore,
+                            tabCubit: BlocProvider.of<ExploreCubit>(context),
+                          ),
                         );
                       } else if (state is TabError) {
                         return Center(child: Text(state.error));
@@ -256,6 +266,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                         return PostListView(
                           posts: state.posts,
                           viewMode: ViewMode.trending,
+                          tabCubit: BlocProvider.of<TrendingCubit>(context),
                         );
                       } else if (state is TabError) {
                         return Center(child: Text(state.error));
@@ -277,6 +288,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                         return PostListView(
                           posts: state.posts,
                           viewMode: ViewMode.following,
+                          tabCubit: BlocProvider.of<FollowingCubit>(context),
                         );
                       } else if (state is TabError) {
                         return Center(child: Text(state.error));

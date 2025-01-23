@@ -3,6 +3,8 @@ import 'package:socialapp/utils/import.dart';
 abstract class PostRepository {
   Future<List<OnlinePostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false});
 
+  Future<List<OnlinePostModel>> loadMorePostsData();
+
   Future<List<CommentModel>?> getCommentPost(OnlinePostModel post);
 
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);

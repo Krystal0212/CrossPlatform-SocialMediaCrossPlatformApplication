@@ -74,11 +74,11 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
           final currentUser = context.read<HomeCubit>().getCurrentUser();
           currentUserNotifier.value = currentUser;
 
-          context.read<FollowingCubit>().loadPosts(isOffline: false);
+          context.read<FollowingCubit>().initialLoadPosts(isOffline: false);
         }
         if (!context.mounted) return;
-        context.read<ExploreCubit>().loadPosts(isOffline: false);
-        context.read<TrendingCubit>().loadPosts(isOffline: false);
+        context.read<ExploreCubit>().initialLoadPosts(isOffline: false);
+        context.read<TrendingCubit>().initialLoadPosts(isOffline: false);
       } catch (e) {
         if (kDebugMode) {
           print("Error fetching user: $e");
@@ -140,6 +140,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return PostListView(
                                 posts: state.posts,
                                 viewMode: ViewMode.explore,
+                                tabCubit: BlocProvider.of<ExploreCubit>(context),
                               );
                             } else if (state is TabError) {
                               return Center(child: Text(state.error));
@@ -158,6 +159,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return PostListView(
                                 posts: state.posts,
                                 viewMode: ViewMode.trending,
+                                tabCubit: BlocProvider.of<TrendingCubit>(context),
                               );
                             } else if (state is TabError) {
                               return Center(child: Text(state.error));
@@ -179,6 +181,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return PostListView(
                                 posts: state.posts,
                                 viewMode: ViewMode.following,
+                                tabCubit: BlocProvider.of<FollowingCubit>(context),
                               );
                             } else if (state is TabError) {
                               return Center(child: Text(state.error));

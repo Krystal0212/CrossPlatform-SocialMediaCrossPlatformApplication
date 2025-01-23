@@ -26,21 +26,15 @@ class _RecordBoxState extends State<RecordBox> {
   final ValueNotifier<bool> isRecording = ValueNotifier<bool>(false);
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   dispose() {
     _audioRecorder.dispose();
     audioPlayer.dispose();
     super.dispose();
-  }
-
-  Future<void> _playAudio(String? filePath) async {
-    if (filePath == null) return;
-
-    // Directly set file path for non-web platforms
-    await audioPlayer.setFilePath(filePath);
-    await audioPlayer.play();
-    setState(() {
-      isPlaying = true;
-    });
   }
 
   @override
@@ -53,29 +47,13 @@ class _RecordBoxState extends State<RecordBox> {
         valueListenable: isRecording,
         builder: (context, isListening, _) {
           return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (recordingPath != null)
-                MaterialButton(
-                  onPressed: () async {
-                    if (audioPlayer.playing) {
-                      await audioPlayer.stop();
-                      setState(() {
-                        isPlaying = false;
-                      });
-                    } else {
-                      await _playAudio(recordingPath);
-                    }
-                  },
-                  child: Text(
-                    isPlaying ? "Stop playing recording" : "Start playing recording",
-                  ),
-                ),
-              if (recordingPath == null)
-                const Text("No recording found. :("),
-              // Your CircularIconButton for start/stop recording
-              SizedBox(
-                width: 100,
-                height: 100,
+              Container(
+                width: 400,
+                height: 400,
+                alignment: Alignment.center,
                 child: CircularIconButton(
                   onPressed: () async {
                     if (isListening) {
@@ -84,68 +62,121 @@ class _RecordBoxState extends State<RecordBox> {
                         setState(() {
                           recordingPath = filePath;
                         });
+                        await audioPlayer.setFilePath(recordingPath!);
                         isRecording.value = false;
                       }
                     } else {
                       if (await _audioRecorder.hasPermission()) {
-                        final Directory appDocumentDir = await getApplicationDocumentsDirectory();
-                        final String appDocumentsPath = p.join(appDocumentDir.path, "recording.wav");
-                        await _audioRecorder.start(const RecordConfig(), path: appDocumentsPath);
-                        setState(() {
-                          recordingPath = appDocumentsPath;
-                        });
+                        final Directory appDocumentDir =
+                            await getApplicationDocumentsDirectory();
+                        final String appDocumentsPath =
+                            p.join(appDocumentDir.path, "recording.wav");
+                        await _audioRecorder.start(const RecordConfig(),
+                            path: appDocumentsPath);
+                        // setState(() {
+                        //   recordingPath = appDocumentsPath;
+                        // });
                         isRecording.value = true;
                       }
                     }
                   },
-                  icon: Icon(!isListening ? Icons.mic_rounded : Icons.mic_off_rounded),
+                  icon: Icon(
+                    !isListening ? Icons.mic_rounded : Icons.square,
+                    size: 250,
+                  ),
                 ),
               ),
-              // Slider to show and adjust the audio playback position
-              if (recordingPath != null && isPlaying)
-                Column(
+              if (recordingPath == null) const Text("No recording found. :("),
+              SizedBox(
+                height: widget.topicBoxHeight * 0.3,
+                child: Column(
                   children: [
-                    StreamBuilder<Duration>(
-                      stream: audioPlayer.positionStream,
-                      builder: (context, snapshot) {
-                        final position = snapshot.data ?? Duration.zero;
-                        final duration = audioPlayer.duration ?? Duration.zero;
+                    if (recordingPath != null)
+                      StreamBuilder<Duration>(
+                        stream: audioPlayer.positionStream,
+                        builder: (context, snapshot) {
+                          if(snapshot.hasData){
+                            const position = Duration.zero;
+                            final duration = audioPlayer.duration;
 
-                        // Update slider value only when not seeking
-                        if (!isSeeking) {
-                          _sliderValue = position.inMilliseconds.toDouble();
-                        }
+                            if (!isSeeking) {
+                              _sliderValue = position.inSeconds.toDouble();
+                            }
 
-                        return Column(
+                            return Column(
+                              children: [
+                                Slider(
+                                  value: _sliderValue,
+                                  min: 0.0,
+                                  max: duration!.inSeconds.toDouble(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _sliderValue = value;
+                                      isSeeking = true;
+                                    });
+                                    // Seek to the new position
+                                    audioPlayer.seek(
+                                        Duration(milliseconds: value.toInt()));
+                                  },
+                                  onChangeEnd: (value) {
+                                    setState(() {
+                                      isSeeking = false;
+                                    });
+                                  },
+                                ),
+                                Text(
+                                  "${position.toString().split('.').first} / ${duration.toString().split('.').first}",
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+
+                        },
+                      ),
+                    if (recordingPath != null)
+                      SizedBox(
+                        width: widget.topicBoxWidth * 0.9,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Slider(
-                              value: _sliderValue,
-                              min: 0.0,
-                              max: duration.inMilliseconds.toDouble(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _sliderValue = value;
-                                  isSeeking = true;
-                                });
-                                // Seek to the new position
-                                audioPlayer.seek(Duration(milliseconds: value.toInt()));
+                            CircularIconButton(
+                              onPressed: () async {
+                                if (audioPlayer.playing) {
+                                  await audioPlayer.stop();
+                                  setState(() {
+                                    isPlaying = false;
+                                  });
+                                } else {
+                                  setState(() {
+                                    isPlaying = true;
+                                  });
+                                }
                               },
-                              onChangeEnd: (value) {
-                                setState(() {
-                                  isSeeking = false;
-                                });
-                              },
+                              icon: Icon(
+                                !isPlaying ? Icons.play_arrow : Icons.pause,
+                                size: 55,
+                              ),
                             ),
-                            Text(
-                              "${position.toString().split('.').first} / ${duration.toString().split('.').first}",
-                              style: const TextStyle(fontSize: 14),
-                            ),
+                            CircularIconButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    recordingPath = null;
+                                  });
+
+                                },
+                                icon: const Icon(
+                                  Icons.replay,
+                                  size: 55,
+                                )),
                           ],
-                        );
-                      },
-                    ),
+                        ),
+                      ),
                   ],
                 ),
+              ),
             ],
           );
         },

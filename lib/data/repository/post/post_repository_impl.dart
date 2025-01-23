@@ -21,6 +21,10 @@ class PostRepositoryImpl extends PostRepository {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId) {
     return serviceLocator.get<PostService>().getPostsByUserId(userId);
   }
+  @override
+  Future<List<OnlinePostModel>> loadMorePostsData() {
+    return serviceLocator.get<PostService>().loadMorePostsData();
+  }
 
   @override
   Future<String?> getPostImageById(String postId) {

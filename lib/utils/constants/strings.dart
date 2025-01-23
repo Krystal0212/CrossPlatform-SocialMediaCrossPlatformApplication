@@ -4,6 +4,7 @@ class AppStrings {
       'The page you are looking for does not exist.';
   static const String goBack = 'Go Back';
   static const String notDisplayImage = 'Unable to display image';
+  static const String noMorePosts = 'No more posts available';
   static const String pleaseSignIn = 'Please sign in';
   static const String needSignIn = 'You need to sign in to browse this section';
   static const String alertNSFW =
