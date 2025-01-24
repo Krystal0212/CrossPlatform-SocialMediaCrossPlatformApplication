@@ -25,6 +25,10 @@ class PostRepositoryImpl extends PostRepository {
   Future<List<OnlinePostModel>> loadMorePostsData() {
     return serviceLocator.get<PostService>().loadMorePostsData();
   }
+  @override
+  Future<void> createSoundPost(String content, String filePath) async{
+    return serviceLocator.get<PostService>().createSoundPost(content, filePath);
+  }
 
   @override
   Future<String?> getPostImageById(String postId) {

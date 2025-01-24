@@ -247,7 +247,7 @@ class _WebsiteDialogBodyState extends State<WebsiteDialogBody>
               ),
               IconButton(
                 onPressed: () {
-                  context.read<NewPostCubit>().sendPost(
+                  context.read<NewPostCubit>().sendAssetPost(
                       NewPostPropertiesProvider.of(context)!.homeContext!,
                       context,
                       styleableTextFieldController,

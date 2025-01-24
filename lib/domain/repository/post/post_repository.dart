@@ -14,6 +14,8 @@ abstract class PostRepository {
   Future<void> createAssetPost(
       String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
 
+  Future<void> createSoundPost(String content, String filePath);
+
   // Future<void> deletePost(PostModel post);
   // Future<
   // Future<void> addPostData(AddPostReq addPostReq);

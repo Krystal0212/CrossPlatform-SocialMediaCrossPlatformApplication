@@ -47,6 +47,7 @@ class MobileDialogHeader extends StatelessWidget {
   final ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier;
   final TextEditingController styleableTextFieldController;
   final ValueNotifier<List<TopicModel>> topicSelectedNotifier;
+  final ValueNotifier<String?> recordingPathNotifier;
   final ValueNotifier<bool> isRecordingMode;
 
   const MobileDialogHeader({
@@ -55,7 +56,7 @@ class MobileDialogHeader extends StatelessWidget {
     required this.imagePathNotifier,
     required this.styleableTextFieldController,
     required this.topicSelectedNotifier,
-    required this.isRecordingMode,
+    required this.isRecordingMode, required this.recordingPathNotifier,
   });
 
 
@@ -166,13 +167,22 @@ class MobileDialogHeader extends StatelessWidget {
                         ),
                         IconButton(
                           onPressed: () {
-                            context.read<NewPostCubit>().sendPost(
+                            if(!isRecordModeChosen) {
+                              context.read<NewPostCubit>().sendAssetPost(
                                 NewPostPropertiesProvider.of(context)!
                                     .homeContext,
                                 context,
                                 styleableTextFieldController,
                                 imagePathNotifier,
                                 topicSelectedNotifier);
+                            } else {
+                              context.read<NewPostCubit>().sendSoundPost(
+                                  NewPostPropertiesProvider.of(context)!
+                                      .homeContext,
+                                  context,
+                                  styleableTextFieldController,
+                                  recordingPathNotifier.value);
+                            }
                           },
                           icon: ShaderMask(
                             shaderCallback: (Rect bounds) {

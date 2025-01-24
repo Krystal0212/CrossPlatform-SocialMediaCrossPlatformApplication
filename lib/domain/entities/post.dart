@@ -2,17 +2,19 @@ import 'package:socialapp/utils/import.dart';
 
 class NewPostModel {
   final String content;
-  final Map<String, OnlineMediaItem> media;
+  final Map<String, OnlineMediaItem>? media;
+  final String? record;
   final Timestamp timestamp;
-  final Set<DocumentReference> topicRefs;
+  final Set<DocumentReference>? topicRefs;
   final DocumentReference userRef;
 
-  const NewPostModel({
+  const NewPostModel( {
     required this.content,
     required this.media,
     required this.timestamp,
     required this.topicRefs,
     required this.userRef,
+    this.record,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +27,7 @@ class NewPostModel {
       'viewAmount': 0,
       'topicRefs': topicRefs,
       'userRef': userRef,
+      'record': record,
     };
   }
 }

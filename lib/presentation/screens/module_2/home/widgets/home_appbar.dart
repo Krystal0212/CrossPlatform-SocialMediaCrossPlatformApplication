@@ -297,7 +297,7 @@ class HomeAppBarActionButtons extends StatelessWidget {
                         );
                       },
                     );
-                  },),
+                  }, ),
             ],
             SizedBox(
               width: 46,

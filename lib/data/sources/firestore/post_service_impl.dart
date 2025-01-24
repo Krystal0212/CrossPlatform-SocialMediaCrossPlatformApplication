@@ -1,6 +1,7 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:path/path.dart' as p;
 
 abstract class PostService {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
@@ -16,6 +17,8 @@ abstract class PostService {
 
   Future<void> syncLikesToFirestore(
       Map<String, Map<String, bool>> likedPostsCache);
+
+  Future<void> createSoundPost(String content, String filePath);
 
   Future<void> createAssetPost(String content,
       List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
@@ -43,8 +46,8 @@ class PostServiceImpl extends PostService
 
   CollectionReference get _topicRef => _firestoreDB.collection('Topic');
 
-  Query<Object?> get _postsQuery => _postRef.orderBy('timestamp', descending: true);
-
+  Query<Object?> get _postsQuery =>
+      _postRef.orderBy('timestamp', descending: true);
 
   // ToDo: Offline Service Functions
 
@@ -213,7 +216,8 @@ class PostServiceImpl extends PostService
     List<OnlinePostModel> posts = [];
 
     try {
-      AggregateQuerySnapshot aggregateSnapshot = await _postsQuery.count().get();
+      AggregateQuerySnapshot aggregateSnapshot =
+          await _postsQuery.count().get();
       int? count = aggregateSnapshot.count ?? 0;
 
       if (count == 0) {
@@ -235,9 +239,9 @@ class PostServiceImpl extends PostService
 
         randomIndexes.addAll(newRandomIndexes);
         posts = await _fetchPostWithSubCollections(newRandomIndexes);
-      }
-      else{
-        throw CustomFirestoreException(code: 'no-more', message: 'No more posts');
+      } else {
+        throw CustomFirestoreException(
+            code: 'no-more', message: 'No more posts');
       }
 
       return posts;
@@ -621,6 +625,47 @@ class PostServiceImpl extends PostService
     } catch (error) {
       if (kDebugMode) {
         print('Error uploading media: $error');
+      }
+    }
+  }
+
+  Future<String> _uploadSoundAndGetUrl(
+      String filePath, DocumentReference newPostRef) async {
+    final storageRef =
+        _storage.ref().child('posts/${newPostRef.id}/${p.basename(filePath)}');
+
+    final SettableMetadata metadata =
+        SettableMetadata(contentType: "audio/wav");
+
+    await storageRef.putFile(File(filePath), metadata);
+
+    String soundUrl = await storageRef.getDownloadURL();
+    return soundUrl;
+  }
+
+  @override
+  Future<void> createSoundPost(String content, String filePath) async {
+    final Timestamp timestamp = Timestamp.now();
+
+    try {
+      NewPostModel newPost = NewPostModel(
+          content: content,
+          timestamp: timestamp,
+          topicRefs: null,
+          media: {},
+          record: "",
+          userRef: _usersRef.doc(currentUserId));
+
+      DocumentReference newPostRef = await _postRef.add(newPost.toMap());
+
+      final String assetUrl = await _uploadSoundAndGetUrl(filePath, newPostRef);
+
+      await newPostRef.update({
+        'record': assetUrl,
+      });
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error uploading sound post: $error');
       }
     }
   }

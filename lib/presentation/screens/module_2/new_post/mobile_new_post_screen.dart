@@ -51,6 +51,8 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
 
   late ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier =
       ValueNotifier([]);
+  late ValueNotifier<String?> recordingPathNotifier =
+  ValueNotifier(null);
   late ValueNotifier<List<TopicModel>> topicSelectedNotifier =
       ValueNotifier([]);
   late ValueNotifier<bool> isRecordingMode = ValueNotifier<bool>(false);
@@ -79,6 +81,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
     imagePathNotifier.dispose();
     styleableTextFieldController.dispose();
     isRecordingMode.dispose();
+    recordingPathNotifier.dispose();
     super.dispose();
   }
 
@@ -104,7 +107,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
                     imagePathNotifier: imagePathNotifier,
                     styleableTextFieldController: styleableTextFieldController,
                     topicSelectedNotifier: topicSelectedNotifier,
-                    isRecordingMode: isRecordingMode,
+                    isRecordingMode: isRecordingMode, recordingPathNotifier: recordingPathNotifier,
                   ),
                   const Divider(
                     color: AppColors.iris,
@@ -119,7 +122,7 @@ class _NewPostBaseState extends State<NewPostBase> with FlashMessage {
                           styleableTextFieldController,
                       imagePathNotifier: imagePathNotifier,
                       topicSelectedNotifier: topicSelectedNotifier,
-                      isRecordingMode: isRecordingMode,
+                      isRecordingMode: isRecordingMode, recordingPathNotifier: recordingPathNotifier,
                     ),
                   ),
                   // Add more widgets as necessary

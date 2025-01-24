@@ -371,14 +371,14 @@ class NewPostCubit extends Cubit<NewPostState>
     return await VideoCompress.getByteThumbnail(file.path);
   }
 
-  void sendPost(
+  void sendAssetPost(
     BuildContext homeContext,
     BuildContext context,
-    TextEditingController textEditingController,
+    TextEditingController contentTextEditingController,
     ValueNotifier<List<Map<String, dynamic>>> assetDataNotifier,
     ValueNotifier<List<TopicModel>> topicSelectedNotifier,
   ) async {
-    final String content = textEditingController.text;
+    final String content = contentTextEditingController.text;
     final List<Map<String, dynamic>> imagesAndVideos = assetDataNotifier.value;
     final List<TopicModel> topics = topicSelectedNotifier.value;
 
@@ -421,6 +421,50 @@ class NewPostCubit extends Cubit<NewPostState>
       } else if (error.toString() == 'need-topics') {
         if (!homeContext.mounted) return;
         showUnknownMessage(context: context, label: AppStrings.noTopics);
+      }
+      if (kDebugMode) {
+        print("Error while creating new asset post : $error");
+      }
+    }
+  }
+
+  void sendSoundPost(
+    BuildContext homeContext,
+    BuildContext context,
+    TextEditingController contentTextEditingController,
+    String? filePath,
+  ) async {
+    try {
+      if (filePath != null && filePath.isNotEmpty) {
+        Navigator.of(context).pop();
+
+        if (!homeContext.mounted) return;
+
+        Future.microtask(() {
+          if (homeContext.mounted) {
+            showAttentionMessage(
+                context: homeContext, description: AppStrings.uploading);
+          }
+        });
+        await serviceLocator<PostRepository>()
+            .createSoundPost(contentTextEditingController.text, filePath);
+
+        Future.microtask(() {
+          if (homeContext.mounted) {
+            showSuccessMessage(
+              context: homeContext,
+              description: AppStrings.sendSuccess,
+            );
+          }
+        });
+      }
+      else {
+        throw 'empty-data';
+      }
+    } catch (error) {
+      if (error.toString() == 'empty-data') {
+        if (!homeContext.mounted) return;
+        showUnknownMessage(context: context, label: AppStrings.noRecord);
       }
       if (kDebugMode) {
         print("Error while creating new asset post : $error");

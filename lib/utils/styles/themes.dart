@@ -56,6 +56,18 @@ class AppTheme {
         ],
       ));
 
+  static BoxDecoration get mainVerticalGradientBoxDecoration => BoxDecoration(
+      borderRadius: BorderRadius.circular(30),
+      gradient: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppColors.systemShockBlue,
+          AppColors.cabbageBlossomViolet,
+
+        ],
+      ));
+
   static BoxDecoration get profileBackgroundBoxDecoration => BoxDecoration(
       image: const DecorationImage(
         image: AssetImage(AppImages.editProfileAppbarBackground),
@@ -365,6 +377,15 @@ class AppTheme {
 
   static ButtonStyle get actionSignInCircleButtonStyle => TextButton.styleFrom(
     backgroundColor: AppColors.systemShockBlue,
+    foregroundColor: AppTheme.white,
+    minimumSize: const Size(50, 45),
+    shape: const CircleBorder(),
+  );
+
+  static ButtonStyle get recordButtonStyle => TextButton.styleFrom(
+    elevation: 0,
+    splashFactory: NoSplash.splashFactory,
+    backgroundColor: Colors.transparent,
     foregroundColor: AppTheme.white,
     minimumSize: const Size(50, 45),
     shape: const CircleBorder(),

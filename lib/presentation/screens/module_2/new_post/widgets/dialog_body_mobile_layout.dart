@@ -16,6 +16,7 @@ class MobileDialogBody extends StatefulWidget {
   final ValueNotifier<List<Map<String, dynamic>>> imagePathNotifier;
   final ValueNotifier<List<TopicModel>> topicSelectedNotifier;
   final ValueNotifier<bool> isRecordingMode;
+  final ValueNotifier<String?> recordingPathNotifier;
 
   const MobileDialogBody({
     super.key,
@@ -23,7 +24,7 @@ class MobileDialogBody extends StatefulWidget {
     required this.styleableTextFieldController,
     required this.imagePathNotifier,
     required this.topicSelectedNotifier,
-    required this.isRecordingMode,
+    required this.isRecordingMode, required this.recordingPathNotifier,
   });
 
   @override
@@ -170,13 +171,9 @@ class _MobileDialogBodyState extends State<MobileDialogBody> with FlashMessage {
                     ],
                   );
                 } else {
-                  return Container(
-
-                    color: Colors.redAccent,
-                    child: const RecordBox(
-                      topicBoxWidth: 490,
-                      topicBoxHeight: 650,
-                    ),
+                  return  RecordBox(
+                    topicBoxWidth: 490,
+                    topicBoxHeight: 650, recordingPathNotifier: widget.recordingPathNotifier,
                   );
                 }
               }),

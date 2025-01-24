@@ -93,6 +93,7 @@ class AppStrings {
   static const String chooseTopic ='Choose your topic';
   static const String searchTopics = 'Search other topics';
   static const String noAssets ='No images or videos selected';
+  static const String noRecord = 'Nothing recorded';
   static const String noTopics = 'Choose at least 1 topic';
   static const String sendSuccess = 'Post sent successfully!';
   static const String uploading = 'Uploading...';
