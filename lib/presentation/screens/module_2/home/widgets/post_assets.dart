@@ -28,12 +28,12 @@ class _PostAssetState extends State<PostAsset> {
   void initState() {
     super.initState();
 
-    mediaLength = widget.post.media.length;
-    media = widget.post.media;
+    mediaLength = widget.post.media?.length ?? 0;
+    media = widget.post.media ?? {};
 
-    if (widget.post.media.isNotEmpty) {
-      mediaLength = widget.post.media.length ?? 0;
-      media = widget.post.media;
+    if (widget.post.media?.isNotEmpty ?? false) {
+      mediaLength = widget.post.media?.length ?? 0;
+      media = widget.post.media??{};
       // isCachedData = widget.post.mediaOffline == null;
     }
     // else if (widget.post.mediaOffline != null && widget.post.mediaOffline!.isNotEmpty && !isWeb) {

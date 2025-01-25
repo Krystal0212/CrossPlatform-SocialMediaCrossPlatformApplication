@@ -1,5 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 import 'preferred_topic_state.dart';
+import 'package:intl/intl.dart';
 
 // if nhap dai url khi ko signed in
 // if nhap dai url nhung acc da xong pick cac topic tu lau
@@ -40,12 +41,15 @@ class PreferredTopicCubit extends Cubit<PreferredTopicState> {
       BuildContext context, List<Map<TopicModel, bool>> categories) async {
     User? currentUser = await serviceLocator<AuthRepository>().getCurrentUser();
 
+    DateTime now = DateTime.now();
+    String tagName = '${currentUser?.email}_${DateFormat('ddMM').format(now)}';
+
     Map<String, bool> mergedMap = convertToMapStringBool(categories);
 
     try {
       emit(AddUserLoading());
       UserModel userModel = UserModel.newUser(
-          mergedMap, currentUser!.photoURL, currentUser.email);
+          mergedMap, currentUser!.photoURL, currentUser.email, tagName );
       serviceLocator<UserRepository>().addCurrentUserData(userModel);
       if (!context.mounted) return;
       context.go('/home');

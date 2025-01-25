@@ -22,8 +22,8 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
-  Future<List<String>> getUserRelatedData(String uid, String datatype) {
-    return serviceLocator<UserService>().getUserRelatedData(uid, datatype);
+  Future<Map<String, dynamic>> getUserRelatedData(String uid) {
+    return serviceLocator<UserService>().getUserRelatedData(uid);
   }
 
   @override

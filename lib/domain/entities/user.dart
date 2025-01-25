@@ -1,7 +1,6 @@
-import 'package:socialapp/utils/import.dart';
-
 class UserModel {
   String? id;
+  final String tagName;
   final String name;
   final String email;
   final String lastName;
@@ -22,6 +21,7 @@ class UserModel {
     required this.avatar,
     required this.email,
     required this.socialAccounts,
+    required this.tagName,
     this.emailChanged = false,
     this.avatarChanged = false,
   });
@@ -32,15 +32,15 @@ class UserModel {
         location = '',
         emailChanged = false,
         avatarChanged = false,
+        tagName = '',
         avatar = '',
         email = '',
         socialAccounts = {} {
     preferredTopics = {};
   }
 
-
-  UserModel.newUser(
-      Map<String, bool> chosenTopics, String? userAvatar, String? userEmail)
+  UserModel.newUser(Map<String, bool> chosenTopics, String? userAvatar,
+      String? userEmail, this.tagName)
       : name = '',
         lastName = '',
         location = '',
@@ -63,13 +63,17 @@ class UserModel {
       location: map['location'] ?? '',
       preferredTopics: Map<String, String>.from(
         (map['preferred-topics'] ?? {}).map(
-              (key, value) {
-              return MapEntry(key, value.toString());  // Or any other field you need from the reference
-            },
+          (key, value) {
+            return MapEntry(
+                key,
+                value
+                    .toString()); // Or any other field you need from the reference
+          },
         ),
       ),
       avatar: map['avatar'] ?? '',
       socialAccounts: Map<String, String>.from(map['socials'] ?? {}),
+      tagName: map['tag-name'] ?? '',
     );
   }
 
@@ -92,6 +96,7 @@ class UserModel {
       'preferred-topics': preferredTopics,
       'avatar': avatar,
       'socials': socialAccounts,
+      'tag-name': tagName,
     };
   }
 
@@ -106,6 +111,7 @@ class UserModel {
       preferredTopics: preferredTopics,
       socialAccounts: socialAccounts,
       email: email,
+      tagName: tagName,
     );
   }
 
@@ -124,6 +130,7 @@ class UserModel {
     Map<String, String>? socialAccounts,
     List<String>? followers,
     List<String>? followingUsers,
+    String? tagName,
   }) {
     if (newEmail != null && newEmail != email) {
       emailChanged = true;
@@ -140,6 +147,7 @@ class UserModel {
       preferredTopics: preferredTopics ?? this.preferredTopics,
       socialAccounts: socialAccounts ?? this.socialAccounts,
       email: newEmail ?? email,
+      tagName: tagName ?? this.tagName,
     );
   }
 }

@@ -1,102 +1,68 @@
-
-
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:socialapp/presentation/screens/module_2/home/cubit/tab_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 
-class ShotTab extends StatefulWidget {
-  final List<String> imageUrls;
+import '../cubit/media_cubit.dart';
+import '../cubit/media_state.dart';
 
-  const ShotTab({super.key, required this.imageUrls});
+class ShotTab1 extends StatefulWidget {
+  const ShotTab1({super.key});
 
   @override
-  State<ShotTab> createState() => _ShotTabState();
+  State<ShotTab1> createState() => _ShotTab1State();
 }
 
-class _ShotTabState extends State<ShotTab> {
+class _ShotTab1State extends State<ShotTab1>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
-    if (widget.imageUrls.isEmpty) {
-      return Center(child: SvgPicture.asset(AppImages.empty));
-    } else {
+    super.build(context);
+    double deviceWidth = MediaQuery.of(context).size.width;
 
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child:
-        // StaggeredGridView.countBuilder(
-        //   physics: const NeverScrollableScrollPhysics(),
-        //   crossAxisCount: 2,
-        //   itemCount: imageUrls.length,
-        //   shrinkWrap: true,
-        //   itemBuilder: (context, index) {
-        //     return ClipRRect(
-        //       borderRadius: BorderRadius.circular(10),
-        //       child: CachedNetworkImage(
-        //       imageUrl: imageUrls[index],
-        //       fit: BoxFit.cover,
-        //       placeholder: (context, url) =>
-        //       const Center(child: CircularProgressIndicator()),
-        //       errorWidget: (context, url, error) => const Icon(
-        //           Icons.error), // Error widget if image fails to load
-        //                         ),
-        //     );
-        //   },
-        //   staggeredTileBuilder: (index) => const StaggeredTile.fit(1),
-        //   mainAxisSpacing: 16.0,
-        //   crossAxisSpacing: 16.0, // Horizontal space between items
-        // ),
-
-        // GridView.custom(
-        //   gridDelegate: SliverQuiltedGridDelegate(
-        //     crossAxisCount: 2, // Changed to 2
-        //     mainAxisSpacing: 16.0, // Space between rows
-        //     crossAxisSpacing: 16.0, // Space between columns
-        //     repeatPattern: QuiltedGridRepeatPattern.inverted,
-        //     pattern: [
-        //       QuiltedGridTile(2, 1),
-        //       QuiltedGridTile(1, 1),
-        //       QuiltedGridTile(1, 1),
-        //       QuiltedGridTile(1, 2),
-        //     ],
-        //   ),
-        //   childrenDelegate: SliverChildBuilderDelegate(
-        //         (context, index) {
-        //       return ClipRRect(
-        //         borderRadius: BorderRadius.circular(10),
-        //         child: CachedNetworkImage(
-        //           imageUrl: imageUrls[index],
-        //           fit: BoxFit.cover,
-        //           placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-        //           errorWidget: (context, url, error) => const Icon(Icons.error), // Error widget if image fails to load
-        //         ),
-        //       );
-        //     },
-        //     childCount: imageUrls.length, // Total number of images
-        //   ),)
-
-
-        MasonryGridView.count(
-          crossAxisCount: 2, // Updated crossAxisCount to 2
-          mainAxisSpacing: 16.0, // Space between items vertically
-          crossAxisSpacing: 16.0, // Space between items horizontally
-          itemBuilder: (context, index) {
-            if (index < widget.imageUrls.length) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: CachedNetworkImage(
-                  imageUrl: widget.imageUrls[index],
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              );
-            } else {
-              return const SizedBox(); // Return an empty widget if index is out of bounds
-            }
-          },
-        )
-
-
-      );
-    }
+    return BlocProvider(
+      create: (context) => MediaPostCubit(),
+      child: Padding(
+        padding: EdgeInsets.only(top:30, left: deviceWidth * 0.07,
+            right: deviceWidth * 0.07),
+        child: SingleChildScrollView(
+          child: BlocBuilder<MediaPostCubit, MediaPostState>(
+            builder: (context, state) {
+              if (state is MediaPostLoaded) {
+                return MasonryGridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 2,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.imageUrls.length,
+                  mainAxisSpacing: 16.0,
+                  crossAxisSpacing: 16.0,
+                  itemBuilder: (context, index) {
+                    if (index < state.imageUrls.length) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: state.imageUrls[index].mediasOrThumbnailUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                          const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                        ),
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                );
+              }
+              return Center(child: SvgPicture.asset(AppImages.empty));
+            },
+          ),
+        ),
+      ),
+    );
   }
+
+  @override
+  bool get wantKeepAlive => true; // Keep the widget alive
 }
+

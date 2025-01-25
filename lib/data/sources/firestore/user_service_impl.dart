@@ -12,7 +12,7 @@ abstract class UserService {
 
   Future<void> updateCurrentUserData(UserModel updateUser);
 
-  Future<List<String>> getUserRelatedData(String uid, String dataType);
+  Future<Map<String, dynamic>> getUserRelatedData(String uid);
 
   Future<String>? uploadAvatar(File image, String uid);
 }
@@ -38,6 +38,12 @@ class UserServiceImpl extends UserService {
   CollectionReference _usersCollectionsRef(String uid) {
     return _usersRef.doc(uid).collection('collections');
   }
+
+  CollectionReference _usersPostRef(String uid) {
+    return _usersRef.doc(uid).collection('posts');
+  }
+
+  CollectionReference get _postRef => _firestoreDB.collection('Post');
 
   // ToDo: Service Functions
   @override
@@ -143,36 +149,76 @@ class UserServiceImpl extends UserService {
     }
   }
 
+  Future<Map<String, int>> updateMediaAndRecordNumber(String uid) async {
+    int totalMediaCount = 0;
+    int totalRecordCount = 0;
+
+    try {
+      final QuerySnapshot<Map<String, dynamic>> postsSnapshot =
+          await _usersPostRef(uid).get() as QuerySnapshot<Map<String, dynamic>>;
+
+      for (var post in postsSnapshot.docs) {
+        final mediaField = (await _postRef.doc(post.id).get())['media'];
+        final recordField = (await _postRef.doc(post.id).get())['record'];
+
+        if (mediaField != null) {
+          int mediaLength = mediaField.length ?? 0;
+          totalMediaCount += mediaLength;
+        } else if (recordField != null) {
+          totalRecordCount += 1;
+        }
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error calculating total media count: $e");
+      }
+    }
+    return {
+      'totalRecordCount': totalRecordCount,
+      'totalMediaCount': totalMediaCount
+    };
+  }
+
   @override
-  Future<List<String>> getUserRelatedData(String uid, String dataType) async {
-    List<String> data = [];
-    QuerySnapshot<Map<String, dynamic>> snapshot;
+  Future<Map<String, dynamic>> getUserRelatedData(String uid) async {
+    final Map<String, dynamic> dataMap = {
+      'followers': [],
+      'followings': [],
+      'collectionsNumber': [],
+      'mediasNumber': []
+    };
 
-    switch (dataType) {
-      case 'followers':
-        snapshot = await _usersFollowersRef(uid).get()
-            as QuerySnapshot<Map<String, dynamic>>;
-        break;
-      case 'followings':
-        snapshot = await _usersFollowingsRef(uid).get()
-            as QuerySnapshot<Map<String, dynamic>>;
-        break;
-      case 'collections':
-        snapshot = await _usersCollectionsRef(uid).get()
-            as QuerySnapshot<Map<String, dynamic>>;
-        break;
-      default:
-        throw ArgumentError('Invalid data type: $dataType');
+    try {
+      // Fetch followers
+      final followersSnapshot = await _usersFollowersRef(uid).get()
+          as QuerySnapshot<Map<String, dynamic>>;
+      for (var doc in followersSnapshot.docs) {
+        dataMap['followers']!.add(doc.id);
+      }
+
+      // Fetch followings
+      final followingsSnapshot = await _usersFollowingsRef(uid).get()
+          as QuerySnapshot<Map<String, dynamic>>;
+      for (var doc in followingsSnapshot.docs) {
+        dataMap['followings']!.add(doc.id);
+      }
+
+      dataMap['collectionsNumber'] = (await _usersCollectionsRef(uid).get()).size;
+      Map<String, int> countDataNumber = await updateMediaAndRecordNumber(uid);
+      dataMap['mediasNumber'] = countDataNumber['totalMediaCount'];
+      dataMap['recordsNumber'] = countDataNumber['totalRecordCount'];
+
+      if (kDebugMode) {
+        print(dataMap.toString());
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching user-related data: $e');
+      }
+      rethrow;
     }
 
-    for (var doc in snapshot.docs) {
-      data.add(doc.id);
-    }
-
-    if (kDebugMode) {
-      print(data.toString());
-    }
-
-    return data;
+    return dataMap;
   }
 }

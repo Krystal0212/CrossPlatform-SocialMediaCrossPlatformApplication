@@ -9,7 +9,7 @@ abstract class UserRepository {
 
   Future<void> updateCurrentUserData(UserModel updateUserReq);
 
-  Future<List<String>> getUserRelatedData(String uid, String datatype);
+  Future<Map<String, dynamic>> getUserRelatedData(String uid);
 
   Future<String>? uploadAvatar(File image, String uid);
 }

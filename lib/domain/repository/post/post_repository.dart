@@ -7,9 +7,9 @@ abstract class PostRepository {
 
   Future<List<CommentModel>?> getCommentPost(OnlinePostModel post);
 
-  Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
+  Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId);
 
-  Future<String?> getPostImageById(String postId);
+  Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
 
   Future<void> createAssetPost(
       String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);

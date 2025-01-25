@@ -115,7 +115,7 @@ class AppTheme {
       );
 
   static TextStyle get profileTagStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 14,
+        fontSize: 26,
         fontWeight: FontWeight.w700,
         color: white,
       );

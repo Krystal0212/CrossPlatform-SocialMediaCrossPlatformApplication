@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 abstract class PostService {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
 
-  Future<String?> getPostImageById(String postId);
+  Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId);
 
   Future<List<OnlinePostModel>> getPostsData(
       {required bool isOffline, bool skipLocalFetch = false});
@@ -331,6 +331,7 @@ class PostServiceImpl extends PostService
     Future<DocumentSnapshot<Object?>> userData;
     String username = '';
     String userAvatar = '';
+    List<String> comments, likes;
 
     try {
       DocumentReference tempUserRef = _usersRef.doc(userId);
@@ -345,70 +346,67 @@ class PostServiceImpl extends PostService
         );
       }
 
-      for (var doc in postsSnapshot.docs) {
-        userRef = doc['userRef'];
+      for (QueryDocumentSnapshot document in postsSnapshot.docs) {
+        comments = await _fetchSubCollection(document, 'comments');
+        likes = await _fetchSubCollection(document, 'likes');
+
+        userRef = document['userRef'];
         userData = userRef.get();
         await userData.then((value) {
           username = value['name'];
           userAvatar = value['avatar'];
         });
 
-        // OnlinePostModel post = OnlinePostModel(
-        //   postId: doc.id,
-        //   username: username,
-        //   userAvatarUrl: userAvatar,
-        //   content: doc['content'],
-        //   likeAmount: doc['likeAmount'],
-        //   commentAmount: doc['commentAmount'],
-        //   viewAmount: doc['viewAmount'],
-        //   media: (doc['media'] as List<dynamic>).map((item) {
-        //     return OnlineMediaItem.fromMap(
-        //       item,
-        //     );
-        //   }).toList(),
-        //   timestamp: (doc['timestamp'] as Timestamp).toDate(),
-        //   comments: {},
-        //   likes: {},
-        //   topicRefs: (doc['topicRef'] as List<dynamic>)
-        //       .map((item) => item.toString())
-        //       .toSet(),
-        // );
+        Map<String, dynamic> documentMap =
+            document.data() as Map<String, dynamic>;
 
-        // posts.add(post);
+        documentMap['postId'] = document.id;
+        documentMap['username'] = username;
+        documentMap['userAvatar'] = userAvatar;
+        documentMap['comments'] = comments.toSet();
+        documentMap['likes'] = likes.toSet();
+
+        OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+
+        posts.add(post);
       }
 
       return posts;
     } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching posts for user: $e');
+      }
       rethrow;
     }
   }
 
-  Future<DocumentSnapshot> getPostDataById(String postId) async {
+  @override
+  Future<List<PreviewAssetPostModel>> getPostImagesByPostId(
+      String postId) async {
     try {
+      List<PreviewAssetPostModel> imagePreviews = [];
       DocumentSnapshot postSnapshot = await _postRef.doc(postId).get();
 
-      if (!postSnapshot.exists) {
-        throw CustomFirestoreException(
-          code: 'post-not-found',
-          message: 'Post not found in Firestore',
-        );
+      Map<String, dynamic>? postData =
+          postSnapshot.data() as Map<String, dynamic>?;
+      Map<String, dynamic>? medias = postData?['media'];
+
+      if (medias != null) {
+        for (var media in medias.entries) {
+          if (media.value['type'] == 'image' &&
+              media.value['imageUrl'] != null) {
+            imagePreviews.add(PreviewAssetPostModel(
+                postId: postId, mediasOrThumbnailUrl: media.value['imageUrl']));
+          } else if (media.value['type'] == 'video' &&
+              media.value['thumbnailUrl'] != null) {
+            imagePreviews.add(PreviewAssetPostModel(
+                postId: postId,
+                mediasOrThumbnailUrl: media.value['thumbnailUrl']));
+          }
+        }
       }
 
-      return postSnapshot;
-    } catch (e) {
-      rethrow; // Rethrow the error for further handling
-    }
-  }
-
-  @override
-  Future<String?> getPostImageById(String postId) async {
-    try {
-      DocumentSnapshot documentSnapshot = await getPostDataById(postId);
-
-      Map<String, dynamic>? postData =
-          documentSnapshot.data() as Map<String, dynamic>?;
-
-      return postData?["image"] as String?;
+      return imagePreviews;
     } catch (e) {
       rethrow;
     }

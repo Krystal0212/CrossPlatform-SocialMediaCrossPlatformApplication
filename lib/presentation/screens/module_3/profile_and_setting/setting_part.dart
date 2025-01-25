@@ -1,6 +1,3 @@
-
-
-
 import 'package:socialapp/utils/import.dart';
 
 import 'widgets/rounded_icon_image.dart';
@@ -13,14 +10,23 @@ class SettingPart extends StatefulWidget {
 }
 
 class _SettingPartState extends State<SettingPart> {
+  late double deviceWidth;
+  late double deviceHeight;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    deviceWidth = MediaQuery.of(context).size.width;
+    deviceHeight = MediaQuery.of(context).size.height;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        padding:
-            EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.15),
-        width: MediaQuery.of(context).size.width * 0.66,
+        padding: EdgeInsets.only(top: deviceHeight * 0.15),
+        width: deviceWidth * 0.66,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -58,11 +64,14 @@ class DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final deviceHeight = MediaQuery.of(context).size.height;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.7,
-        height: MediaQuery.of(context).size.height * 0.06,
+        width: deviceWidth * 0.7,
+        height: deviceHeight * 0.06,
         padding: const EdgeInsets.only(left: 16, right: 0, top: 7, bottom: 7),
         decoration: ShapeDecoration(
           color: Colors.white.withOpacity(0.3),

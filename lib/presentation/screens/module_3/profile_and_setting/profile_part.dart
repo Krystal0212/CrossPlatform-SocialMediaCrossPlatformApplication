@@ -17,9 +17,7 @@ class ProfilePart extends StatefulWidget {
 
 class _ProfilePartState extends State<ProfilePart>
     with SingleTickerProviderStateMixin {
-  final AuthRepository authRepository = AuthRepositoryImpl();
-
-  double avatarRadius = 50;
+  double avatarRadius = 75;
   late double appBarBackgroundHeight = avatarRadius * 2 / 0.6;
   late double appBarContainerHeight = avatarRadius * (1 + 2 / 0.6);
 
@@ -32,25 +30,14 @@ class _ProfilePartState extends State<ProfilePart>
   late TabController _tabController;
 
   final ValueNotifier<int> _selectedIndexNotifier = ValueNotifier(0);
-  late List<String> urls = [];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       _onTabChanged();
     });
-
-    getShotsForUser();
-  }
-
-  void getShotsForUser() async {
-    User? currentUser = await authRepository.getCurrentUser();
-    if(currentUser != null) {
-      urls = await getImageUrlsForUserPosts(currentUser.uid);
-    }
   }
 
   @override
@@ -63,13 +50,7 @@ class _ProfilePartState extends State<ProfilePart>
 
   @override
   Future<void> didChangeDependencies() async {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-    User? currentUser = await authRepository.getCurrentUser();
-
-    if(currentUser != null) {
-      urls = await getImageUrlsForUserPosts(currentUser.uid);
-    }
   }
 
   void _onTabChanged() {
@@ -97,64 +78,45 @@ class _ProfilePartState extends State<ProfilePart>
     });
   }
 
-  Future<List<String>> getImageUrlsForUserPosts(String userId) async {
-    PostRepository postRepository = PostRepositoryImpl();
-    List<OnlinePostModel>? posts = await postRepository.getPostsByUserId(userId);
-    List<String> imageUrls = [];
-
-    if (posts != null) {
-      for (var post in posts) {
-        String? imageUrl = await postRepository.getPostImageById(post.postId);
-        if (imageUrl != null) {
-          imageUrls.add(imageUrl);
-        }
-      }
-    }
-
-    return imageUrls;
-  }
-
   @override
   Widget build(BuildContext context) {
     // double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
-    return GestureDetector(
-      onTap: () {
-        if (isDrawerOpen) {
-          toggleContainer(); // Tap anywhere to enlarge when smaller
-        }
-      },
-      child: AnimatedContainer(
-        curve: Curves.easeIn,
-        transform: Matrix4.translationValues(xOffset, yOffset, 0)
-          ..scale(scaleFactor)
-          ..rotateY(isDrawerOpen ? -0.5 : 0),
-        duration: const Duration(milliseconds: 400),
-        decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
-        child: DefaultTabController(
-          length: 2,
-          child: BlocBuilder<ProfileCubit, ProfileState>(
-              builder: (context, state) {
-            if (state is ProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is ProfileError) {
-              return Center(child: Text(state.message));
-            } else if (state is ProfileLoaded) {
-              final UserModel userModel = state.userModel;
-              final List<CollectionModel> userCollections = state.collections;
-              return NestedScrollView(
+    return BlocProvider(
+      create: (context) => ProfileCubit(),
+      child: GestureDetector(
+        onTap: () {
+          if (isDrawerOpen) {
+            toggleContainer(); // Tap anywhere to enlarge when smaller
+          }
+        },
+        child: AnimatedContainer(
+          curve: Curves.easeIn,
+          transform: Matrix4.translationValues(xOffset, yOffset, 0)
+            ..scale(scaleFactor)
+            ..rotateY(isDrawerOpen ? -0.5 : 0),
+          duration: const Duration(milliseconds: 400),
+          decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
+          child: DefaultTabController(
+            length: 2,
+            child: NotificationListener<OverscrollIndicatorNotification>(
+              onNotification: (overscroll) {
+                overscroll.disallowIndicator();
+                return true;
+              },
+              child: NestedScrollView(
                 physics: isDrawerOpen
                     ? const NeverScrollableScrollPhysics()
-                    : const AlwaysScrollableScrollPhysics(),
+                    : const ClampingScrollPhysics(),
                 headerSliverBuilder:
                     (BuildContext context, bool innerBoxIsScrolled) {
                   return [
                     SliverToBoxAdapter(
                       child: Column(
                         children: [
-                          //ToDo : AppBar Background
+                          // AppBar Background
                           SizedBox(
                             height: appBarContainerHeight,
                             child: Stack(
@@ -177,29 +139,40 @@ class _ProfilePartState extends State<ProfilePart>
                                       children: [
                                         Align(
                                           alignment: Alignment.centerRight,
-                                          child: IconButton(
-                                            onPressed: () {
-                                              if (!isDrawerOpen) {
-                                                toggleContainer(); // Tap anywhere to enlarge when smaller
-                                              }
-                                            },
-                                            icon: SvgPicture.asset(
-                                              AppIcons.setting,
-                                              colorFilter: const ColorFilter.mode(
-                                              AppColors.white,
-                                              BlendMode.srcIn,
-                                            ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only( right: 56.0),
+                                            child: IconButton(
+                                              onPressed: () {
+                                                if (!isDrawerOpen) {
+                                                  toggleContainer(); // Tap anywhere to enlarge when smaller
+                                                }
+                                              },
+                                              icon: SvgPicture.asset(
+                                                AppIcons.setting,
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                  AppColors.white,
+                                                  BlendMode.srcIn,
+                                                ),
+                                                width: 30,
+                                                height: 30,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                        Align(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            '@brunopham',
-                                            textAlign: TextAlign.center,
-                                            style: AppTheme.profileTagStyle,
-                                          ),
-                                        ),
+                                        BlocBuilder<ProfileCubit, ProfileState>(
+                                            builder: (context, state) {
+                                          return Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              (state is ProfileLoaded)
+                                                  ? state.userModel.tagName
+                                                  : 'Username',
+                                              textAlign: TextAlign.center,
+                                              style: AppTheme.profileTagStyle,
+                                            ),
+                                          );
+                                        }),
                                       ],
                                     ),
                                   ),
@@ -218,14 +191,31 @@ class _ProfilePartState extends State<ProfilePart>
                                     ),
                                     child: Stack(
                                       children: [
-                                        Align(
-                                          child: CircleAvatar(
-                                            // 0.6 Appbar Background
-                                            radius: avatarRadius,
-                                            backgroundImage:
-                                                CachedNetworkImageProvider(
-                                                    userModel.avatar),
-                                          ),
+                                        BlocBuilder<ProfileCubit, ProfileState>(
+                                          builder: (context, state) {
+                                            return Align(
+                                              child: CircleAvatar(
+                                                radius: avatarRadius,
+                                                backgroundColor:
+                                                    state is ProfileLoaded
+                                                        ? Colors.transparent
+                                                        : AppColors.roseDragee,
+                                                backgroundImage: state
+                                                        is ProfileLoaded
+                                                    ? CachedNetworkImageProvider(
+                                                        state.userModel.avatar)
+                                                    : null,
+                                                child: state is! ProfileLoaded
+                                                    ? Icon(
+                                                        Icons.person,
+                                                        size: avatarRadius,
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                      )
+                                                    : null,
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),
@@ -235,42 +225,68 @@ class _ProfilePartState extends State<ProfilePart>
                             ),
                           ),
 
-                          //ToDo : Profile Information
+                          // Profile Information
                           IgnorePointer(
                             ignoring: isDrawerOpen,
-                            child: InformationBox(
-                              userModel: userModel,
-                              userFollowers: state.userFollowers,
-                              userFollowings: state.userFollowings,
-                            ),
+                            child: BlocBuilder<ProfileCubit, ProfileState>(
+                                builder: (context, state) {
+                              if (state is ProfileLoaded) {
+                                return InformationBox(
+                                  userModel: state.userModel,
+                                  userFollowers: state.userFollowers,
+                                  userFollowings: state.userFollowings,
+                                );
+                              }
+                              return const InformationBox(
+                                userModel: null,
+                                userFollowers: null,
+                                userFollowings: null,
+                              );
+                            }),
                           ),
 
-                          //TODO : Nested Tab
+                          // Nested Tab
                           IgnorePointer(
                             ignoring: isDrawerOpen,
                             child: SizedBox(
                               width: deviceWidth * 0.9,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  ProfileTab(
-                                    index: 0,
-                                    selectedIndexNotifier:
-                                        _selectedIndexNotifier,
-                                    label: '${urls.length} Shots',
-                                    onTabSelected: _onTabSelected,
-                                  ),
-                                  ProfileTab(
-                                    index: 1,
-                                    selectedIndexNotifier:
-                                        _selectedIndexNotifier,
-                                    label:
-                                        '${userCollections.length} Collections',
-                                    onTabSelected: _onTabSelected,
-                                  ),
-                                ],
-                              ),
+                              child: BlocBuilder<ProfileCubit, ProfileState>(
+                                  builder: (context, state) {
+                                return Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    ProfileTab(
+                                      index: 0,
+                                      selectedIndexNotifier:
+                                          _selectedIndexNotifier,
+                                      label: (state is ProfileLoaded)
+                                          ? '${state.mediasNumber} Shots'
+                                          : '0 Shots',
+                                      onTabSelected: _onTabSelected,
+                                    ),
+                                    // ProfileTab(
+                                    //   index: 1,
+                                    //   selectedIndexNotifier:
+                                    //   _selectedIndexNotifier,
+                                    //   label: (state is ProfileLoaded)
+                                    //       ? '${state.recordsNumber} Records'
+                                    //       : '0 Records',
+                                    //   onTabSelected: _onTabSelected,
+                                    // ),
+                                    ProfileTab(
+                                      index: 1,
+                                      selectedIndexNotifier:
+                                          _selectedIndexNotifier,
+                                      label: (state is ProfileLoaded)
+                                          ? '${state.collectionsNumber} Collections'
+                                          : '0 Collections',
+                                      onTabSelected: _onTabSelected,
+                                    ),
+
+                                  ],
+                                );
+                              }),
                             ),
                           ),
                         ],
@@ -282,25 +298,28 @@ class _ProfilePartState extends State<ProfilePart>
                   ignoring: isDrawerOpen,
                   child: Padding(
                     padding: EdgeInsets.only(
-                        left: deviceWidth * 0.07,
-                        right: deviceWidth * 0.07,
                         top: 8,
                         bottom: deviceWidth * 0.15),
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        ShotTab(imageUrls: urls),
-                        CollectionTab(
-                          collections: userCollections,
-                        ),
-                      ],
-                    ),
+                    child: BlocBuilder<ProfileCubit, ProfileState>(
+                        builder: (context, state) {
+                      return TabBarView(
+                        controller: _tabController,
+                        children: [
+                          const ShotTab1(),
+                          // const ShotTab1(),
+                          CollectionTab1(
+                            uid: (state is ProfileLoaded)
+                                ? (state.userModel.id ?? '')
+                                : '',
+                          ),
+                        ],
+                      );
+                    }),
                   ),
                 ),
-              );
-            }
-            return Container();
-          }),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -341,6 +360,7 @@ class ProfileTab extends StatelessWidget {
                 label,
                 textAlign: TextAlign.center,
                 style: AppTheme.profileTabStyle.copyWith(
+                  fontSize: 18,
                   color: selectedIndex == index
                       ? AppColors.iris
                       : AppColors.noghreiSilver,

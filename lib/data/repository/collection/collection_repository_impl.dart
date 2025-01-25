@@ -23,4 +23,9 @@ class CollectionRepositoryImpl extends CollectionRepository {
   Future<List<String>> getCollectionPostsID(String collectionID){
     return serviceLocator<CollectionService>().getCollectionPostsID(collectionID);
   }
+
+  @override
+  Future<List<CollectionModel>> getCollectionsFromUser(String uid) {
+    return serviceLocator<CollectionService>().getCollectionsFromUser(uid);
+  }
 }

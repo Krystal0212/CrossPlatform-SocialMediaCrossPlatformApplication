@@ -65,7 +65,7 @@ class SingleCollection extends StatelessWidget {
         children: [
           CollectionImageCustom(collection: collection),
           Center(
-            child: Text(collection.name),
+            child: Text(collection.title),
           )
         ],
       ),
@@ -84,17 +84,17 @@ class CollectionImageCustom extends StatelessWidget {
       width: 150,
       child: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-              image: DecorationImage(
-                image: NetworkImage(collection.thumbnail),
-                fit: BoxFit.fill
-              )
-            ),
-          ),
+          // Container(
+          //   decoration: BoxDecoration(
+          //     borderRadius: const BorderRadius.all(Radius.circular(16)),
+          //     image: DecorationImage(
+          //       image: NetworkImage(collection.thumbnail),
+          //       fit: BoxFit.fill
+          //     )
+          //   ),
+          // ),
           Center(
-            child: Text(collection.name.toUpperCase(), style: AppTextStyle.uppercaseWhiteNormalStyle,),
+            child: Text(collection.title.toUpperCase(), style: AppTextStyle.uppercaseWhiteNormalStyle,),
           )
         ],
       ),

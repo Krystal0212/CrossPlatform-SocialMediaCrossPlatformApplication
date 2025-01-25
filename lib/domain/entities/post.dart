@@ -8,14 +8,17 @@ class NewPostModel {
   final Set<DocumentReference>? topicRefs;
   final DocumentReference userRef;
 
-  const NewPostModel( {
+  const NewPostModel({
     required this.content,
-    required this.media,
+    this.media,
+    this.record,
     required this.timestamp,
     required this.topicRefs,
     required this.userRef,
-    this.record,
-  });
+  }) : assert(
+          (media != null) ^ (record != null),
+          'Either media or record must be provided, but not both.',
+        );
 
   Map<String, dynamic> toMap() {
     return {
@@ -32,12 +35,62 @@ class NewPostModel {
   }
 }
 
+class PreviewAssetPostModel {
+  final String postId;
+  final String mediasOrThumbnailUrl;
+
+  PreviewAssetPostModel({
+    required this.postId,
+    required this.mediasOrThumbnailUrl,
+  });
+
+  factory PreviewAssetPostModel.fromMap(Map<String, dynamic> map) {
+    return PreviewAssetPostModel(
+      postId: map['postId'] as String,
+      mediasOrThumbnailUrl: map['mediasOrThumbnailUrl'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'postId': postId,
+      'mediasOrThumbnailUrl': mediasOrThumbnailUrl,
+    };
+  }
+}
+
+class SoundPostModel {
+  final String postId;
+  final String recordUrl;
+
+  SoundPostModel({
+    required this.postId,
+    required this.recordUrl,
+  });
+
+  factory SoundPostModel.fromMap(Map<String, dynamic> map) {
+    return SoundPostModel(
+      postId: map['postId'] as String,
+      recordUrl: map['recordUrl'] as String,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'postId': postId,
+      'recordUrl': recordUrl,
+    };
+  }
+}
+
+
 class OnlinePostModel {
   final String postId;
   final String username;
   final String userAvatarUrl;
   final String content;
-  final Map<String, OnlineMediaItem> media;
+  final Map<String, OnlineMediaItem>? media;
+  final String? record;
   final Timestamp timestamp;
   final int likeAmount;
   final int commentAmount;
@@ -46,12 +99,13 @@ class OnlinePostModel {
   final Set<String> comments;
   final Set<String> likes;
 
-  OnlinePostModel({
+  OnlinePostModel( {
     required this.postId,
     required this.username,
     required this.userAvatarUrl,
     required this.content,
-    required this.media,
+    this.media,
+    this.record,
     required this.timestamp,
     required this.likeAmount,
     required this.commentAmount,
@@ -61,28 +115,6 @@ class OnlinePostModel {
     required this.likes,
   });
 
-  factory OnlinePostModel.newPost({
-    required String content,
-    required Map<String, OnlineMediaItem> media,
-    required Timestamp timestamp,
-    required Set<DocumentReference> topicRefs,
-  }) {
-    return OnlinePostModel(
-      postId: '',
-      username: '',
-      userAvatarUrl: '',
-      content: content,
-      media: media,
-      timestamp: timestamp,
-      likeAmount: 0,
-      commentAmount: 0,
-      viewAmount: 0,
-      comments: {},
-      likes: {},
-      topicRefs: topicRefs,
-    );
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'postId': postId,
@@ -90,6 +122,7 @@ class OnlinePostModel {
       'userAvatar': userAvatarUrl,
       'content': content,
       'media': media,
+      'record': record,
       'timestamp': timestamp,
       'likeAmount': likeAmount,
       'commentAmount': commentAmount,
@@ -106,9 +139,10 @@ class OnlinePostModel {
       username: map['username'],
       userAvatarUrl: map['userAvatar'],
       content: map['content'],
-      media: (map['media'] as Map<String, dynamic>).map((key, value) =>
+      media: map['media'] != null? (map['media'] as Map<String, dynamic>).map((key, value) =>
           MapEntry(
-              key, OnlineMediaItem.fromMap(value as Map<String, dynamic>))),
+              key, OnlineMediaItem.fromMap(value as Map<String, dynamic>))):null,
+      record: map['record'],
       timestamp: (map['timestamp'] as Timestamp),
       likeAmount: map['likeAmount'] ?? 0,
       commentAmount: map['commentAmount'] ?? 0,

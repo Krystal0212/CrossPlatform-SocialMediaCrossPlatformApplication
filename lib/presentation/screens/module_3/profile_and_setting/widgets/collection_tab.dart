@@ -1,98 +1,129 @@
-
-
 import 'package:socialapp/utils/import.dart';
 
-import 'collection_grid_view.dart';
+import '../cubit/collection_state.dart';
+import '../cubit/collection_cubit.dart';
 
-class CollectionTab extends StatefulWidget {
-  final List<CollectionModel> collections;
+class CollectionTab1 extends StatefulWidget {
+  final String uid;
 
-  const CollectionTab({super.key, required this.collections});
+  const CollectionTab1({super.key, required this.uid});
 
   @override
-  State<CollectionTab> createState() => _CollectionTabState();
+  State<CollectionTab1> createState() => _CollectionTab1State();
 }
 
-class _CollectionTabState extends State<CollectionTab> {
-  late CollectionRepository collectionRepository;
-  late PostRepository postRepository;
-  late Map<String, List<String?>> collectionImagesMap;
+class _CollectionTab1State extends State<CollectionTab1>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    double deviceWidth = MediaQuery.of(context).size.width;
+    return BlocProvider(
+      create: (context) => CollectionPostCubit(widget.uid),
+      child: BlocBuilder<CollectionPostCubit, CollectionPostState>(
+        builder: (context, state) {
+          if (state is CollectionPostLoaded) {
+            return Padding(
+              padding: EdgeInsets.only(top:30, left: deviceWidth * 0.07,
+                  right: deviceWidth * 0.07),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,  // Keep 2 columns for your grid
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                  childAspectRatio: 0.5
+                ),
+                itemCount: state.collections.length,
+                itemBuilder: (context, index) {
+                  CollectionModel collection = state.collections[index];
+                  String? collectionPostImages = collection.presentationUrl;
+                  String? collectionDominantColor = collection.dominantColor;
+                  int shotsNumber = collection.shotsNumber;
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          GridTile(
+                            child: RadiusTile(
+                              presentationUrl: collectionPostImages,
+                              tileDominantColor: collectionDominantColor,
+                            ),
+                          ),
+                          Center(
+                            child: Text(
+                              collection.title,
+                              style: AppTheme.gridItemStyle.copyWith(fontSize: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Text(
+                          '$shotsNumber shots',
+                          style: AppTheme.blackHeaderStyle.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );          }
+          return Center(child: SvgPicture.asset(AppImages.empty));
+        },
+      ),
+    );  }
 
   @override
-  void initState() {
-    super.initState();
-    collectionRepository = CollectionRepositoryImpl();
-    postRepository = PostRepositoryImpl();
-    collectionImagesMap = {};
-    fetchAllCollectionImages();
-  }
+  bool get wantKeepAlive => true;
+}
 
-  Future<void> fetchAllCollectionImages() async {
-    for (var collection in widget.collections) {
-      List<String?> collectionPostImages = await getImagesOfCollection(collection.collectionId);
-      setState(() {
-        collectionImagesMap[collection.collectionId] = collectionPostImages;
-      });
-    }
-  }
+class RadiusTile extends StatelessWidget {
+  final String? presentationUrl;
+  final String? tileDominantColor;
 
-  Future<List<String?>> getImagesOfCollection(String collectionID) async {
-    List<String?> collectionPostImages = [];
-    List<String> collectionPostsID = await collectionRepository.getCollectionPostsID(collectionID);
-    for (String postId in collectionPostsID) {
-      String? imageUrls = await postRepository.getPostImageById(postId);
-      collectionPostImages.add(imageUrls);
-    }
-    return collectionPostImages;
-  }
-
-  SliverGridDelegateWithFixedCrossAxisCount get collectionDelegates =>
-      const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Adjust the number of columns as needed
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 10.0,
-      );
+  const RadiusTile({
+    super.key,
+    required this.presentationUrl,
+    required this.tileDominantColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: collectionDelegates,
-      itemCount: widget.collections.length,
-      itemBuilder: (context, index) {
-        final collection = widget.collections[index];
+    if (presentationUrl == null) {
+      return Center(child: SvgPicture.asset(AppImages.empty));
+    }
 
-        return FutureBuilder<List<String?>>(
-          future: Future.value(
-              collectionImagesMap[collection.collectionId] ?? []), // Ensure non-null value
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+    Color dominantColor = Color(int.parse('0x$tileDominantColor'));
 
-            if (snapshot.hasError) {
-              return const Center(child: Text('Error loading images'));
-            }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double size = constraints.maxWidth;
 
-            List<String?>? collectionPostImages = snapshot.data ?? [];
-
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: GridTile(
-                    child: RadiusContainer(imageUrls: collectionPostImages),
-                  ),
-                ),
-                Center(
-                  child: Text(collection.name, style: AppTheme.gridItemStyle),
-                ),
-              ],
-            );
-          },
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: size,
+            height: size,
+            color: dominantColor,
+            child: CachedNetworkImage(
+              imageUrl: presentationUrl!,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: dominantColor,
+              ),
+              errorWidget: (context, url, error) =>
+                  const ImageErrorPlaceholder(),
+            ),
+          ),
         );
       },
     );

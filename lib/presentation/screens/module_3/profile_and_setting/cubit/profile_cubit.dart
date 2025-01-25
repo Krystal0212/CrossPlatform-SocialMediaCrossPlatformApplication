@@ -2,7 +2,13 @@ import 'package:socialapp/utils/import.dart';
 import 'profile_state.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
-  ProfileCubit() : super(ProfileLoading());
+  ProfileCubit() : super(ProfileInitial()) {
+    _initialize();
+  }
+
+  void _initialize() async {
+    await fetchProfile();
+  }
 
   Future<void> fetchProfile() async {
     emit(ProfileLoading());
@@ -13,26 +19,47 @@ class ProfileCubit extends Cubit<ProfileState> {
           await serviceLocator<UserRepository>().getCurrentUserData();
 
       if (currentUser != null) {
-        final userFollowers = await serviceLocator<UserRepository>()
-            .getUserRelatedData(currentUser.uid, 'followers');
-        final userFollowings = await serviceLocator<UserRepository>()
-            .getUserRelatedData(currentUser.uid, 'followings');
-        final userCollectionIDs = await serviceLocator<UserRepository>()
-            .getUserRelatedData(currentUser.uid, 'collections');
-        final List<CollectionModel> collections =
-            await serviceLocator<CollectionRepository>()
-                .getCollectionsData(userCollectionIDs);
+        Map<String, dynamic> userRelatedMap =
+            await serviceLocator<UserRepository>()
+                .getUserRelatedData(currentUser.uid);
+
+        final List<String> userFollowers = List<String>.from(userRelatedMap['followers'] ?? []);
+        final List<String> userFollowings = List<String>.from(userRelatedMap['followings'] ?? []);
+        final int collectionNumber =
+            (userRelatedMap['collectionsNumber'] as int);
+        final int mediaNumber = (userRelatedMap['mediasNumber'] as int);
+        final int recordNumber = (userRelatedMap['recordsNumber'] as int);
 
         if (userModel != null) {
-          emit(ProfileLoaded(
-              userModel, userFollowers, userFollowings, collections));
+          emit(ProfileLoaded(userModel, userFollowers, userFollowings,
+              mediaNumber, collectionNumber, recordNumber));
         } else {
-          emit(ProfileError("User data not found"));
+          throw "User data not found";
         }
       }
     } catch (e) {
-      emit(ProfileError(e.toString()));
+      if (kDebugMode) {
+        print("Error fetching profile: $e");
+      }
     }
+  }
+
+  Future<List<PreviewAssetPostModel>> getImageUrlsForUserPosts(String userId) async {
+    List<OnlinePostModel>? posts =
+        await serviceLocator<PostRepository>().getPostsByUserId(userId);
+    List<PreviewAssetPostModel> imageUrls = [];
+
+    if (posts != null) {
+      for (OnlinePostModel post in posts) {
+        List<PreviewAssetPostModel> imageUrlsForPost = await serviceLocator<PostRepository>()
+            .getPostImagesByPostId(post.postId);
+        if (imageUrlsForPost.isNotEmpty) {
+          imageUrls.addAll(imageUrlsForPost);
+        }
+      }
+    }
+
+    return imageUrls;
   }
 
   Future<void> updateProfile(UserModel updatedUser) async {
@@ -41,7 +68,9 @@ class ProfileCubit extends Cubit<ProfileState> {
       await serviceLocator<UserRepository>().updateCurrentUserData(updatedUser);
       fetchProfile();
     } catch (e) {
-      emit(ProfileError(e.toString()));
+      emit(ProfileError());
+
+      debugPrint('Failed to update profile: $e');
     }
   }
 
@@ -54,7 +83,9 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(ProfileEmailChanged());
     } catch (e) {
       if (e is FirebaseAuthException) {
-        emit(ProfileError(e.toString()));
+        debugPrint('Failed to update profile\'s email: $e');
+
+        emit(ProfileError());
       } else {
         if (kDebugMode) {
           print(e);
@@ -68,7 +99,8 @@ class ProfileCubit extends Cubit<ProfileState> {
       await serviceLocator<AuthRepository>().signOut();
       emit(ProfileLoggedOut());
     } catch (e) {
-      emit(ProfileError('Logout failed: $e'));
+      debugPrint('Logout failed: $e');
+      emit(ProfileError());
     }
   }
 }

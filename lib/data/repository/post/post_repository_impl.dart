@@ -2,8 +2,11 @@ import 'package:socialapp/utils/import.dart';
 
 class PostRepositoryImpl extends PostRepository {
   @override
-  Future<List<OnlinePostModel>> getPostsData({required bool isOffline, bool skipLocalFetch = false}) {
-    return serviceLocator.get<PostService>().getPostsData(isOffline: isOffline, skipLocalFetch: skipLocalFetch);
+  Future<List<OnlinePostModel>> getPostsData(
+      {required bool isOffline, bool skipLocalFetch = false}) {
+    return serviceLocator
+        .get<PostService>()
+        .getPostsData(isOffline: isOffline, skipLocalFetch: skipLocalFetch);
   }
 
   @override
@@ -13,25 +16,31 @@ class PostRepositoryImpl extends PostRepository {
 
   @override
   Future<void> createAssetPost(
-      String content, List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics)async {
-    return serviceLocator.get<PostService>().createAssetPost(content, imagesAndVideos, topics);
+      String content,
+      List<Map<String, dynamic>> imagesAndVideos,
+      List<TopicModel> topics) async {
+    return serviceLocator
+        .get<PostService>()
+        .createAssetPost(content, imagesAndVideos, topics);
   }
 
   @override
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId) {
     return serviceLocator.get<PostService>().getPostsByUserId(userId);
   }
+
   @override
   Future<List<OnlinePostModel>> loadMorePostsData() {
     return serviceLocator.get<PostService>().loadMorePostsData();
   }
+
   @override
-  Future<void> createSoundPost(String content, String filePath) async{
+  Future<void> createSoundPost(String content, String filePath) async {
     return serviceLocator.get<PostService>().createSoundPost(content, filePath);
   }
 
   @override
-  Future<String?> getPostImageById(String postId) {
-    return serviceLocator.get<PostService>().getPostImageById(postId);
+  Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId) {
+    return serviceLocator.get<PostService>().getPostImagesByPostId(postId);
   }
 }
