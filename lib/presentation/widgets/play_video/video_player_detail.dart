@@ -22,6 +22,8 @@ class VideoPlayerDetailWidget extends StatefulWidget {
 
 class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
   late VideoPlayerController _controller;
+  double ratioThreshold =(kIsWeb)?0.7:1;
+
   final ValueNotifier<bool> isInitialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isTimeout = ValueNotifier<bool>(false);
   final ValueNotifier<double> currentPosition = ValueNotifier<double>(0.0);
@@ -117,6 +119,8 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
     return ValueListenableBuilder<bool>(
       valueListenable: isTimeout,
       builder: (context, timeout, child) {
+
+
         if (timeout) {
           return const ImageErrorPlaceholder();
         }
@@ -155,7 +159,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> {
                       key: const Key('video-player'),
                       onVisibilityChanged: (visibilityInfo) {
                         double visibleFraction = visibilityInfo.visibleFraction;
-                        if (visibleFraction == 1) {
+                        if (visibleFraction >= ratioThreshold) {
                           if (mounted) {
                             _controller.play();
                             if (!isPlaying.value) {

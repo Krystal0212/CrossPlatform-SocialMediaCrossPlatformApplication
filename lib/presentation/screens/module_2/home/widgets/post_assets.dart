@@ -177,7 +177,7 @@ class PostMultipleAsset extends StatelessWidget {
     return InkWell(
       onTap: () {},
       child: (image.type == 'video') ? VideoPlayerDetailWidget(
-        videoUrl: (image as OnlineMediaItem).assetUrl,
+        videoUrl: (image as OnlineMediaItem).imageUrl,
         height: image.height,
         width: image.width, dominantColor: dominantColor,
       ) :
@@ -189,7 +189,7 @@ class PostMultipleAsset extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 child: CachedNetworkImage(
-                    imageUrl: (image as OnlineMediaItem).assetUrl, fit: BoxFit.cover ,
+                    imageUrl: (image as OnlineMediaItem).imageUrl, fit: BoxFit.cover ,
                   errorWidget: (context, url, error) => const ImageErrorPlaceholder(),)
           ),),
           if (otherAssets != null && otherAssets! > 0)
@@ -239,7 +239,7 @@ class PostSimpleAsset extends StatelessWidget {
   Widget build(BuildContext context) {
     final double mediaWidth = postWidth - horizontalPadding * 2;
     // final String imageUrl = isCachedData? (image['uri'] ?? '') : (image['url'] ?? '') ;
-    final String imageUrl = (image as OnlineMediaItem).assetUrl;
+    final String imageUrl = (image as OnlineMediaItem).imageUrl;
 
     final Color dominantColor = Color(int.parse('0x${image.dominantColor}'));
 
@@ -256,7 +256,7 @@ class PostSimpleAsset extends StatelessWidget {
         valueListenable: containerHeight,
         builder: (context, height, child) {
           return (image.type == 'video') ?  VideoPlayerDetailWidget(
-            videoUrl: (image as OnlineMediaItem).assetUrl,
+            videoUrl: (image as OnlineMediaItem).imageUrl,
             height: height,
             width: double.infinity, dominantColor: dominantColor,
           ):InkWell(

@@ -55,7 +55,7 @@ class ExploreCubit extends TabCubit {
   Future<void> initialLoadPosts({required bool isOffline}) async {
     emit(TabLoading());
     try {
-      final posts = await postRepository.getPostsData(isOffline: isOffline);
+      final posts = await postRepository.getExplorePostsData(isOffline: isOffline);
       if (isClosed) return;
       emit(TabLoaded(posts));
     } catch (e) {

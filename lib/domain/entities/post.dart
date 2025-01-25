@@ -242,15 +242,17 @@ abstract class MediaItemBase {
 }
 
 class OnlineMediaItem extends MediaItemBase {
-  final String assetUrl;
+  final String imageUrl;
+  final String? thumbnailUrl;
 
   OnlineMediaItem({
     required super.dominantColor,
     required super.height,
     required super.width,
     required super.type,
-    required this.assetUrl,
+    required this.imageUrl,
     required super.isNSFW,
+    required this.thumbnailUrl,
   });
 
   @override
@@ -260,8 +262,9 @@ class OnlineMediaItem extends MediaItemBase {
       'height': height,
       'width': width,
       'type': type,
-      'imageUrl': assetUrl,
-      'isNSFW': isNSFW
+      'imageUrl': imageUrl,
+      'isNSFW': isNSFW,
+      'thumbnailUrl': thumbnailUrl,
     };
   }
 
@@ -271,8 +274,9 @@ class OnlineMediaItem extends MediaItemBase {
       height: map['height'].toDouble(),
       width: map['width'].toDouble(),
       type: map['type'],
-      assetUrl: map['imageUrl'],
+      imageUrl: map['imageUrl'],
       isNSFW: map['isNSFW'],
+      thumbnailUrl: map['thumbnailUrl'],
     );
   }
 }

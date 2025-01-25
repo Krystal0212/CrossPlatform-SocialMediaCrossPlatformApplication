@@ -14,18 +14,24 @@ class WebsiteHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>HomeCubit(),
+      create: (context) => HomeCubit(),
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
               create: (context) => ExploreCubit(
-                  serviceLocator<PostRepository>(), context.read<HomeCubit>(), ViewMode.explore)),
+                  serviceLocator<PostRepository>(),
+                  context.read<HomeCubit>(),
+                  ViewMode.explore)),
           BlocProvider(
               create: (context) => TrendingCubit(
-                  serviceLocator<PostRepository>(), context.read<HomeCubit>(), ViewMode.trending)),
+                  serviceLocator<PostRepository>(),
+                  context.read<HomeCubit>(),
+                  ViewMode.trending)),
           BlocProvider(
               create: (context) => FollowingCubit(
-                  serviceLocator<PostRepository>(), context.read<HomeCubit>(), ViewMode.following)),
+                  serviceLocator<PostRepository>(),
+                  context.read<HomeCubit>(),
+                  ViewMode.following)),
         ],
         child: const WebsiteHomeBase(),
       ),
@@ -68,7 +74,8 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
 
     if (isLoading.value) {
       try {
-        final isUserSignedIn = await context.read<HomeCubit>().checkCurrentUser();
+        final isUserSignedIn =
+            await context.read<HomeCubit>().checkCurrentUser();
         if (isUserSignedIn) {
           if (!context.mounted) return;
           final currentUser = context.read<HomeCubit>().getCurrentUser();
@@ -101,10 +108,12 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) async {
-      },
+      onPopInvokedWithResult: (bool didPop, Object? result) async {},
       child: HomePropertiesProvider(
-        homeProperties: HomeProperties(currentUserNotifier: currentUserNotifier, user: currentUserNotifier.value, listBodyWidth: listBodyWidth),
+        homeProperties: HomeProperties(
+            currentUserNotifier: currentUserNotifier,
+            user: currentUserNotifier.value,
+            listBodyWidth: listBodyWidth),
         child: ValueListenableBuilder<bool>(
           valueListenable: isLoading,
           builder: (context, isLoadingValue, child) {
@@ -140,12 +149,11 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return PostListView(
                                 posts: state.posts,
                                 viewMode: ViewMode.explore,
-                                tabCubit: BlocProvider.of<ExploreCubit>(context),
+                                tabCubit:
+                                    BlocProvider.of<ExploreCubit>(context),
                               );
-                            } else if (state is TabError) {
-                              return Center(child: Text(state.error));
-                            } else {
-                              return const Center(child: Text('Fetching data'));
+                            }  else {
+                              return NoMorePostsPlaceholder(width: listBodyWidth,);
                             }
                           },
                         ),
@@ -159,12 +167,13 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return PostListView(
                                 posts: state.posts,
                                 viewMode: ViewMode.trending,
-                                tabCubit: BlocProvider.of<TrendingCubit>(context),
+                                tabCubit:
+                                    BlocProvider.of<TrendingCubit>(context),
                               );
-                            } else if (state is TabError) {
-                              return Center(child: Text(state.error));
                             } else {
-                              return const Center(child: Text('Fetching data'));
+                              return NoMorePostsPlaceholder(
+                                width: listBodyWidth,
+                              );
                             }
                           },
                         ),
@@ -174,19 +183,21 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                             if (state is TabLoading) {
                               return const Center(
                                   child: CircularProgressIndicator());
-                            }else if(state is TabNotSignIn){
-                              return SignInPagePlaceholder(width: listBodyWidth,);
-                            }
-                            else if (state is TabLoaded) {
+                            } else if (state is TabNotSignIn) {
+                              return SignInPagePlaceholder(
+                                width: listBodyWidth,
+                              );
+                            } else if (state is TabLoaded) {
                               return PostListView(
                                 posts: state.posts,
                                 viewMode: ViewMode.following,
-                                tabCubit: BlocProvider.of<FollowingCubit>(context),
+                                tabCubit:
+                                    BlocProvider.of<FollowingCubit>(context),
                               );
-                            } else if (state is TabError) {
-                              return Center(child: Text(state.error));
                             } else {
-                              return const Center(child: Text('Fetching data'));
+                              return NoMorePostsPlaceholder(
+                                width: listBodyWidth,
+                              );
                             }
                           },
                         ),

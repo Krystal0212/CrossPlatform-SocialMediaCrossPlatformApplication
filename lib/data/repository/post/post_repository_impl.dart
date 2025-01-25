@@ -10,6 +10,14 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
+  Future<List<OnlinePostModel>> getExplorePostsData(
+      {required bool isOffline, bool skipLocalFetch = false}) {
+    return serviceLocator
+        .get<PostService>()
+        .getExplorePostsData(isOffline: isOffline);
+  }
+
+  @override
   Future<List<CommentModel>?> getCommentPost(OnlinePostModel post) {
     return serviceLocator.get<PostService>().getCommentPost(post);
   }

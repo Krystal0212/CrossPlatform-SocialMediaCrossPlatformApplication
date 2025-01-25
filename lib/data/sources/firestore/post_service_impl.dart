@@ -1,7 +1,11 @@
+// ignore_for_file: unused_local_variable, unused_element
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:get_thumbnail_video/index.dart';
+import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:socialapp/utils/import.dart';
-import 'package:universal_html/html.dart' as html;
 import 'package:path/path.dart' as p;
+import 'package:universal_html/html.dart' as html;
 
 abstract class PostService {
   Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
@@ -9,6 +13,9 @@ abstract class PostService {
   Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId);
 
   Future<List<OnlinePostModel>> getPostsData(
+      {required bool isOffline, bool skipLocalFetch = false});
+
+  Future<List<OnlinePostModel>> getExplorePostsData(
       {required bool isOffline, bool skipLocalFetch = false});
 
   Future<List<OnlinePostModel>> loadMorePostsData();
@@ -48,6 +55,18 @@ class PostServiceImpl extends PostService
 
   Query<Object?> get _postsQuery =>
       _postRef.orderBy('timestamp', descending: true);
+
+  CollectionReference _usersFollowersRef(String uid) {
+    return _usersRef.doc(uid).collection('followers');
+  }
+
+  CollectionReference _usersFollowingsRef(String uid) {
+    return _usersRef.doc(uid).collection('followings');
+  }
+
+  CollectionReference _usersCollectionsRef(String uid) {
+    return _usersRef.doc(uid).collection('collections');
+  }
 
   // ToDo: Offline Service Functions
 
@@ -208,6 +227,110 @@ class PostServiceImpl extends PostService
       return posts;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<List<OnlinePostModel>> getExplorePostsData(
+      {required bool isOffline, bool skipLocalFetch = false}) async {
+    try {
+      List<QueryDocumentSnapshot<Object?>> topicPosts = [];
+      List<QueryDocumentSnapshot<Object?>> followingPosts = [];
+
+      if (currentUser != null) {
+        DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
+        Map<String, dynamic> userTopicRefs =
+        userTopics['preferred-topics'] as Map<String, dynamic>;
+        List topicIds = userTopicRefs.values.toList();
+        final topicRefs = topicIds.map((id) {
+          return _topicRef.doc(id);
+        }).toList();
+        QuerySnapshot topicPostsQuery = await _postRef
+            .where('topicRefs', arrayContainsAny: topicRefs)
+            .orderBy('timestamp', descending: true)
+            .limit(10)
+            .get();
+
+        topicPosts = topicPostsQuery.docs;
+
+
+        QuerySnapshot followingsRef =
+        await _usersFollowingsRef(currentUserId).get();
+        List<String> followingIds = [];
+        if (followingsRef.docs.isNotEmpty) {
+          followingIds = followingsRef.docs.map((doc) => doc.id).toList();
+        }
+        final userRefs = followingIds.map((id) {
+          return _usersRef.doc(id);
+        }).toList();
+        final QuerySnapshot followingPostsQuery = await _postRef
+            .where('userRef', whereIn: userRefs)
+            .orderBy('timestamp', descending: true)
+            .limit(10)
+            .get();
+
+        followingPosts = followingPostsQuery.docs;
+      }
+      final randomPostsQuery =
+          await _postRef.orderBy('timestamp', descending: true).limit(5).get();
+      final List<QueryDocumentSnapshot<Object?>> randomPosts =
+          randomPostsQuery.docs;
+
+      final List<QueryDocumentSnapshot<Object?>> allPosts = [
+        ...topicPosts,
+        ...followingPosts,
+        ...randomPosts,
+      ];
+
+      final Set<String> uniquePostIds = {};
+      final List<QueryDocumentSnapshot<Object?>> uniquePosts = [];
+
+      for (var post in allPosts) {
+        if (!uniquePostIds.contains(post.id)) {
+          uniquePostIds.add(post.id);
+          uniquePosts.add(post);
+        }
+      }
+
+      DocumentReference userRef;
+      Future<DocumentSnapshot<Object?>> userData;
+      String username = '';
+      String userAvatar = '';
+      List<String> comments, likes;
+      List<OnlinePostModel> posts = [];
+
+      for (QueryDocumentSnapshot document in uniquePosts) {
+        comments = await _fetchSubCollection(document, 'comments');
+        likes = await _fetchSubCollection(document, 'likes');
+
+        userRef = document['userRef'];
+        userData = userRef.get();
+
+        await userData.then((value) {
+          username = value['name'];
+          userAvatar = value['avatar'];
+        });
+
+        Map<String, dynamic> documentMap =
+            document.data() as Map<String, dynamic>;
+
+        documentMap['postId'] = document.id;
+        documentMap['username'] = username;
+        documentMap['userAvatar'] = userAvatar;
+        documentMap['comments'] = comments.toSet();
+        documentMap['likes'] = likes.toSet();
+
+        OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+
+        posts.add(post);
+      }
+
+      return posts;
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error during get posts for user: $error');
+      }
+      return [];
     }
   }
 
@@ -595,30 +718,75 @@ class PostServiceImpl extends PostService
               height: asset['height'].toDouble(),
               width: asset['width'].toDouble(),
               type: 'image',
-              assetUrl: assetUrl,
-              isNSFW: await classifyNSFW(assetData));
+              imageUrl: assetUrl,
+              isNSFW: await classifyNSFW(assetData),
+              thumbnailUrl: null);
         } else if (asset['type'] == 'video') {
-          Uint8List videoDate =
-              await compressVideo(asset['data'], asset['index'].toString()) ??
-                  asset['data'];
+          Uint8List? thumbnailData;
+          if (kIsWeb) {
+            final blob = html.Blob([asset['data']]);
+            final videoUrl = html.Url.createObjectUrlFromBlob(blob);
 
-          final String videoUrl =
-              await _uploadVideoAndGetUrl(videoDate, newPostRef, mediaKey);
+            thumbnailData = await (await VideoThumbnail.thumbnailFile(
+              video: videoUrl, // Use the Blob URL here
+              imageFormat: ImageFormat.WEBP,
+              maxHeight: 800, // Specify the height of the thumbnail
+              quality: 80,
+            ))
+                .readAsBytes();
+          } else {
+            try {
+              final Directory directory = await getTemporaryDirectory();
+              final String filePath = '${directory.path}/temp_file.mp4';
 
-          mediaMap[mediaKey] = OnlineMediaItem(
-            dominantColor: 'ff000000',
-            // Default color for videos
-            height: asset['height'].toDouble(),
-            width: asset['width'].toDouble(),
-            type: 'video',
-            assetUrl: videoUrl,
-            isNSFW: false, // You can add a video NSFW classifier if needed
-          );
+              final file = File(filePath);
+              await file.writeAsBytes(asset['data']);
+              final Uint8List thumbnailData =
+                  await VideoThumbnail.thumbnailData(
+                video: filePath,
+                imageFormat: ImageFormat.JPEG,
+                maxWidth: 1000,
+                quality: 50,
+              );
+            } catch (e) {
+              if (kDebugMode) {
+                print("Error getting temporary directory: $e");
+              }
+            }
+          }
+
+          if (thumbnailData != null) {
+            final String dominantColor = (kIsWeb)
+                ? 'ff000000'
+                : await getDominantColorFromImage(thumbnailData);
+            Uint8List videoDate = kIsWeb
+                ? asset['data']
+                : await compressVideo(asset['data'], asset['index'].toString());
+            ;
+
+            final String thumbnailUrl = await _uploadImageAndGetUrl(
+                thumbnailData, newPostRef, mediaKey);
+            final String videoUrl =
+                await _uploadVideoAndGetUrl(videoDate, newPostRef, mediaKey);
+
+            mediaMap[mediaKey] = OnlineMediaItem(
+              dominantColor: dominantColor,
+              // Default color for videos
+              height: asset['height'].toDouble(),
+              width: asset['width'].toDouble(),
+              type: 'video',
+              imageUrl: videoUrl,
+              isNSFW: await classifyNSFW(thumbnailData),
+              thumbnailUrl: thumbnailUrl,
+            );
+
+            await newPostRef.update({
+              'media.$mediaKey': mediaMap[mediaKey]!.toMap(),
+            });
+          } else {
+            throw Exception('Thumbnail data is null');
+          }
         }
-
-        await newPostRef.update({
-          'media.$mediaKey': mediaMap[mediaKey]!.toMap(),
-        });
       }
     } catch (error) {
       if (kDebugMode) {

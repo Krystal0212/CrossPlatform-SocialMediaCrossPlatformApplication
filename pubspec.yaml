@@ -82,6 +82,7 @@ dependencies:
   record: ^5.2.0
   just_audio: ^0.9.43
   audio_waveforms: ^1.2.0
+  get_thumbnail_video: ^0.7.3
 #  microphone: ^0.1.0
 #  just_audio_web: ^0.4.13
 #  flutter_file_compressor: ^0.0.7
