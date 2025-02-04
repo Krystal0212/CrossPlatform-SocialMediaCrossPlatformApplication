@@ -52,33 +52,33 @@ class CommentScreen extends StatelessWidget {
               ),
             ),
 
-            Expanded(
-              child: FutureBuilder(
-                future: serviceLocator<PostRepository>().getCommentPost(post),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No comments available'));
-                  }
-                  
-                  return ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: SingleComment(comment: snapshot.data![index]),
-                      );
-                    }
-                  );
-                }
-              )
-            )
+            // Expanded(
+            //   child: FutureBuilder(
+            //     future: serviceLocator<PostRepository>().getCommentOfPost(post),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.connectionState == ConnectionState.waiting) {
+            //         return const Center(child: CircularProgressIndicator());
+            //       }
+            //
+            //       if (snapshot.hasError) {
+            //         return Center(child: Text('Error: ${snapshot.error}'));
+            //       }
+            //
+            //       if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            //         return const Center(child: Text('No comments available'));
+            //       }
+            //
+            //       return ListView.builder(
+            //         itemCount: snapshot.data!.length,
+            //         itemBuilder: (context, index) {
+            //           return ListTile(
+            //             title: SingleComment(comment: snapshot.data![index]),
+            //           );
+            //         }
+            //       );
+            //     }
+            //   )
+            // )
           ],
         )
       )

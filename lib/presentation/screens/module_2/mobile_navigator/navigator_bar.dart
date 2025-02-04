@@ -1,10 +1,6 @@
-// import 'package:custom_navigation_bar/custom_navigation_bar.dart';
-
-import 'package:socialapp/presentation/screens/module_2/discover/discover_screen.dart';
-import 'package:socialapp/presentation/screens/module_2/home/mobile_home_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
-import '../new_post/mobile_new_post_screen.dart';
+import 'providers/mobile_navigator_provider.dart';
 
 class CustomNavigatorBar extends StatefulWidget {
   const CustomNavigatorBar({super.key});
@@ -21,108 +17,120 @@ class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
     const DiscoverScreen(),
     const NotificationScreen(),
     const ProfileScreen(),
-    // NewPostScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBody: true,
-        resizeToAvoidBottomInset: false,
-        // body: _screens[_screenIndex],
-        body: IndexedStack(
-          index: _screenIndex,
-          children: _screens,
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: AppColors.lavenderBlueShadow,
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return NewPostScreen(
-                parentContext: context,
-              );
-            }));
-            // context.go('/new-post');
+    return MobileNavigatorPropertiesProvider(
+      mobileNavigatorProperties: MobileNavigatorProperties(
+          navigateToCurrentUserProfile: () {
+            setState(() {
+              _screenIndex = 3;
+            });
           },
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(30.0)),
+          navigateToOtherUserProfile: (String userId) {
+             Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+               return UserViewingProfileScreen(userId: userId,);
+             }));
+          }),
+      child: Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBody: true,
+          resizeToAvoidBottomInset: false,
+          body: IndexedStack(
+            index: _screenIndex,
+            children: _screens,
           ),
-          child: const Icon(
-            Icons.add_box,
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: AppColors.lavenderBlueShadow,
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return NewPostScreen(
+                  parentContext: context,
+                );
+              }));
+              // context.go('/new-post');
+            },
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+            ),
+            child: const Icon(
+              Icons.add_box,
+              color: AppColors.white,
+            ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          bottomNavigationBar: BottomAppBar(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            height: 76,
             color: AppColors.white,
-          ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: BottomAppBar(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          height: 76,
-          color: AppColors.white,
-          shape: const CircularNotchedRectangle(),
-          // elevation: 0,
-          notchMargin: 4,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: IconButton(
-                  icon: Icon(Icons.home,
-                      size: 20,
-                      color: _screenIndex == 0
-                          ? AppColors.lavenderBlueShadow
-                          : AppColors.erieBlack.withOpacity(0.4)),
-                  onPressed: () {
-                    setState(() {
-                      _screenIndex = 0;
-                    });
-                  },
+            shape: const CircularNotchedRectangle(),
+            // elevation: 0,
+            notchMargin: 4,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.home,
+                        size: 20,
+                        color: _screenIndex == 0
+                            ? AppColors.lavenderBlueShadow
+                            : AppColors.erieBlack.withOpacity(0.4)),
+                    onPressed: () {
+                      setState(() {
+                        _screenIndex = 0;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              Expanded(
-                child: IconButton(
-                  icon: Icon(Icons.category_sharp,
-                      size: 20,
-                      color: _screenIndex == 1
-                          ? AppColors.lavenderBlueShadow
-                          : AppColors.erieBlack.withOpacity(0.4)),
-                  onPressed: () {
-                    setState(() {
-                      _screenIndex = 1;
-                    });
-                  },
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.category_sharp,
+                        size: 20,
+                        color: _screenIndex == 1
+                            ? AppColors.lavenderBlueShadow
+                            : AppColors.erieBlack.withOpacity(0.4)),
+                    onPressed: () {
+                      setState(() {
+                        _screenIndex = 1;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Expanded(
-                child: IconButton(
-                  icon: Icon(Icons.notifications,
-                      size: 20,
-                      color: _screenIndex == 2
-                          ? AppColors.lavenderBlueShadow
-                          : AppColors.erieBlack.withOpacity(0.4)),
-                  onPressed: () {
-                    setState(() {
-                      _screenIndex = 2;
-                    });
-                  },
+                const Spacer(),
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.notifications,
+                        size: 20,
+                        color: _screenIndex == 2
+                            ? AppColors.lavenderBlueShadow
+                            : AppColors.erieBlack.withOpacity(0.4)),
+                    onPressed: () {
+                      setState(() {
+                        _screenIndex = 2;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              Expanded(
-                child: IconButton(
-                  icon: Icon(Icons.person,
-                      size: 20,
-                      color: _screenIndex == 3
-                          ? AppColors.lavenderBlueShadow
-                          : AppColors.erieBlack.withOpacity(0.4)),
-                  onPressed: () {
-                    setState(() {
-                      _screenIndex = 3;
-                    });
-                  },
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.person,
+                        size: 20,
+                        color: _screenIndex == 3
+                            ? AppColors.lavenderBlueShadow
+                            : AppColors.erieBlack.withOpacity(0.4)),
+                    onPressed: () {
+                      setState(() {
+                        _screenIndex = 3;
+                      });
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ));
+              ],
+            ),
+          )),
+    );
   }
 }

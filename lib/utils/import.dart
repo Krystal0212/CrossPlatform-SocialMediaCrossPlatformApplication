@@ -39,7 +39,9 @@ export 'package:cloud_firestore/cloud_firestore.dart'
         AggregateQuerySnapshot,
         FieldValue,
         QueryDocumentSnapshot,
-        SetOptions;
+        SetOptions,
+        GetOptions,
+        Source;
 export 'package:image/image.dart' show decodeImage, copyResize, encodeJpg;
 export 'package:like_button/like_button.dart';
 export 'package:shimmer/shimmer.dart';
@@ -69,21 +71,21 @@ export 'package:socialapp/utils/mixin/methods/flash_message.dart';
 
 
 // Data and Repositories
-export 'package:socialapp/data/models/auth/sign_in_user_req.dart';
-export 'package:socialapp/data/models/auth/create_user_req.dart';
-
 export 'package:socialapp/data/repository/collection/collection_repository_impl.dart';
 export 'package:socialapp/data/repository/post/post_repository_impl.dart';
 export 'package:socialapp/data/repository/topic/topic_repository_impl.dart';
 export 'package:socialapp/data/repository/auth/auth_repository_impl.dart';
 export 'package:socialapp/data/repository/user/user_repository_impl.dart';
 export 'package:socialapp/data/repository/deep_link/deep_link_repository_impl.dart';
+export 'package:socialapp/data/repository/post/comment_repository_impl.dart';
+
 export 'package:socialapp/data/sources/auth/auth_firebase_service.dart';
 export 'package:socialapp/data/sources/firestore/firestore_service.dart';
 export 'package:socialapp/data/sources/firestore/user_service_impl.dart';
 export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/post_service_impl.dart';
+export 'package:socialapp/data/sources/firestore/comment_service_impl.dart';
 
 // Domain
 export 'package:socialapp/domain/repository/post/post_repository.dart';
@@ -92,6 +94,7 @@ export 'package:socialapp/domain/repository/auth/auth_repository.dart';
 export 'package:socialapp/domain/repository/collection/collection_repository.dart';
 export 'package:socialapp/domain/repository/user/user_repository.dart';
 export 'package:socialapp/domain/repository/deep_link/deep_link_repository.dart';
+export 'package:socialapp/domain/repository/post/comment_repository.dart';
 export 'package:socialapp/domain/entities/user.dart';
 export 'package:socialapp/domain/entities/collection.dart';
 export 'package:socialapp/domain/entities/topic.dart';

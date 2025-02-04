@@ -80,7 +80,6 @@ class _ProfilePartState extends State<ProfilePart>
 
   @override
   Widget build(BuildContext context) {
-    // double deviceHeight = MediaQuery.of(context).size.height;
     double deviceWidth = MediaQuery.of(context).size.width;
     return BlocProvider(
       create: (context) => ProfileCubit(),
@@ -140,11 +139,13 @@ class _ProfilePartState extends State<ProfilePart>
                                         Align(
                                           alignment: Alignment.centerRight,
                                           child: Padding(
-                                            padding: const EdgeInsets.only( right: 56.0),
+                                            padding: const EdgeInsets.only(
+                                                right: 56.0),
                                             child: IconButton(
                                               onPressed: () {
                                                 if (!isDrawerOpen) {
-                                                  toggleContainer(); // Tap anywhere to enlarge when smaller
+                                                  // Tap anywhere to enlarge when smaller
+                                                  toggleContainer();
                                                 }
                                               },
                                               icon: SvgPicture.asset(
@@ -283,7 +284,6 @@ class _ProfilePartState extends State<ProfilePart>
                                           : '0 Collections',
                                       onTabSelected: _onTabSelected,
                                     ),
-
                                   ],
                                 );
                               }),
@@ -297,21 +297,29 @@ class _ProfilePartState extends State<ProfilePart>
                 body: IgnorePointer(
                   ignoring: isDrawerOpen,
                   child: Padding(
-                    padding: EdgeInsets.only(
-                        top: 8,
-                        bottom: deviceWidth * 0.15),
+                    padding:
+                        EdgeInsets.only(top: 8, bottom: deviceWidth * 0.15),
                     child: BlocBuilder<ProfileCubit, ProfileState>(
                         builder: (context, state) {
                       return TabBarView(
                         controller: _tabController,
                         children: [
-                          const ShotTab1(),
+                          if(state is ProfileLoaded)
+                          ShotTab1(
+                            userId: state.userModel.id ?? ''
+                          ) else
+                            const Center(
+                                child: CircularProgressIndicator(
+                                    color: AppColors.iris)),
                           // const ShotTab1(),
+                          if(state is ProfileLoaded)
                           CollectionTab1(
-                            uid: (state is ProfileLoaded)
-                                ? (state.userModel.id ?? '')
-                                : '',
-                          ),
+                            userId:  state.userModel.id ?? ''
+                          )
+                          else
+                            const Center(
+                                child: CircularProgressIndicator(
+                                    color: AppColors.iris)),
                         ],
                       );
                     }),

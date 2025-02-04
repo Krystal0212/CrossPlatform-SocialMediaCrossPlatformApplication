@@ -2,15 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:socialapp/domain/repository/auth/auth_repository.dart';
 
 import '../../../service_locator.dart';
-import '../../models/auth/create_user_req.dart';
-import '../../models/auth/sign_in_user_req.dart';
 import '../../sources/auth/auth_firebase_service.dart';
 
 class AuthRepositoryImpl extends AuthRepository {
   @override
-  Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq) async {
+  Future<void> signInWithEmailAndPassword(String email, String password) async {
     return await serviceLocator<AuthFirebaseService>()
-        .signInWithEmailAndPassword(signInUserReq);
+        .signInWithEmailAndPassword(email,password);
   }
 
   @override
@@ -24,8 +22,11 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  Future<void> signUp(SignUpUserReq signUpUserReq) async {
-    return await serviceLocator<AuthFirebaseService>().signUp(signUpUserReq);
+  Future<void> signUp(
+    String email,
+    String password,
+  ) async {
+    return await serviceLocator<AuthFirebaseService>().signUp(email, password);
   }
 
   @override

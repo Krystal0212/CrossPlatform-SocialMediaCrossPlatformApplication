@@ -11,5 +11,7 @@ abstract class UserRepository {
 
   Future<Map<String, dynamic>> getUserRelatedData(String uid);
 
+  Future<void> followOrUnfollowUser(String uid, bool? isFollow);
+
   Future<String>? uploadAvatar(File image, String uid);
 }

@@ -1,7 +1,6 @@
 import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.dart';
 import 'package:socialapp/presentation/screens/module_2/home/providers/home_properties_provider.dart';
 import 'package:socialapp/utils/import.dart';
-import 'package:socialapp/utils/mixin/methods/flash_message.dart';
 
 class PostBottom extends StatefulWidget {
   final OnlinePostModel post;
@@ -18,8 +17,6 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
   late final ValueNotifier<int> likeAmountNotifier;
 
   late int commentAmount, likeAmount;
-
-  final Map<String, Set<String>> postLikesChanges = {};
 
   @override
   void initState() {
@@ -55,11 +52,11 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
     if (isUserLiked.value) {
       widget.post.likes.remove(userId);
       likeAmountNotifier.value -= 1;
-      context.read<HomeCubit>().removePostLike(postId, userId); // Notify Cubit
+      context.read<HomeCubit>().removePostLike(postId);
     } else {
       widget.post.likes.add(userId);
       likeAmountNotifier.value += 1;
-      context.read<HomeCubit>().addPostLike(postId, userId); // Notify Cubit
+      context.read<HomeCubit>().addPostLike(postId);
     }
 
     isUserLiked.value = !isUserLiked.value;
@@ -72,6 +69,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          if(widget.post.media!= null)
           IconButton(
             icon: SvgPicture.asset(AppIcons.addToCollection),
             onPressed: () {

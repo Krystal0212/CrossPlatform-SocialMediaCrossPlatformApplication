@@ -9,13 +9,11 @@ import 'post_assets.dart';
 
 class PostListView extends StatefulWidget {
   final List<OnlinePostModel> posts;
-  final ViewMode viewMode;
   final TabCubit tabCubit;
 
   const PostListView({
     super.key,
     required this.posts,
-    required this.viewMode,
     required this.tabCubit,
   });
 
@@ -49,18 +47,17 @@ class _PostListViewState extends State<PostListView>
 
   void loadMore() async {
     if (scrollController.offset >=
-        scrollController.position.maxScrollExtent - 100 &&
+            scrollController.position.maxScrollExtent - 100 &&
         !scrollController.position.outOfRange &&
         !isLoadingNotifier.value &&
         canBeFetched) {
-      // Set loading state to true
       isLoadingNotifier.value = true;
 
       try {
-        List<OnlinePostModel> morePosts =
-        await widget.tabCubit.loadMorePosts();
+        List<OnlinePostModel> morePosts = await widget.tabCubit.loadMorePosts();
         if (morePosts.isNotEmpty) {
-          postListNotifier.value = [...postListNotifier.value, ...morePosts];
+          postListNotifier.value =
+              ([...postListNotifier.value, ...morePosts]).toSet().toList();
         } else {
           canBeFetched = false; // No more data available
         }
@@ -113,6 +110,19 @@ class _PostListViewState extends State<PostListView>
             return ValueListenableBuilder<bool>(
               valueListenable: isLoadingNotifier,
               builder: (context, isLoading, child) {
+                if (postList.isEmpty) {
+                  return ListView(children: [
+                    Padding(
+                      padding: AppTheme.homeListPostPaddingEdgeInsets(
+                          isCompactView
+                              ? smallHorizontalPadding
+                              : horizontalPadding),
+                      child: NoMorePostsPlaceholder(
+                        width: postWidth,
+                      ),
+                    ),
+                  ]);
+                }
                 return ListView.builder(
                   controller: scrollController,
                   itemCount: postList.length +
@@ -125,11 +135,28 @@ class _PostListViewState extends State<PostListView>
                         return const Padding(
                           padding: EdgeInsets.all(16.0),
                           child: Center(
-                            child: CircularProgressIndicator(color: AppColors.iris,),
+                            child: CircularProgressIndicator(
+                              color: AppColors.iris,
+                            ),
                           ),
                         );
                       } else if (!canBeFetched) {
-                        return  NoMorePostsPlaceholder(width: postWidth,);
+                        return Column(
+                          children: [
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Padding(
+                              padding: AppTheme.homeListPostPaddingEdgeInsets(
+                                  isCompactView
+                                      ? smallHorizontalPadding
+                                      : horizontalPadding),
+                              child: NoMorePostsPlaceholder(
+                                width: postWidth,
+                              ),
+                            ),
+                          ],
+                        );
                       }
                     }
 

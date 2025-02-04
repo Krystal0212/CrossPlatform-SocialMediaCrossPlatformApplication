@@ -26,17 +26,12 @@ class _SettingPartState extends State<SettingPart> {
       alignment: Alignment.centerLeft,
       child: Container(
         padding: EdgeInsets.only(top: deviceHeight * 0.15),
-        width: deviceWidth * 0.66,
+        width: deviceWidth * 0.45,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DrawerItem(title: AppStrings.email, onPressed: () {}),
-            DrawerItem(title: AppStrings.instagram, onPressed: () {}),
-            DrawerItem(title: AppStrings.twitter, onPressed: () {}),
-            DrawerItem(title: AppStrings.website, onPressed: () {}),
-            DrawerItem(title: AppStrings.paypal, onPressed: () {}),
             DrawerItem(title: AppStrings.changePassword, onPressed: () {}),
-            DrawerItem(title: AppStrings.aboutIClick, onPressed: () {}),
+            DrawerItem(title: AppStrings.aboutZineround, onPressed: () {}),
             DrawerItem(
               title: AppStrings.termPrivacy,
               onPressed: () {},

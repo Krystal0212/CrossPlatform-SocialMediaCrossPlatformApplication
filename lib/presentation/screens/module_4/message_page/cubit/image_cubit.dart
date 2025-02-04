@@ -17,10 +17,6 @@ class ChatSendCubit extends Cubit<ChatSendState> with ClassificationMixin {
     emit(ChatSendInInitial());
   }
 
-void reset() {
-  emit(ChatSendInInitial());
-}
-
 // Future<bool> classifyNSFW(Uint8List? image) async {
 //   if (image == null) return false;
 //   try {

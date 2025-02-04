@@ -18,20 +18,24 @@ class WebsiteHomeScreen extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-              create: (context) => ExploreCubit(
-                  serviceLocator<PostRepository>(),
-                  context.read<HomeCubit>(),
-                  ViewMode.explore)),
+              create: (context) =>
+                  ExploreCubit(
+                      serviceLocator<PostRepository>(),
+                      context.read<HomeCubit>(),
+                      ViewMode.explore
+                  )),
           BlocProvider(
-              create: (context) => TrendingCubit(
-                  serviceLocator<PostRepository>(),
-                  context.read<HomeCubit>(),
-                  ViewMode.trending)),
+              create: (context) =>
+                  TrendingCubit(
+                      serviceLocator<PostRepository>(),
+                      context.read<HomeCubit>(),
+                      ViewMode.trending)),
           BlocProvider(
-              create: (context) => FollowingCubit(
-                  serviceLocator<PostRepository>(),
-                  context.read<HomeCubit>(),
-                  ViewMode.following)),
+              create: (context) =>
+                  FollowingCubit(
+                      serviceLocator<PostRepository>(),
+                      context.read<HomeCubit>(),
+                      ViewMode.following)),
         ],
         child: const WebsiteHomeBase(),
       ),
@@ -67,15 +71,21 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    deviceWidth = MediaQuery.of(context).size.width;
-    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    deviceHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
     isCompactView = (deviceWidth < 530);
     listBodyWidth = isCompactView ? 490 : 800;
 
     if (isLoading.value) {
       try {
         final isUserSignedIn =
-            await context.read<HomeCubit>().checkCurrentUser();
+        await context.read<HomeCubit>().checkCurrentUser();
         if (isUserSignedIn) {
           if (!context.mounted) return;
           final currentUser = context.read<HomeCubit>().getCurrentUser();
@@ -109,22 +119,22 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {},
-      child: HomePropertiesProvider(
-        homeProperties: HomeProperties(
-            currentUserNotifier: currentUserNotifier,
-            user: currentUserNotifier.value,
-            listBodyWidth: listBodyWidth),
-        child: ValueListenableBuilder<bool>(
-          valueListenable: isLoading,
-          builder: (context, isLoadingValue, child) {
-            if (isLoadingValue) {
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-            return Scaffold(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isLoading,
+        builder: (context, isLoadingValue, child) {
+          if (isLoadingValue) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          return HomePropertiesProvider(
+            homeProperties: HomeProperties(
+                currentUserNotifier: currentUserNotifier,
+                user: currentUserNotifier.value,
+                listBodyWidth: listBodyWidth),
+            child: Scaffold(
               appBar: HomeScreenAppBar(
                 deviceWidth: deviceWidth,
                 currentUserNotifier: currentUserNotifier,
@@ -148,12 +158,12 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                             } else if (state is TabLoaded) {
                               return PostListView(
                                 posts: state.posts,
-                                viewMode: ViewMode.explore,
                                 tabCubit:
-                                    BlocProvider.of<ExploreCubit>(context),
+                                BlocProvider.of<ExploreCubit>(context),
                               );
-                            }  else {
-                              return NoMorePostsPlaceholder(width: listBodyWidth,);
+                            } else {
+                              return NoMorePostsPlaceholder(
+                                width: listBodyWidth,);
                             }
                           },
                         ),
@@ -166,9 +176,8 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                             } else if (state is TabLoaded) {
                               return PostListView(
                                 posts: state.posts,
-                                viewMode: ViewMode.trending,
                                 tabCubit:
-                                    BlocProvider.of<TrendingCubit>(context),
+                                BlocProvider.of<TrendingCubit>(context),
                               );
                             } else {
                               return NoMorePostsPlaceholder(
@@ -190,9 +199,8 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                             } else if (state is TabLoaded) {
                               return PostListView(
                                 posts: state.posts,
-                                viewMode: ViewMode.following,
                                 tabCubit:
-                                    BlocProvider.of<FollowingCubit>(context),
+                                BlocProvider.of<FollowingCubit>(context),
                               );
                             } else {
                               return NoMorePostsPlaceholder(
@@ -206,9 +214,9 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

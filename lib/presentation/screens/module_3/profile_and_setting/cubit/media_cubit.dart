@@ -2,7 +2,9 @@ import 'package:socialapp/utils/import.dart';
 import 'media_state.dart';
 
 class MediaPostCubit extends Cubit<MediaPostState> {
-  MediaPostCubit() : super(MediaPostInitial()) {
+  final String userId;
+
+  MediaPostCubit({required this.userId}) : super(MediaPostInitial()) {
     _initialize();
   }
 
@@ -14,11 +16,9 @@ class MediaPostCubit extends Cubit<MediaPostState> {
     emit(MediaPostLoading());
 
     try {
-      final User? currentUser =
-      await serviceLocator<AuthRepository>().getCurrentUser();
 
       List<OnlinePostModel>? posts = await serviceLocator<PostRepository>()
-          .getPostsByUserId(currentUser?.uid ?? "");
+          .getPostsByUserId(userId);
       List<PreviewAssetPostModel> imageUrls = [];
 
       if (posts != null) {

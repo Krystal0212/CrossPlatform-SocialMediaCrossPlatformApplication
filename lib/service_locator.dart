@@ -1,8 +1,6 @@
 
 import 'package:socialapp/utils/import.dart';
 
-import 'data/repository/storage/storate_repository_impl.dart';
-import 'domain/repository/storage/storage_repository.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -25,4 +23,7 @@ Future<void> initializeDependencies() async {
 
   serviceLocator.registerSingleton<PostService>(PostServiceImpl());
   serviceLocator.registerSingleton<PostRepository>(PostRepositoryImpl());
+
+  serviceLocator.registerSingleton<CommentService>(CommentServiceImpl());
+  serviceLocator.registerSingleton<CommentRepository>(CommentRepositoryImpl());
 }

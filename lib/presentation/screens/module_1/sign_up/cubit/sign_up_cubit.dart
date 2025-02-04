@@ -5,11 +5,11 @@ class SignUpCubit extends Cubit<SignUpState> with AppDialogs {
   SignUpCubit() : super(SignUpInitial());
 
   void signup(BuildContext context, GlobalKey<FormState> formKey,
-      SignUpUserReq signUpUserReq) async {
+  {required String email, required String password}) async {
     try {
       if (formKey.currentState!.validate()) {
         emit(SignUpLoading());
-        await serviceLocator<AuthRepository>().signUp(signUpUserReq);
+        await serviceLocator<AuthRepository>().signUp(email, password);
         emit(SignUpSuccess());
       }
     } catch (error) {

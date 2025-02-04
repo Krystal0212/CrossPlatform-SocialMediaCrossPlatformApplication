@@ -624,8 +624,14 @@ class _Labels extends StatelessWidget {
                       duration: kTabScrollDuration,
                       curve: Curves.ease,
                       style: (index == currentIndex)
-                          ? selectedTextStyle
-                          : textStyle,
+                          ? (kIsWeb)
+                              ? selectedTextStyle
+                              : selectedTextStyle.copyWith(
+                                  fontSize: 20, fontWeight: FontWeight.bold)
+                          : (kIsWeb)
+                              ? textStyle
+                              : textStyle.copyWith(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                       child: Text(
                         tab.label,
                         overflow: TextOverflow.clip,

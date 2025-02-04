@@ -41,12 +41,12 @@ mixin FlashMessage {
     }
 
   void showSuccessMessage(
-      {required BuildContext context, required String description}) {
+      {required BuildContext context, required String title}) {
     PulpFlash.of(context).showMessage(
       context,
       inputMessage: Message(
         status: FlashStatus.successful,
-        title: description,
+        title: title,
         displayDuration: const Duration(seconds: 3),
       ),
     );

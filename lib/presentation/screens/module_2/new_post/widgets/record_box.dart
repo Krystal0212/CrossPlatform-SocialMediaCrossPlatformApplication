@@ -1,5 +1,4 @@
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:record/record.dart';
 import 'package:path/path.dart' as p;
@@ -15,11 +14,11 @@ class RecordBox extends StatefulWidget {
   final double topicBoxWidth, topicBoxHeight;
   final ValueNotifier<String?> recordingPathNotifier;
 
-
   const RecordBox({
     super.key,
     required this.topicBoxWidth,
-    required this.topicBoxHeight, required this.recordingPathNotifier,
+    required this.topicBoxHeight,
+    required this.recordingPathNotifier,
   });
 
   @override
@@ -134,120 +133,119 @@ class _RecordBoxState extends State<RecordBox> {
               if (isListening == RecordState.start)
                 Text("Tap the counter to stop recording",
                     style: AppTheme.blackHeaderStyle),
-
               if (isListening == RecordState.complete)
-              // Recording status and controls
-              ValueListenableBuilder<String?>(
-                valueListenable: widget.recordingPathNotifier,
-                builder: (context, recordingPath, _) {
-                  return Container(
-                    decoration: AppTheme.mainVerticalGradientBoxDecoration,
-                    padding: const EdgeInsets.symmetric(vertical: 25),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        AudioFileWaveforms(
-                          size: Size(widget.topicBoxWidth * 0.9, 50),
-                          playerController: _playerController,
-                          waveformType: WaveformType.fitWidth,
-                        ),
-                        const SizedBox(height: 50),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ValueListenableBuilder<PlayerState>(
-                              valueListenable: isPlayingNotifier,
-                              builder: (context, playerState, _) {
-                                if (playerState == PlayerState.complete) {
-                                  return CircularIconButton(
-                                    onPressed: () async {
-                                      _playerController.stopPlayer();
-                                      _playerController.preparePlayer(
-                                          path: recordingPath!);
+                // Recording status and controls
+                ValueListenableBuilder<String?>(
+                  valueListenable: widget.recordingPathNotifier,
+                  builder: (context, recordingPath, _) {
+                    return Container(
+                      decoration: AppTheme.mainVerticalGradientBoxDecoration,
+                      padding: const EdgeInsets.symmetric(vertical: 25),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          AudioFileWaveforms(
+                            size: Size(widget.topicBoxWidth * 0.9, 50),
+                            playerController: _playerController,
+                            waveformType: WaveformType.fitWidth,
+                          ),
+                          const SizedBox(height: 50),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ValueListenableBuilder<PlayerState>(
+                                valueListenable: isPlayingNotifier,
+                                builder: (context, playerState, _) {
+                                  if (playerState == PlayerState.complete) {
+                                    return CircularIconButton(
+                                      onPressed: () async {
+                                        _playerController.stopPlayer();
+                                        _playerController.preparePlayer(
+                                            path: recordingPath!);
 
-                                      isPlayingNotifier.value =
-                                          PlayerState.reset;
-                                      _playerController.seekTo(0);
-                                    },
-                                    icon: const Icon(
-                                      Icons.replay,
-                                      size: optionIconSize,
-                                    ),
-                                    style: AppTheme.recordButtonStyle,
-                                    boxWidth: recordBoxWidth,
-                                    backgroundColor: Colors.transparent,
-                                  );
-                                } else if (playerState == PlayerState.play) {
-                                  return CircularIconButton(
-                                    onPressed: () async {
-                                      _playerController.pausePlayer();
-                                      isPlayingNotifier.value =
-                                          PlayerState.pause;
-                                    },
-                                    icon: const Icon(
-                                      Icons.pause,
-                                      size: optionIconSize,
-                                    ),
-                                    style: AppTheme.recordButtonStyle,
-                                    boxWidth: recordBoxWidth,
-                                    backgroundColor: Colors.transparent,
-                                  );
-                                } else if (playerState == PlayerState.pause) {
-                                  return CircularIconButton(
-                                    onPressed: () async {
-                                      _playerController.startPlayer();
-                                      isPlayingNotifier.value =
-                                          PlayerState.play;
-                                    },
-                                    icon: const Icon(
-                                      Icons.play_arrow,
-                                      size: optionIconSize,
-                                    ),
-                                    style: AppTheme.recordButtonStyle,
-                                    boxWidth: recordBoxWidth,
-                                    backgroundColor: Colors.transparent,
-                                  );
-                                } else {
-                                  return CircularIconButton(
-                                    onPressed: () async {
-                                      _playerController.startPlayer();
-                                      isPlayingNotifier.value =
-                                          PlayerState.play;
-                                    },
-                                    icon: const Icon(
-                                      Icons.play_arrow,
-                                      size: optionIconSize,
-                                    ),
-                                    style: AppTheme.recordButtonStyle,
-                                    boxWidth: recordBoxWidth,
-                                    backgroundColor: Colors.transparent,
-                                  );
-                                }
-                              },
-                            ),
-                            CircularIconButton(
-                              onPressed: () async {
-                                // Delete the recording and reset the UI
-                                widget.recordingPathNotifier.value = null;
-                                isPlayingNotifier.value = PlayerState.reset;
-                                isRecording.value = RecordState.init;
-                                sliderValueNotifier.value = 0.0;
-                              },
-                              icon: const Icon(
-                                Icons.delete_forever_rounded,
-                                size: optionIconSize,
+                                        isPlayingNotifier.value =
+                                            PlayerState.reset;
+                                        _playerController.seekTo(0);
+                                      },
+                                      icon: const Icon(
+                                        Icons.replay,
+                                        size: optionIconSize,
+                                      ),
+                                      style: AppTheme.recordButtonStyle,
+                                      boxWidth: recordBoxWidth,
+                                      backgroundColor: Colors.transparent,
+                                    );
+                                  } else if (playerState == PlayerState.play) {
+                                    return CircularIconButton(
+                                      onPressed: () async {
+                                        _playerController.pausePlayer();
+                                        isPlayingNotifier.value =
+                                            PlayerState.pause;
+                                      },
+                                      icon: const Icon(
+                                        Icons.pause,
+                                        size: optionIconSize,
+                                      ),
+                                      style: AppTheme.recordButtonStyle,
+                                      boxWidth: recordBoxWidth,
+                                      backgroundColor: Colors.transparent,
+                                    );
+                                  } else if (playerState == PlayerState.pause) {
+                                    return CircularIconButton(
+                                      onPressed: () async {
+                                        _playerController.startPlayer();
+                                        isPlayingNotifier.value =
+                                            PlayerState.play;
+                                      },
+                                      icon: const Icon(
+                                        Icons.play_arrow,
+                                        size: optionIconSize,
+                                      ),
+                                      style: AppTheme.recordButtonStyle,
+                                      boxWidth: recordBoxWidth,
+                                      backgroundColor: Colors.transparent,
+                                    );
+                                  } else {
+                                    return CircularIconButton(
+                                      onPressed: () async {
+                                        _playerController.startPlayer();
+                                        isPlayingNotifier.value =
+                                            PlayerState.play;
+                                      },
+                                      icon: const Icon(
+                                        Icons.play_arrow,
+                                        size: optionIconSize,
+                                      ),
+                                      style: AppTheme.recordButtonStyle,
+                                      boxWidth: recordBoxWidth,
+                                      backgroundColor: Colors.transparent,
+                                    );
+                                  }
+                                },
                               ),
-                              style: AppTheme.recordButtonStyle,
-                              boxWidth: recordBoxWidth,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                              CircularIconButton(
+                                onPressed: () async {
+                                  // Delete the recording and reset the UI
+                                  widget.recordingPathNotifier.value = null;
+                                  isPlayingNotifier.value = PlayerState.reset;
+                                  isRecording.value = RecordState.init;
+                                  sliderValueNotifier.value = 0.0;
+                                },
+                                icon: const Icon(
+                                  Icons.delete_forever_rounded,
+                                  size: optionIconSize,
+                                ),
+                                style: AppTheme.recordButtonStyle,
+                                boxWidth: recordBoxWidth,
+                                backgroundColor: Colors.transparent,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
             ],
           );
         },

@@ -39,12 +39,12 @@ class SignInCubit extends Cubit<SignInState> {
   }
 
   void loginWithEmailAndPassword(BuildContext context,
-      GlobalKey<FormState> formKey, SignInUserReq signInUserReq) async {
+      GlobalKey<FormState> formKey, {required String email, required String password}) async {
     try {
       if (formKey.currentState!.validate()) {
         emit(SignInLoading());
         await serviceLocator<AuthRepository>()
-            .signInWithEmailAndPassword(signInUserReq);
+            .signInWithEmailAndPassword(email, password);
         await serviceLocator<UserRepository>().getCurrentUserData();
         emit(SignInSuccess());
 

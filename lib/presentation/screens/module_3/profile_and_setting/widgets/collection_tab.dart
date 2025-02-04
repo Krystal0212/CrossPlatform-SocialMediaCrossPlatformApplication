@@ -4,9 +4,9 @@ import '../cubit/collection_state.dart';
 import '../cubit/collection_cubit.dart';
 
 class CollectionTab1 extends StatefulWidget {
-  final String uid;
+  final String userId;
 
-  const CollectionTab1({super.key, required this.uid});
+  const CollectionTab1({super.key, required this.userId});
 
   @override
   State<CollectionTab1> createState() => _CollectionTab1State();
@@ -19,7 +19,7 @@ class _CollectionTab1State extends State<CollectionTab1>
     super.build(context);
     double deviceWidth = MediaQuery.of(context).size.width;
     return BlocProvider(
-      create: (context) => CollectionPostCubit(widget.uid),
+      create: (context) => CollectionPostCubit(userId: widget.userId),
       child: BlocBuilder<CollectionPostCubit, CollectionPostState>(
         builder: (context, state) {
           if (state is CollectionPostLoaded) {

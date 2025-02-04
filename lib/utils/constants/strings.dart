@@ -134,6 +134,6 @@ class AppStrings {
   static const String website = 'Website';
   static const String paypal = 'Paypal';
   static const String changePassword = 'Change password';
-  static const String aboutIClick = 'About i.click';
+  static const String aboutZineround = 'About Zineround';
   static const String termPrivacy = 'Term & privacy';
 }

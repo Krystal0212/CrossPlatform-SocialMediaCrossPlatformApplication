@@ -83,32 +83,16 @@ class InformationBox extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  onPressed: () {
-                    if (kDebugMode) {
-                      print(userModel?.socialAccounts['website']);
-                    }
-                  },
-                  icon: SvgPicture.asset(AppIcons.globe),
-                ),
                 SvgPicture.asset(AppIcons.gradientDot),
                 IconButton(
-                  onPressed: () {
-                    if (kDebugMode) {
-                      print(userModel?.socialAccounts['instagramId']);
-                    }
-                  },
-                  icon: SvgPicture.asset(AppIcons.instagram),
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.message_outlined,
+                    color: AppColors.iris,
+                    size: 35,
+                  ),
                 ),
                 SvgPicture.asset(AppIcons.gradientDot),
-                IconButton(
-                  onPressed: () {
-                    if (kDebugMode) {
-                      print(userModel?.socialAccounts['facebookId']);
-                    }
-                  },
-                  icon: SvgPicture.asset(AppIcons.facebook),
-                ),
               ],
             ),
           ),

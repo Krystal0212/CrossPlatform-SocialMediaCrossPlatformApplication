@@ -16,8 +16,8 @@ abstract class AppTextStyle {
   );
 
   static const TextStyle timestampStyle = TextStyle(
-      fontSize: 12,
-      color: Color(0xFFC0C0C0)
+      fontSize: 18,
+      color:AppColors.blackOak,
   );
 
   static const TextStyle tabItemStyle = TextStyle(

@@ -55,4 +55,6 @@ class AppIcons {
   static const String createNewPost = '${iconPath}plus$svgFormat';
   static const String cross = '${iconPath}cross$svgFormat';
   static const String heartFilled = '${iconPath}heart-filled$svgFormat';
+  static const String follow = '${iconPath}follow$pngFormat';
+  static const String unfollow = '${iconPath}unfollow$pngFormat';
 }

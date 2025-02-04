@@ -2,9 +2,9 @@ import 'package:socialapp/utils/import.dart';
 import "package:http/http.dart";
 
 abstract class AuthFirebaseService {
-  Future<void> signUp(SignUpUserReq signUpUserReq);
+  Future<void> signUp(String email, String password);
 
-  Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq);
+  Future<void> signInWithEmailAndPassword(String email, String password);
 
   bool isUserVerified();
 
@@ -41,12 +41,12 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   final GoogleAuthProvider _googleProvider = GoogleAuthProvider();
 
   @override
-  Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq) async {
+  Future<void> signInWithEmailAndPassword(String email, String password) async {
     try {
       final UserCredential userCredential =
           await _auth.signInWithEmailAndPassword(
-        email: signInUserReq.email.trim(),
-        password: signInUserReq.password.trim(),
+        email: email.trim(),
+        password: password.trim(),
       );
 
       User? user = userCredential.user;
@@ -127,17 +127,17 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> signUp(SignUpUserReq signUpUserReq) async {
+  Future<void> signUp(String email, String password) async {
     try {
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
-        email: signUpUserReq.email,
-        password: signUpUserReq.password,
+        email: email,
+        password: password,
       );
 
       final accessToken = await userCredential.user?.getIdToken() ?? "";
 
-      sendVerificationEmail(signUpUserReq.email, accessToken);
+      sendVerificationEmail(email, accessToken);
 
       await userCredential.user!.updatePhotoURL(AppStrings.defaultAvatarUrl);
     } on FirebaseAuthException catch (e) {

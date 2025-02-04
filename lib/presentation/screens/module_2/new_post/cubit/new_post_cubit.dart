@@ -410,7 +410,7 @@ class NewPostCubit extends Cubit<NewPostState>
         if (homeContext.mounted) {
           showSuccessMessage(
             context: homeContext,
-            description: AppStrings.sendSuccess,
+            title: AppStrings.sendSuccess,
           );
         }
       });
@@ -453,7 +453,7 @@ class NewPostCubit extends Cubit<NewPostState>
           if (homeContext.mounted) {
             showSuccessMessage(
               context: homeContext,
-              description: AppStrings.sendSuccess,
+              title: AppStrings.sendSuccess,
             );
           }
         });

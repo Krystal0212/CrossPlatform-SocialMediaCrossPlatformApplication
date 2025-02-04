@@ -11,15 +11,42 @@ class PostRepositoryImpl extends PostRepository {
 
   @override
   Future<List<OnlinePostModel>> getExplorePostsData(
-      {required bool isOffline, bool skipLocalFetch = false}) {
-    return serviceLocator
-        .get<PostService>()
-        .getExplorePostsData(isOffline: isOffline);
+      {bool isOffline = false,
+      bool skipLocalFetch = false,
+        List<OnlinePostModel>? lastFetchedModels,}) {
+    return serviceLocator.get<PostService>().getExplorePostsData(
+        isOffline: isOffline,
+        skipLocalFetch: skipLocalFetch,
+        lastFetchedModels: lastFetchedModels);
   }
 
   @override
-  Future<List<CommentModel>?> getCommentPost(OnlinePostModel post) {
-    return serviceLocator.get<PostService>().getCommentPost(post);
+  Future<List<OnlinePostModel>> getTrendyPostsData({
+    bool isOffline = false,
+    bool skipLocalFetch = false,
+    List<OnlinePostModel>? lastFetchedModels,
+  }) {
+    return serviceLocator.get<PostService>().getTrendyPostsData(
+        isOffline: isOffline,
+        skipLocalFetch: skipLocalFetch,
+        lastFetchedModels: lastFetchedModels);
+  }
+
+  @override
+  Future<List<OnlinePostModel>> getFollowingPostsData(
+  {bool isOffline = false,
+  bool skipLocalFetch = false,
+  OnlinePostModel? lastFetchedPost,}){
+    return serviceLocator.get<PostService>().getFollowingPostsData(
+      isOffline: isOffline,
+      skipLocalFetch: skipLocalFetch,
+      lastFetchedPost: lastFetchedPost,
+    );
+  }
+
+  @override
+  Stream<List<CommentPostModel>> getCommentsOfPost(String postId) {
+    return serviceLocator.get<PostService>().getCommentsOfPost(postId);
   }
 
   @override
@@ -38,11 +65,6 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<List<OnlinePostModel>> loadMorePostsData() {
-    return serviceLocator.get<PostService>().loadMorePostsData();
-  }
-
-  @override
   Future<void> createSoundPost(String content, String filePath) async {
     return serviceLocator.get<PostService>().createSoundPost(content, filePath);
   }
@@ -50,5 +72,10 @@ class PostRepositoryImpl extends PostRepository {
   @override
   Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId) {
     return serviceLocator.get<PostService>().getPostImagesByPostId(postId);
+  }
+
+  @override
+  Future<void> syncLikesToFirestore(Map<String, bool> likedPostsCache) {
+    return serviceLocator.get<PostService>().syncLikesToFirestore(likedPostsCache);
   }
 }

@@ -3,7 +3,7 @@ import 'package:socialapp/utils/import.dart';
 class SingleComment extends StatefulWidget {
   const SingleComment({super.key, required this.comment});
 
-  final CommentModel comment;
+  final CommentPostModel comment;
 
   @override
   State<SingleComment> createState() => _SingleCommentState();
@@ -35,7 +35,7 @@ class _SingleCommentState extends State<SingleComment> with Methods {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: CircleAvatar(
                 backgroundImage: CachedNetworkImageProvider(
-                  widget.comment.userAvatar,
+                  widget.comment.userAvatar!,
                 ),
               ),
             ),
@@ -43,7 +43,7 @@ class _SingleCommentState extends State<SingleComment> with Methods {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.comment.username),
+                  Text(widget.comment.username!),
                   Text(widget.comment.content),
                   Row(
                     children: [

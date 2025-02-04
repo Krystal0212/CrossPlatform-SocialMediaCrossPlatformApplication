@@ -49,7 +49,6 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
           description: AppStrings.notSignedInTitle,
         );
       });
-
     }
 
   }
@@ -211,10 +210,9 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
                                           .loginWithEmailAndPassword(
                                             context,
                                             _formKey,
-                                            SignInUserReq(
                                                 email: _emailController.text,
                                                 password:
-                                                    _passwordController.text),
+                                                    _passwordController.text,
                                           ),
                                       isLoading:
                                           (state is SignInLoading ? true : false),

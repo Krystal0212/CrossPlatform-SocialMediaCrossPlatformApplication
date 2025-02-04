@@ -86,6 +86,7 @@ class SoundPostModel {
 
 class OnlinePostModel {
   final String postId;
+  final String userId;
   final String username;
   final String userAvatarUrl;
   final String content;
@@ -93,13 +94,16 @@ class OnlinePostModel {
   final String? record;
   final Timestamp timestamp;
   final int likeAmount;
-  final int commentAmount;
+   int commentAmount;
   final int viewAmount;
   final Set<DocumentReference> topicRefs;
   final Set<String> comments;
   final Set<String> likes;
+  final DocumentSnapshot? documentSnapshot;
+  final double? trendingScore;
 
-  OnlinePostModel( {
+  OnlinePostModel(   {
+    required this.userId,
     required this.postId,
     required this.username,
     required this.userAvatarUrl,
@@ -112,7 +116,8 @@ class OnlinePostModel {
     required this.viewAmount,
     required this.topicRefs,
     required this.comments,
-    required this.likes,
+    required this.likes,this.documentSnapshot,
+    this.trendingScore
   });
 
   Map<String, dynamic> toMap() {
@@ -130,28 +135,40 @@ class OnlinePostModel {
       'topicRefs': topicRefs,
       'comments': comments,
       'likes': likes,
+
     };
   }
 
   factory OnlinePostModel.fromMap(Map<String, dynamic> map) {
-    return OnlinePostModel(
-      postId: map['postId'],
-      username: map['username'],
-      userAvatarUrl: map['userAvatar'],
-      content: map['content'],
-      media: map['media'] != null? (map['media'] as Map<String, dynamic>).map((key, value) =>
-          MapEntry(
-              key, OnlineMediaItem.fromMap(value as Map<String, dynamic>))):null,
-      record: map['record'],
-      timestamp: (map['timestamp'] as Timestamp),
-      likeAmount: map['likeAmount'] ?? 0,
-      commentAmount: map['commentAmount'] ?? 0,
-      viewAmount: map['viewAmount'] ?? 0,
-      topicRefs: Set<DocumentReference>.from(map['topicRefs'] ?? []),
-      comments: map['comments'],
-      likes: map['likes'],
-    );
+    try {
+      return OnlinePostModel(
+        postId: map['postId'],
+        username: map['username'],
+        userAvatarUrl: map['userAvatar'],
+        content: map['content'],
+        media: map['media'] != null
+            ? (map['media'] as Map<String, dynamic>).map((key, value) =>
+            MapEntry(key, OnlineMediaItem.fromMap(value as Map<String, dynamic>)))
+            : null,
+        record: map['record'],
+        timestamp: (map['timestamp'] as Timestamp),
+        likeAmount: map['likeAmount'] ?? 0,
+        commentAmount: map['commentAmount'] ?? 0,
+        viewAmount: map['viewAmount'] ?? 0,
+        topicRefs: Set<DocumentReference>.from(map['topicRefs'] ?? []),
+        comments: map['comments'],
+        likes: map['likes'],
+        documentSnapshot: map['documentSnapshot'],
+        trendingScore: map['trendingScore'], userId: map['userId'],
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error creating OnlinePostModel from map: $e");
+      }
+      rethrow;
+    }
   }
+
 }
 
 class OfflinePostModel {

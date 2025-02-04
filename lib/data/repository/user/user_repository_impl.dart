@@ -27,6 +27,11 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
+  Future<void> followOrUnfollowUser(String uid, bool? isFollow) {
+    return serviceLocator<UserService>().followOrUnfollowUser(uid, isFollow);
+  }
+
+  @override
   Future<String>? uploadAvatar(File image, String uid) {
     return serviceLocator<UserService>().uploadAvatar(image, uid);
   }

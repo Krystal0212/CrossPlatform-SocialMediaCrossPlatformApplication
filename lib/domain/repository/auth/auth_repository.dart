@@ -1,15 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:socialapp/data/models/auth/create_user_req.dart';
-import 'package:socialapp/data/models/auth/sign_in_user_req.dart';
 
 abstract class AuthRepository {
   bool isUserVerified();
 
   bool isSignedIn();
 
-  Future<void> signUp(SignUpUserReq signUpUserReq);
+  Future<void> signUp(String email, String password);
 
-  Future<void> signInWithEmailAndPassword(SignInUserReq signInUserReq);
+  Future<void> signInWithEmailAndPassword(String email, String password);
 
   Future<void> signInWithGoogle();
 

@@ -1,63 +1,90 @@
-
-
+import 'package:socialapp/presentation/screens/module_2/post_detail/widgets/post_detail_info.dart';
 import 'package:socialapp/utils/import.dart';
 
-import 'post_detail/post_detail.dart';
+import 'cubit/post_detail_cubit.dart';
+import 'widgets/post_detail_asset.dart';
+import 'widgets/post_detail_comments_list_view.dart';
+import 'widgets/post_detail_edit_text_field.dart';
+import 'widgets/post_detail_content.dart';
+import 'widgets/post_detail_stat.dart';
+
+const double iconSize = 50;
 
 class PostDetailScreen extends StatelessWidget {
-  const PostDetailScreen({super.key, required this.post});
-
   final OnlinePostModel post;
- 
-  // CollectionReference<Map<String, dynamic>> postCollection = FirebaseFirestore.instance.collection('NewPost').doc('');
-  
+  final UserModel currentUser;
+
+  const PostDetailScreen(
+      {super.key, required this.post, required this.currentUser});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+        create: (context) => PostDetailCubit(post.postId),
+        child: PostDetailBase(
+          currentUser: currentUser,
+          post: post,
+        ));
+  }
+}
+
+class PostDetailBase extends StatefulWidget {
+  final OnlinePostModel post;
+  final UserModel currentUser;
+
+  const PostDetailBase(
+      {super.key, required this.post, required this.currentUser});
+
+  @override
+  State<PostDetailBase> createState() => _PostDetailBaseState();
+}
+
+class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
+  late ValueNotifier<int> commentAmountNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+
+    commentAmountNotifier = ValueNotifier(widget.post.commentAmount);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Row(children: [
-                  const BackButton(
-                    color: AppColors.erieBlack,
-                  ),
-                  const Spacer(),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border, color: AppColors.erieBlack,)),
-                  // const AddCollectionIcon(),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share, color: AppColors.erieBlack,))
-                ],),
-                
-                PostUserInfo(post: post),
-              ],
-            ),
+        child: Scaffold(
+            body: NotificationListener<OverscrollIndicatorNotification>(
+      onNotification: (overscroll) {
+        overscroll.disallowIndicator();
+        return true;
+      },
+      child: SingleChildScrollView(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              PostDetailInfo(post: widget.post,),
+              PostDetailContent(
+                post: widget.post,
+                user: widget.currentUser,
+              ),
+              PostDetailAsset(post: widget.post),
+              PostStatsBar(
+                post: widget.post,
+                currentUser: widget.currentUser,
+                commentAmountNotifier: commentAmountNotifier,
+              ),
+              PostDetailEditTextField(
+                post: widget.post,
+                commentAmountNotifier: commentAmountNotifier,
+              ),
+              PostDetailCommentsListView(
 
-            // Expanded(child: SingleChildScrollView(child: PostDetail(post: post))),
-            PostDetail(post: post),
-        
-            // FutureBuilder(
-            //   future: serviceLocator<PostRepository>().getCommentPost(post),
-            //   builder: (context, snapshot) {
-            //     return Text('hehe');
-            //   }
-            // )
-            // TextField(
-            //   onTapOutside: (e) {
-            //     FocusManager.instance.primaryFocus?.unfocus();
-            //   },
-            //   decoration: InputDecoration(
-            //     hintText: 'Add a comment',
-            //     suffixIcon: IconButton(
-            //       icon: Icon(Icons.send),
-            //       onPressed: () {
-            //         // serviceLocator<PostRepository>().addCommentPost(post, 'hehe');
-            //     }
-            // )))
-          ]
-        )
-      )
-    );
+                post: widget.post,
+                currentUser: widget.currentUser,
+              )
+            ]),
+      ),
+    )));
   }
 }

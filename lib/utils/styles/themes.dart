@@ -68,6 +68,12 @@ class AppTheme {
         ],
       ));
 
+  static BoxDecoration get commentBoxDecoration => BoxDecoration(
+    color: AppColors.bleachSilk.withOpacity(0.8),
+    borderRadius: BorderRadius.circular(25),
+    border: Border.all(color: AppColors.iris),
+  );
+
   static BoxDecoration get profileBackgroundBoxDecoration => BoxDecoration(
       image: const DecorationImage(
         image: AssetImage(AppImages.editProfileAppbarBackground),
@@ -132,8 +138,20 @@ class AppTheme {
         color: black,
       );
 
+  static TextStyle get blackHeaderMobileStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 21,
+    fontWeight: FontWeight.w600,
+    color: black,
+  );
+
+  static TextStyle get blackHeaderCommentMobileStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 20,
+    fontWeight: FontWeight.w500,
+    color: black,
+  );
+
   static TextStyle get showMoreTextStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 15,
+        fontSize: 20,
         fontWeight: FontWeight.w500,
         color: AppColors.iris,
       );
@@ -144,6 +162,12 @@ class AppTheme {
         color: black,
       );
 
+  static TextStyle get blackUsernameMobileStyle => GoogleFonts.plusJakartaSans(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: black,
+  );
+
   static TextStyle get messageStyle => GoogleFonts.plusJakartaSans(
     fontSize: 20,
     fontWeight: FontWeight.w700,
@@ -151,7 +175,7 @@ class AppTheme {
   );
 
   static TextStyle get highlightedHashtagStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 15,
+        fontSize: 20,
         fontWeight: FontWeight.w700,
         color: AppColors.blueDeFrance,
       );
@@ -170,7 +194,7 @@ class AppTheme {
       );
 
   static TextStyle get logOutButtonStyle => GoogleFonts.plusJakartaSans(
-        fontSize: 12,
+        fontSize: 20,
         fontWeight: FontWeight.w400,
         color: black,
       );
@@ -211,7 +235,7 @@ class AppTheme {
 
   static TextStyle get drawerItemStyle => GoogleFonts.plusJakartaSans(
         color: white,
-        fontSize: 12,
+        fontSize: 18,
         fontWeight: FontWeight.bold,
         letterSpacing: -0.1,
       );
@@ -271,6 +295,10 @@ class AppTheme {
         color: Colors.white,
         fontSize: 14,
       );
+
+  static TextStyle get postStatsStyle => GoogleFonts.plusJakartaSans(
+      color: AppColors.erieBlack, fontSize: 18, fontWeight: FontWeight.bold);
+
 
   static TextStyle get signInWhiteText => GoogleFonts.plusJakartaSans(
       color: Colors.white, fontSize: 15, fontWeight: FontWeight.normal);

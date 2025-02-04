@@ -87,22 +87,6 @@ class AppRoutes with FlashMessage {
             return _buildPageRoute((isWeb)
                 ? const WebsiteHomeScreen()
                 : const CustomNavigatorBar());
-          }),
-      GoRoute(
-          path: '/new-post',
-          pageBuilder: (context, state) {
-            final isWeb = PlatformConfig.of(context)?.isWeb ?? false;
-            AuthFirebaseService authService = AuthFirebaseServiceImpl();
-
-            if (isWeb) {
-              return _buildPageRoute(BlocProvider(
-                  create: (context) => HomeCubit(),
-                  child: const WebsiteHomeScreen()));
-            } else {
-                return _buildPageRoute(NewPostScreen(
-                  parentContext: context,
-                ));
-            }
           })
     ],
     errorBuilder: (context, state) => const ErrorPagePlaceholder(),

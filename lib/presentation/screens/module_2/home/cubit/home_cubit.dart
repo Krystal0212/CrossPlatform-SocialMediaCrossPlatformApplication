@@ -179,7 +179,7 @@ import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   final Connectivity connectivity = Connectivity();
-  final Map<String, Map<String, bool>> likedPostsCache = {};
+  final Map<String, bool> likedPostsCache = {};
   bool isBackgroundFetchComplete = false;
 
   Timer? _syncTimer;
@@ -223,18 +223,19 @@ class HomeCubit extends Cubit<HomeState> {
 
   void _startPeriodicSync() {
     _syncTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
-      await serviceLocator<PostService>().syncLikesToFirestore(likedPostsCache);
+      await serviceLocator<PostRepository>().syncLikesToFirestore(likedPostsCache);
     });
   }
 
-  void addPostLike(String postId, String userId) {
-    likedPostsCache.putIfAbsent(postId, () => {});
-    likedPostsCache[postId]?[userId] = true;
+  void addPostLike(String postId) {
+    likedPostsCache.putIfAbsent(postId, () => true);
+    likedPostsCache[postId] = true;
   }
 
-  void removePostLike(String postId, String userId) {
-    likedPostsCache.putIfAbsent(postId, () => {});
-    likedPostsCache[postId]?[userId] = false;
+  // Remove like status for a post
+  void removePostLike(String postId) {
+    likedPostsCache.putIfAbsent(postId, () => false);
+    likedPostsCache[postId] = false;
   }
 
   void _listenToConnectivity() {

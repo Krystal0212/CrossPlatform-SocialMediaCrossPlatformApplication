@@ -15,6 +15,8 @@ abstract class UserService {
   Future<Map<String, dynamic>> getUserRelatedData(String uid);
 
   Future<String>? uploadAvatar(File image, String uid);
+
+  Future<void> followOrUnfollowUser(String uid, bool? isFollow);
 }
 
 class UserServiceImpl extends UserService {
@@ -91,7 +93,7 @@ class UserServiceImpl extends UserService {
 
       return UserModel.fromMap(documentMap);
     } catch (e) {
-      print(e);
+      print('Error during fetching user data: $e');
       rethrow;
     }
   }
@@ -168,7 +170,6 @@ class UserServiceImpl extends UserService {
           totalRecordCount += 1;
         }
       }
-
     } catch (e) {
       if (kDebugMode) {
         print("Error calculating total media count: $e");
@@ -204,14 +205,11 @@ class UserServiceImpl extends UserService {
         dataMap['followings']!.add(doc.id);
       }
 
-      dataMap['collectionsNumber'] = (await _usersCollectionsRef(uid).get()).size;
+      dataMap['collectionsNumber'] =
+          (await _usersCollectionsRef(uid).get()).size;
       Map<String, int> countDataNumber = await updateMediaAndRecordNumber(uid);
       dataMap['mediasNumber'] = countDataNumber['totalMediaCount'];
       dataMap['recordsNumber'] = countDataNumber['totalRecordCount'];
-
-      if (kDebugMode) {
-        print(dataMap.toString());
-      }
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching user-related data: $e');
@@ -220,5 +218,44 @@ class UserServiceImpl extends UserService {
     }
 
     return dataMap;
+  }
+
+  @override
+  Future<void> followOrUnfollowUser(String uid, bool? isFollow) async {
+    if (isFollow == null) {
+      if (kDebugMode) {
+        print("Nothing to do right now");
+      }
+      return;
+    }
+
+    final currentUserUid = currentUser!.uid;
+
+    final userFollowersRef =
+        _usersRef.doc(uid).collection('followers').doc(currentUserUid);
+    final currentUserFollowingsRef =
+        _usersRef.doc(currentUserUid).collection('followings').doc(uid);
+
+    if (isFollow) {
+      final userFollowersDoc = await userFollowersRef.get();
+      if (!userFollowersDoc.exists) {
+        await userFollowersRef.set({});
+      }
+
+      final currentUserFollowingsDoc = await currentUserFollowingsRef.get();
+      if (!currentUserFollowingsDoc.exists) {
+        await currentUserFollowingsRef.set({});
+      }
+    } else {
+      final userFollowersDoc = await userFollowersRef.get();
+      if (userFollowersDoc.exists) {
+        await userFollowersRef.delete();
+      }
+
+      final currentUserFollowingsDoc = await currentUserFollowingsRef.get();
+      if (currentUserFollowingsDoc.exists) {
+        await currentUserFollowingsRef.delete();
+      }
+    }
   }
 }

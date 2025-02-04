@@ -6,7 +6,9 @@ import '../cubit/media_cubit.dart';
 import '../cubit/media_state.dart';
 
 class ShotTab1 extends StatefulWidget {
-  const ShotTab1({super.key});
+  final String userId;
+
+  const ShotTab1( {super.key, required this.userId});
 
   @override
   State<ShotTab1> createState() => _ShotTab1State();
@@ -14,13 +16,21 @@ class ShotTab1 extends StatefulWidget {
 
 class _ShotTab1State extends State<ShotTab1>
     with AutomaticKeepAliveClientMixin {
+  late String userId;
+
+  @override
+  void initState() {
+    userId = widget.userId;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     double deviceWidth = MediaQuery.of(context).size.width;
 
     return BlocProvider(
-      create: (context) => MediaPostCubit(),
+      create: (context) => MediaPostCubit(userId: userId),
       child: Padding(
         padding: EdgeInsets.only(top:30, left: deviceWidth * 0.07,
             right: deviceWidth * 0.07),

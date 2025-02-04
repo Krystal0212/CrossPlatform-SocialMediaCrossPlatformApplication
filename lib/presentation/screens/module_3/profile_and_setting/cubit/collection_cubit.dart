@@ -3,25 +3,26 @@ import 'collection_state.dart';
 
 class CollectionPostCubit extends Cubit<CollectionPostState> {
   bool isCurrentUser = false;
+  final String userId;
 
-  CollectionPostCubit(String uid) : super(CollectionPostInitial()) {
-    _initialize(uid);
+  CollectionPostCubit({required this.userId}) : super(CollectionPostInitial()) {
+    _initialize();
   }
 
-  void _initialize(String uid) async {
+  void _initialize() async {
     final User? currentUser =
         await serviceLocator<AuthRepository>().getCurrentUser();
-    if (currentUser?.uid == uid) {
+    if (currentUser?.uid == userId) {
       isCurrentUser = true;
     }
-    getCollectionsOfUser(uid);
+    getCollectionsOfUser();
   }
 
-  Future<void> getCollectionsOfUser(String uid) async {
+  Future<void> getCollectionsOfUser() async {
     try {
       List<CollectionModel> collections =
           await serviceLocator<CollectionRepository>()
-              .getCollectionsFromUser(uid);
+              .getCollectionsFromUser(userId);
 
       emit(CollectionPostLoaded(collections));
     } catch (error) {
