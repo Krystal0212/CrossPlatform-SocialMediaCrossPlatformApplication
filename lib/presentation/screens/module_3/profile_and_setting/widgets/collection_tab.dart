@@ -82,7 +82,7 @@ class _CollectionTab1State extends State<CollectionTab1>
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 CollectionViewingScreen(
-                                                  userId: widget.userId,
+                                                  userId: collection.userData.id!,
                                                   collection: collection,
                                                   isInSavedCollections: true,
                                                 )));

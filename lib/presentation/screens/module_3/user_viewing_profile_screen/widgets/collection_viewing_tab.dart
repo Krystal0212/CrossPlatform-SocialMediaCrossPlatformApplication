@@ -72,8 +72,9 @@ class _CollectionViewingTab1State extends State<CollectionViewingTab1>
                                             CollectionViewingScreen(
                                               userId: widget.userId,
                                               collection: collection,
-                                              isInSavedCollections: true,
+                                              isInSavedCollections: false,
                                             )));
+
                               },
                               child: RadiusTile(
                                 presentationUrl: collectionPostImages,

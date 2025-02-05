@@ -44,7 +44,7 @@ class CollectionBase extends StatefulWidget {
 
 enum EditingMode { cancel, finish, editing, none }
 
-class _CollectionBaseState extends State<CollectionBase> {
+class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
   late double deviceWidth = 0;
   final ValueNotifier<String> collectionTitleNotifier =
       ValueNotifier<String>('');
@@ -259,7 +259,7 @@ class _CollectionBaseState extends State<CollectionBase> {
                                       );
                                     }
                                   });
-                            } else if (widget.isInSavedCollections) {
+                            } else if (!widget.isInSavedCollections) {
                               return IconButton(
                                 icon: const Icon(Icons.data_saver_on,
                                     size: 35, color: AppColors.blackOak),
@@ -268,6 +268,7 @@ class _CollectionBaseState extends State<CollectionBase> {
                                       .read<CollectionViewingCubit>()
                                       .updateCollectionData(
                                           imageDataPreviewsNotifier.value);
+                                  showSuccessMessage(context: context, title: 'Added to your collections storage');
                                 },
                               );
                             } else {
