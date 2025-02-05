@@ -1,15 +1,18 @@
 import 'package:socialapp/utils/import.dart';
 
+import '../../home/widgets/collection_dialog.dart';
+
 class PostDetailInfo extends StatefulWidget {
   final OnlinePostModel post;
+  final UserModel? currentUser;
 
-  const PostDetailInfo({super.key, required this.post});
+  const PostDetailInfo({super.key, required this.post, this.currentUser});
 
   @override
   State<PostDetailInfo> createState() => _PostDetailInfoState();
 }
 
-class _PostDetailInfoState extends State<PostDetailInfo> with Methods {
+class _PostDetailInfoState extends State<PostDetailInfo> with Methods, FlashMessage {
   late String timeAgo;
 
   @override
@@ -17,6 +20,15 @@ class _PostDetailInfoState extends State<PostDetailInfo> with Methods {
     super.initState();
 
     timeAgo = calculateTimeFromNow(widget.post.timestamp);
+  }
+
+  void showCollectionPicker(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (context) => CollectionPickerDialog(
+        userId: userId, postId: widget.post.postId, medias: widget.post.media!,
+      ),
+    );
   }
 
   @override
@@ -58,7 +70,15 @@ class _PostDetailInfoState extends State<PostDetailInfo> with Methods {
           ),
           const Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              if (widget.currentUser?.id?.isNotEmpty ?? false) {
+                showCollectionPicker(context, widget.currentUser!.id!);
+              } else {
+                showNotSignedInMassage(
+                    context: context,
+                    description: AppStrings.notSignedInCollectionDescription);
+              }
+            },
             icon: SvgPicture.asset(
               AppIcons.addToCollection,
               width: iconSize,

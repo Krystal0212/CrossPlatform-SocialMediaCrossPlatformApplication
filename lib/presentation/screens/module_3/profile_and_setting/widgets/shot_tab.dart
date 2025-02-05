@@ -47,7 +47,7 @@ class _ShotTab1State extends State<ShotTab1>
                       }
 
                       if (snapshot.hasError) {
-                        return const Center(child: Text('There is something wrong, can get data.'));
+                        return const Center(child: Text('There is something wrong, can\'t get data.'));
                       }
 
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {

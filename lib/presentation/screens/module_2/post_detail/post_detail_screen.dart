@@ -63,7 +63,7 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              PostDetailInfo(post: widget.post,),
+              PostDetailInfo(post: widget.post, currentUser: widget.currentUser,),
               PostDetailContent(
                 post: widget.post,
                 user: widget.currentUser,
