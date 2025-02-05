@@ -7,7 +7,7 @@ class CollectionPostInitial extends CollectionPostState {}
 class CollectionPostLoading extends CollectionPostState {}
 
 class CollectionPostLoaded extends CollectionPostState {
-  final List<CollectionModel> collections;
+  final Stream<List<CollectionModel>> collections;
 
   CollectionPostLoaded(this.collections,);
 }

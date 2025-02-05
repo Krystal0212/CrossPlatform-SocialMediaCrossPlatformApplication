@@ -122,38 +122,59 @@ mixin ImageAndVideoProcessingHelper {
   }
 
   Future<Uint8List?> compressVideo(Uint8List videoData, String filename) async {
-    final String filePath = await saveUint8ListToFile(videoData, '$filename.mp4');
+    try {
+      final String filePath = await saveUint8ListToFile(videoData, '$filename.mp4');
+      final File file = File(filePath);
 
-    final File file = File(filePath);
+      final MediaInfo? info = await VideoCompress.compressVideo(
+        file.path,
+        quality: VideoQuality.DefaultQuality,
+        deleteOrigin: false,
+        includeAudio: true,
+        frameRate: 60,
+      ).catchError((error) {
+        if (kDebugMode) {
+          print("Video compression error: $error");
+        }
+        return null;
+      });
 
-    // Compress the video
-    final MediaInfo? info = await VideoCompress.compressVideo(
-      file.path,
-      quality: VideoQuality.DefaultQuality,
-      deleteOrigin: false,
-      includeAudio: true,
-      frameRate: 60,
-    );
+      if (info == null || info.path == null) {
+        if (kDebugMode) {
+          print("Compression failed, returning original video.");
+        }
+        return videoData;
+      }
 
-    // Calculate sizes for compression ratio
-    int previousSize = file.lengthSync() ~/ (1024 * 1024);
-    int newSize = (info?.filesize ?? 0) ~/ (1024 * 1024);
-    double compressedSizeRatio = previousSize != 0 ? newSize / previousSize : 0;
+      // Calculate sizes for compression ratio
+      int previousSize = file.lengthSync() ~/ (1024 * 1024);
+      int newSize = (info.filesize ?? 0) ~/ (1024 * 1024);
+      double compressedSizeRatio = previousSize != 0 ? newSize / previousSize : 0;
 
-    if (kDebugMode) {
-      print("Before converting video: ${previousSize.toStringAsFixed(2)} MB");
-      print("After converting video: ${newSize.toStringAsFixed(2)} MB");
-      print("Compressed size ratio: $compressedSizeRatio");
+      if (kDebugMode) {
+        print("Before converting video: ${previousSize.toStringAsFixed(2)} MB");
+        print("After converting video: ${newSize.toStringAsFixed(2)} MB");
+        print("Compressed size ratio: $compressedSizeRatio");
+      }
+
+      // If compression ratio is too low, return original video
+      if (compressedSizeRatio < 0.1) {
+        if (kDebugMode) {
+          print("Compression ratio too low, returning original video.");
+        }
+        return videoData;
+      }
+
+      // Read the compressed video as bytes and return it
+      return File(info.path!).readAsBytesSync();
+    } catch (error) {
+      if (kDebugMode) {
+        print("Unexpected error during video compression: $error");
+      }
+      return videoData; // Return original video if an error occurs
     }
-
-    // If compression was unsuccessful, return null
-    if (info == null || info.path == null || (newSize / previousSize) < 0.1) {
-      return null;
-    }
-
-    // Read the compressed video as bytes and return it
-    return File(info.path!).readAsBytesSync();
   }
+
 
 
 // Future<Map<String, double>> getVideoDimensionsForWebsite(String videoUrl) async {

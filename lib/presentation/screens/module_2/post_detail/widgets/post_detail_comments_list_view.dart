@@ -244,6 +244,7 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
       final String currentMode = sortByNotifier.value;
 
       try {
+        if(newComment != null){
         if (currentMode == "newest") {
           bool shouldAdd = !_currentComments
               .any((comment) => comment.commentId == newComment.commentId);
@@ -268,6 +269,7 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
               _commentsStreamController.add(List.from(_currentComments));
             }
           }
+        }
         }
       } catch (error) {
         if (kDebugMode) {

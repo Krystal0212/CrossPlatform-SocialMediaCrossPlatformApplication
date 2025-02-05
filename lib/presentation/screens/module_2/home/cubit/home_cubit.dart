@@ -1,5 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 import 'home_state.dart';
+
 //
 // class HomeCubit extends Cubit<HomeState> {
 //   final Connectivity connectivity = Connectivity();
@@ -176,7 +177,6 @@ import 'home_state.dart';
 //   // _loadData(viewMode);
 // }
 
-
 class HomeCubit extends Cubit<HomeState> {
   final Connectivity connectivity = Connectivity();
   final Map<String, bool> likedPostsCache = {};
@@ -221,10 +221,29 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
+  Future<bool> checkOnline() async {
+    final List<ConnectivityResult> result =
+        await Connectivity().checkConnectivity();
+    return result.contains(ConnectivityResult.mobile) ||
+        result.contains(ConnectivityResult.wifi);
+  }
+
   void _startPeriodicSync() {
     _syncTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
-      await serviceLocator<PostRepository>().syncLikesToFirestore(likedPostsCache);
+      bool isOnline = await checkOnline();
+      if (isOnline) {
+        await serviceLocator<PostRepository>()
+            .syncLikesToFirestore(likedPostsCache);
+      }
     });
+  }
+
+  void triggerSync() async {
+    bool isOnline = await checkOnline();
+    if (isOnline) {
+      await serviceLocator<PostRepository>()
+          .syncLikesToFirestore(likedPostsCache);
+    }
   }
 
   void addPostLike(String postId) {
@@ -240,14 +259,12 @@ class HomeCubit extends Cubit<HomeState> {
 
   void _listenToConnectivity() {
     _connectivitySubscription = connectivity.onConnectivityChanged.listen(
-          (connectivityList) {
+      (connectivityList) {
         final connectivityResult = connectivityList.isNotEmpty
             ? connectivityList.first
             : ConnectivityResult.none;
 
-        if (connectivityResult != ConnectivityResult.none) {
-          // Notify child Cubits to reload data
-        }
+        if (connectivityResult != ConnectivityResult.none) {}
       },
     );
   }
@@ -255,6 +272,7 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> logout() async {
     if (isClosed) return;
     try {
+      triggerSync();
       emit(HomeLoading());
       await serviceLocator<AuthRepository>().signOut();
       currentUser = null;
@@ -276,9 +294,9 @@ class HomeCubit extends Cubit<HomeState> {
 
   @override
   Future<void> close() {
+    triggerSync();
     _connectivitySubscription?.cancel();
     _syncTimer?.cancel();
     return super.close();
   }
 }
-

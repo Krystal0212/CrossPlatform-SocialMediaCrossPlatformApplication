@@ -40,6 +40,8 @@ abstract class PostService {
 
   Future<void> createAssetPost(String content,
       List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
+
+  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId);
 }
 
 class PostServiceImpl extends PostService
@@ -57,6 +59,9 @@ class PostServiceImpl extends PostService
   User? get currentUser => _auth.currentUser;
 
   String get currentUserId => currentUser?.uid ?? '';
+
+  CollectionReference get _topicRankBoardRef =>
+      _firestoreDB.collection('TopicRankBoard');
 
   CollectionReference get _usersRef => _firestoreDB.collection('User');
 
@@ -257,8 +262,28 @@ class PostServiceImpl extends PostService
       if (currentUser != null) {
         // Fetch topic posts
         DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
-        Map<String, dynamic> userTopicRefs =
-            userTopics['preferred-topics'] as Map<String, dynamic>;
+        DocumentSnapshot topicRankBoardSnapshot =
+            await userTopics['topicRankBoardRef'].get();
+
+        Map<String, String> preferredTopics = {};
+
+        if (topicRankBoardSnapshot.exists) {
+          Map<String, dynamic> rank =
+              Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
+
+          List<MapEntry<String, int>> sortedTopics = rank.entries
+              .map((entry) => MapEntry(entry.key, entry.value as int))
+              .toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
+
+          // Convert sorted list into preferred-topics (Map<String, String>)
+          for (int i = 0; i < 5; i++) {
+            preferredTopics[(i + 1).toString()] = sortedTopics[i].key;
+          }
+        }
+        ;
+
+        Map<String, String> userTopicRefs = preferredTopics;
         List topicIds = userTopicRefs.values.toList();
         final topicRefs = topicIds.map((id) => _topicRef.doc(id)).toList();
 
@@ -282,18 +307,24 @@ class PostServiceImpl extends PostService
             followingsRef.docs.map((doc) => doc.id).toList();
         final userRefs = followingIds.map((id) => _usersRef.doc(id)).toList();
 
-        Query followingQuery = _postRef
-            .where('userRef', whereIn: userRefs)
-            .orderBy('timestamp', descending: true)
-            .limit(amountOfFollowingPostInBatch);
+        if (userRefs.isNotEmpty) {
+          Query followingQuery = _postRef
+              .where('userRef', whereIn: userRefs)
+              .orderBy('timestamp', descending: true)
+              .limit(amountOfFollowingPostInBatch);
 
-        if (lastFetchedModels != null) {
-          followingQuery = followingQuery
-              .startAfterDocument(lastFetchedModels.last.documentSnapshot!);
+          if (lastFetchedModels != null) {
+            followingQuery = followingQuery
+                .startAfterDocument(lastFetchedModels.last.documentSnapshot!);
+          }
+
+          QuerySnapshot followingPostsQuery = await followingQuery.get();
+          followingPosts = followingPostsQuery.docs;
+        } else {
+          if (kDebugMode) {
+            print("No userRefs available, skipping query.");
+          }
         }
-
-        QuerySnapshot followingPostsQuery = await followingQuery.get();
-        followingPosts = followingPostsQuery.docs;
       }
 
       // Fetch random posts
@@ -379,7 +410,7 @@ class PostServiceImpl extends PostService
       }
     } catch (error) {
       if (kDebugMode) {
-        print('Error during get posts for user: $error');
+        print('Error during get explore posts for user: $error');
       }
       if (e is CustomFirestoreException &&
           (e as CustomFirestoreException).code == 'no-more') {
@@ -709,90 +740,95 @@ class PostServiceImpl extends PostService
     return file;
   }
 
+  bool isLikeSyncing = false;
+
   @override
   Future<void> syncLikesToFirestore(Map<String, bool> likedPostsCache) async {
-    if (likedPostsCache.isEmpty) {
-      // if (kDebugMode) {
-      //   print('No likes to sync.');
-      // }
+    if (likedPostsCache.isEmpty || isLikeSyncing) {
       return;
     }
 
     WriteBatch batch = _firestoreDB.batch();
+    isLikeSyncing = true;
 
     try {
-      List<Future<void>> operations = [];
       String userId = currentUserId;
       int topicScoreChange = 1;
 
-      likedPostsCache.forEach((postId, isLiked) {
+      DocumentReference userRef = _usersRef.doc(userId);
+      DocumentReference? topicRankBoardRef = await userRef.get().then(
+          (snapshot) => snapshot.exists
+              ? snapshot.get('topicRankBoardRef') as DocumentReference?
+              : null);
+
+      if (topicRankBoardRef == null) {
+        throw Exception("User does not have a topicRankBoardRef");
+      }
+
+      DocumentSnapshot topicRankBoardSnapshot = await topicRankBoardRef.get();
+      Map<String, dynamic> rank = topicRankBoardSnapshot.exists
+          ? Map.from(topicRankBoardSnapshot['rank'])
+          : {};
+
+      // Iterate over liked posts and update rank map
+      for (var entry in likedPostsCache.entries) {
+        String postId = entry.key;
+        bool isLiked = entry.value;
+
         DocumentReference postRef = _postRef.doc(postId);
+        DocumentSnapshot postSnapshot = await postRef.get();
 
-        operations.add(() async {
-          DocumentReference likeRef = postRef.collection('likes').doc(userId);
-          DocumentSnapshot likeSnapshot = await likeRef.get();
+        if (!postSnapshot.exists) continue;
 
-          DocumentSnapshot postSnapshot = await postRef.get();
-          List<DocumentReference> topicRefs =
-              List.from(postSnapshot['topicRefs']);
+        List<DocumentReference> topicRefs =
+            List.from(postSnapshot['topicRefs']);
 
-          DocumentReference userRef = _usersRef.doc(userId);
-          DocumentReference? topicRankBoardRef = await userRef.get().then(
-              (snapshot) => snapshot.exists
-                  ? snapshot.get('topicRankBoardRef') as DocumentReference?
-                  : null);
+        for (DocumentReference topicRef in topicRefs) {
+          String topicId = topicRef.id;
 
-          if (topicRankBoardRef == null) {
-            throw Exception("User does not have a topicRankBoardRef");
+          // Update rank values
+          rank[topicId] = (rank[topicId] ?? 0) +
+              (isLiked ? topicScoreChange : -topicScoreChange);
+        }
+
+        // Like system updates
+        DocumentReference likeRef = postRef.collection('likes').doc(userId);
+        DocumentSnapshot likeSnapshot = await likeRef.get();
+
+        if (isLiked) {
+          if (!likeSnapshot.exists) {
+            batch.set(likeRef, {'userId': userId});
+            batch.update(postRef, {
+              'likeAmount': FieldValue.increment(1),
+            });
           }
-
-          DocumentSnapshot topicRankBoardSnapshot =
-              await topicRankBoardRef.get();
-          Map<String, dynamic> rank = topicRankBoardSnapshot.exists
-              ? Map.from(topicRankBoardSnapshot['rank'])
-              : {};
-
-          // Iterate over topicRefs to update rank map
-          for (DocumentReference topicRef in topicRefs) {
-            String topicId = topicRef.id;
-
-            rank[topicId] = (rank[topicId] ?? 0) +
-                (isLiked ? topicScoreChange : -topicScoreChange);
+        } else {
+          if (likeSnapshot.exists) {
+            batch.delete(likeRef);
+            batch.update(postRef, {
+              'likeAmount': FieldValue.increment(-1),
+            });
           }
+        }
+      }
 
-          batch.update(topicRankBoardRef, {'rank': rank});
+      // Update Firestore with accumulated rank changes **only once**
+      batch.update(topicRankBoardRef, {'rank': rank});
 
-          if (isLiked) {
-            if (!likeSnapshot.exists) {
-              batch.set(likeRef, {'userId': userId});
-              batch.update(postRef, {
-                'likeAmount': FieldValue.increment(1),
-              });
-            }
-          } else {
-            if (likeSnapshot.exists) {
-              batch.delete(likeRef);
-              batch.update(postRef, {
-                'likeAmount': FieldValue.increment(-1),
-              });
-            }
-          }
-        }());
-      });
-
-      // Wait for all operations to complete before committing the batch
-      await Future.wait(operations);
-
-      // Commit the batch after all operations are prepared
+      // Commit batch updates
       await batch.commit();
+
       if (kDebugMode) {
         print('Likes synced to Firestore successfully.');
       }
+
       likedPostsCache.clear(); // Clear the cache after successful sync
     } catch (e) {
       if (kDebugMode) {
         print('Error syncing likes: $e');
       }
+    } finally {
+      isLikeSyncing = false;
     }
   }
 
@@ -855,6 +891,72 @@ class PostServiceImpl extends PostService
   }
 
   @override
+  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId) {
+    // Create a reference for the user
+    DocumentReference tempUserRef = _usersRef.doc(userId);
+
+    // Listen to realtime changes for posts matching the user's reference
+    return _postRef
+        .where('userRef', isEqualTo: tempUserRef)
+        .snapshots()
+        .asyncMap((QuerySnapshot postsSnapshot) async {
+      try {
+        if (postsSnapshot.docs.isEmpty) {
+          throw CustomFirestoreException(
+            code: 'no-posts',
+            message: 'No posts exist for this user in Firestore',
+          );
+        }
+
+        List<OnlinePostModel> posts = [];
+
+        for (QueryDocumentSnapshot document in postsSnapshot.docs) {
+          List<String> comments =
+              await _fetchSubCollection(document, 'comments');
+          List<String> likes = await _fetchSubCollection(document, 'likes');
+
+          // Fetch user data from the user reference stored in the document
+          DocumentReference userRef = document['userRef'];
+          DocumentSnapshot userSnapshot = await userRef.get();
+          String username = userSnapshot['name'];
+          String userAvatar = userSnapshot['avatar'];
+
+          // Get the document data and add extra fields
+          Map<String, dynamic> documentMap =
+              document.data() as Map<String, dynamic>;
+          documentMap['postId'] = document.id;
+          documentMap['userId'] = userRef.id;
+          documentMap['username'] = username;
+          documentMap['userAvatar'] = userAvatar;
+          documentMap['comments'] = comments.toSet();
+          documentMap['likes'] = likes.toSet();
+
+          OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+          posts.add(post);
+        }
+
+        List<PreviewAssetPostModel> imageUrls = [];
+
+        for (var post in posts) {
+          List<PreviewAssetPostModel> imageUrlsForPost =
+              await serviceLocator<PostRepository>()
+                  .getPostImagesByPostId(post.postId);
+          if (imageUrlsForPost.isNotEmpty) {
+            imageUrls.addAll(imageUrlsForPost);
+          }
+        }
+
+        return imageUrls;
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error fetching posts stream for user: $e');
+        }
+        rethrow;
+      }
+    });
+  }
+
+  @override
   Future<List<PreviewAssetPostModel>> getPostImagesByPostId(
       String postId) async {
     try {
@@ -869,13 +971,40 @@ class PostServiceImpl extends PostService
         for (var media in medias.entries) {
           if (media.value['type'] == 'image' &&
               media.value['imageUrl'] != null) {
-            imagePreviews.add(PreviewAssetPostModel(
-                postId: postId, mediasOrThumbnailUrl: media.value['imageUrl']));
+            try {
+              imagePreviews.add(PreviewAssetPostModel(
+                postId: postId,
+                mediasOrThumbnailUrl: media.value['imageUrl'],
+                mediaOrder: int.parse(media.key),
+                width: (media.value['width'] as num).toDouble(),
+                height: (media.value['height'] as num).toDouble(),
+                isVideo: false,
+                isNSFW: media.value['isNSFW'],
+                dominantColor: media.value['dominantColor'],
+              ));
+            } catch (error) {
+              if (kDebugMode) {
+                print('Error getting image preview for post: $error');
+              }
+            }
           } else if (media.value['type'] == 'video' &&
               media.value['thumbnailUrl'] != null) {
-            imagePreviews.add(PreviewAssetPostModel(
+            try {
+              imagePreviews.add(PreviewAssetPostModel(
                 postId: postId,
-                mediasOrThumbnailUrl: media.value['thumbnailUrl']));
+                mediasOrThumbnailUrl: media.value['thumbnailUrl'],
+                mediaOrder: int.parse(media.key),
+                width: (media.value['width'] as num).toDouble(),
+                height: (media.value['height'] as num).toDouble(),
+                isVideo: true,
+                isNSFW: media.value['isNSFW'],
+                dominantColor: media.value['dominantColor'],
+              ));
+            } catch (error) {
+              if (kDebugMode) {
+                print('Error getting video preview for post: $error');
+              }
+            }
           }
         }
       }
@@ -889,7 +1018,7 @@ class PostServiceImpl extends PostService
   @override
   Stream<List<CommentPostModel>> getCommentsOfPost(String postId) {
     return _postRef.doc(postId).collection('comments').snapshots().asyncMap(
-          (QuerySnapshot commentListSnapshot) async {
+      (QuerySnapshot commentListSnapshot) async {
         if (commentListSnapshot.docs.isEmpty) {
           throw CustomFirestoreException(
             code: 'no-comments',
@@ -899,7 +1028,8 @@ class PostServiceImpl extends PostService
 
         List<CommentPostModel> comments = [];
         for (var document in commentListSnapshot.docs) {
-          Map<String, dynamic> documentMap = document.data() as Map<String, dynamic>;
+          Map<String, dynamic> documentMap =
+              document.data() as Map<String, dynamic>;
 
           DocumentReference userRef = document['userRef'];
           DocumentSnapshot userSnapshot = await userRef.get();
@@ -919,7 +1049,6 @@ class PostServiceImpl extends PostService
       },
     );
   }
-
 
   Future<String> _uploadImageAndGetUrl(Uint8List compressedImage,
       DocumentReference newPostRef, String mediaKey) async {
@@ -970,6 +1099,11 @@ class PostServiceImpl extends PostService
           userRef: _usersRef.doc(currentUserId));
 
       DocumentReference newPostRef = await _postRef.add(newPost.toMap());
+      _usersRef
+          .doc(currentUserId)
+          .collection('posts')
+          .doc(newPostRef.id)
+          .set({});
 
       for (Map<String, dynamic> asset in imagesAndVideos) {
         final String mediaKey = asset['index'].toString();
@@ -990,6 +1124,10 @@ class PostServiceImpl extends PostService
               imageUrl: assetUrl,
               isNSFW: await classifyNSFW(assetData),
               thumbnailUrl: null);
+
+          await newPostRef.update({
+            'media.$mediaKey': mediaMap[mediaKey]!.toMap(),
+          });
         } else if (asset['type'] == 'video') {
           Uint8List? thumbnailData;
           if (kIsWeb) {
@@ -1010,8 +1148,7 @@ class PostServiceImpl extends PostService
 
               final file = File(filePath);
               await file.writeAsBytes(asset['data']);
-              final Uint8List thumbnailData =
-                  await VideoThumbnail.thumbnailData(
+              thumbnailData = await VideoThumbnail.thumbnailData(
                 video: filePath,
                 imageFormat: ImageFormat.JPEG,
                 maxWidth: 1000,
@@ -1028,14 +1165,14 @@ class PostServiceImpl extends PostService
             final String dominantColor = (kIsWeb)
                 ? 'ff000000'
                 : await getDominantColorFromImage(thumbnailData);
-            Uint8List videoDate = kIsWeb
+            Uint8List videoData = kIsWeb
                 ? asset['data']
                 : await compressVideo(asset['data'], asset['index'].toString());
 
             final String thumbnailUrl = await _uploadImageAndGetUrl(
                 thumbnailData, newPostRef, mediaKey);
             final String videoUrl =
-                await _uploadVideoAndGetUrl(videoDate, newPostRef, mediaKey);
+                await _uploadVideoAndGetUrl(videoData, newPostRef, mediaKey);
 
             mediaMap[mediaKey] = OnlineMediaItem(
               dominantColor: dominantColor,

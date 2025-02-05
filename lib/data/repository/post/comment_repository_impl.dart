@@ -33,7 +33,7 @@ class CommentRepositoryImpl extends CommentRepository {
   }
 
   @override
-  Stream<CommentPostModel> getCommentStream(String postId) {
+  Stream<CommentPostModel?> getCommentStream(String postId) {
     return serviceLocator.get<CommentService>().getCommentStream(postId);
   }
 

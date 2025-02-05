@@ -53,6 +53,9 @@ class SignInCubit extends Cubit<SignInState> {
         }
       }
     } catch (e) {
+      if (kDebugMode) {
+        print('Error during login: $e');
+      }
       if (e is CustomFirestoreException) {
         if (e.code == 'new-user') {
           if (!context.mounted) return;
@@ -69,7 +72,7 @@ class SignInCubit extends Cubit<SignInState> {
       } else {
         emit(SignInFailure());
         if (context.mounted) {
-          _showAlertDialog(context, AppStrings.authError, e.toString());
+          _showAlertDialog(context, AppStrings.authError, 'Try again later');
         }
       }
     }

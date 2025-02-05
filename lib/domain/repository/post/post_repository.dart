@@ -35,10 +35,10 @@ abstract class PostRepository {
   Future<void> syncLikesToFirestore(
       Map<String, bool> likedPostsCache);
 
+  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId);
+
 
 // Future<void> deletePost(PostModel post);
-// Future<
-// Future<void> addPostData(AddPostReq addPostReq);
 
 // Future<void> updatePostData(UpdatePostReq updatePostReq);
 }

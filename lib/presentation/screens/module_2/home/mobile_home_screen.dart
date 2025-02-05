@@ -103,14 +103,17 @@ class _HomeScreenState extends State<MobileHomeBase>
   }
 
   Future<void> refreshExplore() async {
+     context.read<HomeCubit>().triggerSync();
     await context.read<ExploreCubit>().refresh();
   }
 
   Future<void> refreshTrending() async {
+    context.read<HomeCubit>().triggerSync();
     await context.read<TrendingCubit>().refresh();
   }
 
   Future<void> refreshFollowing() async {
+    context.read<HomeCubit>().triggerSync();
     await context.read<FollowingCubit>().refresh();
   }
 

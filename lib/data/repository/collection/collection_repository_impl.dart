@@ -13,13 +13,6 @@ class CollectionRepositoryImpl extends CollectionRepository {
   }
 
   @override
-  Future<List<CollectionModel>> getCollectionsData(
-      List<String> collectionIDsList) {
-    return serviceLocator<CollectionService>()
-        .getCollectionsData(collectionIDsList);
-  }
-
-  @override
   Future<List<String>> getCollectionPostsID(String collectionID){
     return serviceLocator<CollectionService>().getCollectionPostsID(collectionID);
   }
@@ -27,5 +20,25 @@ class CollectionRepositoryImpl extends CollectionRepository {
   @override
   Future<List<CollectionModel>> getCollectionsFromUser(String uid) {
     return serviceLocator<CollectionService>().getCollectionsFromUser(uid);
+  }
+
+  @override
+  Future<void> createCollection(String collectionName, bool isPublic){
+    return serviceLocator<CollectionService>().createCollection(collectionName, isPublic);
+  }
+
+  @override
+  Future<void> updateAssetsToCollection(CollectionModel collection) {
+    return serviceLocator<CollectionService>().updateAssetsToCollection(collection);
+  }
+
+  @override
+  Future<void> updateTitleToCollection(String title, CollectionModel collection) {
+    return serviceLocator<CollectionService>().updateTitleToCollection(title, collection);
+  }
+
+  @override
+  Stream<List<CollectionModel>> getCollectionsFromUserRealtime(String uid) {
+    return serviceLocator<CollectionService>().getCollectionsFromUserRealtime(uid);
   }
 }

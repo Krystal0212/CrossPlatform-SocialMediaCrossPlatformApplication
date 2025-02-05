@@ -10,7 +10,6 @@ class UserModel {
   bool emailChanged;
   bool avatarChanged;
   late final Map<String, String> preferredTopics;
-  final Map<String, String> socialAccounts;
 
   UserModel({
     this.id,
@@ -20,7 +19,6 @@ class UserModel {
     required this.preferredTopics,
     required this.avatar,
     required this.email,
-    required this.socialAccounts,
     required this.tagName,
     this.emailChanged = false,
     this.avatarChanged = false,
@@ -34,10 +32,7 @@ class UserModel {
         avatarChanged = false,
         tagName = '',
         avatar = '',
-        email = '',
-        socialAccounts = {} {
-    preferredTopics = {};
-  }
+        email = '';
 
   UserModel.newUser(Map<String, bool> chosenTopics, String? userAvatar,
       String? userEmail, this.tagName)
@@ -47,34 +42,8 @@ class UserModel {
         emailChanged = false,
         avatarChanged = false,
         avatar = userAvatar!,
-        email = userEmail!,
-        socialAccounts = {} {
+        email = userEmail!{
     preferredTopics = toPreferredTopic(chosenTopics);
-  }
-
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
-      id: map['id'] ?? '',
-      emailChanged: false,
-      avatarChanged: false,
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      lastName: map['lastname'] ?? '',
-      location: map['location'] ?? '',
-      preferredTopics: Map<String, String>.from(
-        (map['preferred-topics'] ?? {}).map(
-          (key, value) {
-            return MapEntry(
-                key,
-                value
-                    .toString()); // Or any other field you need from the reference
-          },
-        ),
-      ),
-      avatar: map['avatar'] ?? '',
-      socialAccounts: Map<String, String>.from(map['socials'] ?? {}),
-      tagName: map['tag-name'] ?? '',
-    );
   }
 
   Map<String, String> toPreferredTopic(Map<String, bool> chosenTopics) {
@@ -87,15 +56,30 @@ class UserModel {
     return results;
   }
 
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      id: map['id'] ?? '',
+      emailChanged: false,
+      avatarChanged: false,
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      lastName: map['lastname'] ?? '',
+      location: map['location'] ?? '',
+      preferredTopics: Map<String, String>.from(
+        map['preferred-topics'],
+      ),
+      avatar: map['avatar'] ?? '',
+      tagName: map['tag-name'] ?? '',
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'lastname': lastName,
       'email': email,
       'location': location,
-      'preferred-topics': preferredTopics,
       'avatar': avatar,
-      'socials': socialAccounts,
       'tag-name': tagName,
     };
   }
@@ -109,15 +93,9 @@ class UserModel {
       lastName: lastName,
       location: location,
       preferredTopics: preferredTopics,
-      socialAccounts: socialAccounts,
       email: email,
       tagName: tagName,
     );
-  }
-
-  @override
-  String toString() {
-    return 'UserModel{name: $name, email: $email, lastName: $lastName, location: $location, avatar: $avatar, emailChanged: $emailChanged, avatarChanged: $avatarChanged, preferredTopics: $preferredTopics, socialAccounts: $socialAccounts}';
   }
 
   UserModel copyWith({
@@ -145,7 +123,6 @@ class UserModel {
       lastName: lastName ?? this.lastName,
       location: location ?? this.location,
       preferredTopics: preferredTopics ?? this.preferredTopics,
-      socialAccounts: socialAccounts ?? this.socialAccounts,
       email: newEmail ?? email,
       tagName: tagName ?? this.tagName,
     );

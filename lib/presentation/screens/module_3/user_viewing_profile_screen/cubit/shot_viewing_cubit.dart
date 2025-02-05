@@ -1,19 +1,20 @@
 import 'package:socialapp/utils/import.dart';
-import 'media_state.dart';
 
-class MediaPostCubit extends Cubit<MediaPostState> {
+import 'shot_viewing_state.dart';
+
+class ShotViewingPostCubit extends Cubit<ShotViewingPostState> {
   final String userId;
 
-  MediaPostCubit({required this.userId}) : super(MediaPostInitial()) {
+  ShotViewingPostCubit({required this.userId}) : super(ShotViewingPostInitial()) {
     _initialize();
   }
 
   void _initialize() async {
-    await getImageUrlsForUserPosts();
+    getImageUrlsForUserPosts();
   }
 
   Future<void> getImageUrlsForUserPosts() async {
-    emit(MediaPostLoading());
+    emit(ShotViewingPostLoading());
 
     try {
 
@@ -31,10 +32,12 @@ class MediaPostCubit extends Cubit<MediaPostState> {
         }
       }
 
-      emit(MediaPostLoaded(imageUrls));
+      emit(ShotViewingPostLoaded(imageUrls));
     } catch (error) {
       debugPrint("Error fetching image URLs: $error");
-      emit(MediaPostError());
+      emit(ShotViewingPostError());
     }
   }
+
+
 }

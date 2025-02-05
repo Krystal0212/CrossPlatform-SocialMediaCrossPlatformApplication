@@ -35,30 +35,6 @@ class NewPostModel {
   }
 }
 
-class PreviewAssetPostModel {
-  final String postId;
-  final String mediasOrThumbnailUrl;
-
-  PreviewAssetPostModel({
-    required this.postId,
-    required this.mediasOrThumbnailUrl,
-  });
-
-  factory PreviewAssetPostModel.fromMap(Map<String, dynamic> map) {
-    return PreviewAssetPostModel(
-      postId: map['postId'] as String,
-      mediasOrThumbnailUrl: map['mediasOrThumbnailUrl'],
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'postId': postId,
-      'mediasOrThumbnailUrl': mediasOrThumbnailUrl,
-    };
-  }
-}
-
 class SoundPostModel {
   final String postId;
   final String recordUrl;

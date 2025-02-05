@@ -78,4 +78,9 @@ class PostRepositoryImpl extends PostRepository {
   Future<void> syncLikesToFirestore(Map<String, bool> likedPostsCache) {
     return serviceLocator.get<PostService>().syncLikesToFirestore(likedPostsCache);
   }
+
+  @override
+  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId) {
+    return serviceLocator.get<PostService>().getPostsByUserIdRealTime(userId);
+  }
 }

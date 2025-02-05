@@ -379,7 +379,7 @@ class NewPostCubit extends Cubit<NewPostState>
     ValueNotifier<List<TopicModel>> topicSelectedNotifier,
   ) async {
     final String content = contentTextEditingController.text;
-    final List<Map<String, dynamic>> imagesAndVideos = assetDataNotifier.value;
+    final List<Map<String, dynamic>> imagesAndVideos = List.from(assetDataNotifier.value);
     final List<TopicModel> topics = topicSelectedNotifier.value;
 
     try {
@@ -393,7 +393,6 @@ class NewPostCubit extends Cubit<NewPostState>
       Navigator.of(context).pop();
 
       if (!homeContext.mounted) return;
-
       Future.microtask(() {
         if (homeContext.mounted) {
           showAttentionMessage(
@@ -404,8 +403,6 @@ class NewPostCubit extends Cubit<NewPostState>
       await serviceLocator<PostRepository>()
           .createAssetPost(content, imagesAndVideos, topics);
 
-      assetDataNotifier.value = [];
-
       Future.microtask(() {
         if (homeContext.mounted) {
           showSuccessMessage(
@@ -414,6 +411,9 @@ class NewPostCubit extends Cubit<NewPostState>
           );
         }
       });
+
+      if (!context.mounted) return;
+      assetDataNotifier.value = [];
     } catch (error) {
       if (error.toString() == 'empty-list') {
         if (!homeContext.mounted) return;
@@ -467,7 +467,7 @@ class NewPostCubit extends Cubit<NewPostState>
         showUnknownMessage(context: context, label: AppStrings.noRecord);
       }
       if (kDebugMode) {
-        print("Error while creating new asset post : $error");
+        print("Error while creating new sound post : $error");
       }
     }
   }

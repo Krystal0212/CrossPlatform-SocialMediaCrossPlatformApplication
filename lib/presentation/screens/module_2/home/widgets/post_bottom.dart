@@ -2,6 +2,10 @@ import 'package:socialapp/presentation/screens/module_2/home/cubit/home_cubit.da
 import 'package:socialapp/presentation/screens/module_2/home/providers/home_properties_provider.dart';
 import 'package:socialapp/utils/import.dart';
 
+import 'collection_dialog.dart';
+
+const double customIconSize = 30;
+
 class PostBottom extends StatefulWidget {
   final OnlinePostModel post;
 
@@ -62,6 +66,16 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
     isUserLiked.value = !isUserLiked.value;
   }
 
+  void showCollectionPicker(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (context) => CollectionPickerDialog(
+        userId: userId, postId: widget.post.postId, medias: widget.post.media!,
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -71,10 +85,10 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
         children: [
           if(widget.post.media!= null)
           IconButton(
-            icon: SvgPicture.asset(AppIcons.addToCollection),
+            icon: SvgPicture.asset(AppIcons.addToCollection, width: customIconSize, height: customIconSize),
             onPressed: () {
               if (currentUser?.id?.isNotEmpty ?? false) {
-                toggleLike();
+                showCollectionPicker(context, currentUser!.id!);
               } else {
                 showNotSignedInMassage(
                     context: context,
@@ -85,13 +99,13 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
           const Spacer(),
           Row(
             children: [
-              Text(widget.post.commentAmount.toString()),
-              const SizedBox(width: 15),
+              Text(widget.post.commentAmount.toString(), style: const TextStyle(fontSize: 18)),
+              const SizedBox(width: 5),
               IconButton(
-                icon: SvgPicture.asset(AppIcons.chat),
+                icon: SvgPicture.asset(AppIcons.chat, width: customIconSize, height: customIconSize),
                 onPressed: () {
                   if (currentUser?.id?.isNotEmpty ?? false) {
-                    toggleLike();
+
                   } else {
                     showNotSignedInMassage(
                         context: context,
@@ -101,15 +115,16 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
               ),
             ],
           ),
+          const SizedBox(width: 15),
           Row(
             children: [
               ValueListenableBuilder<int>(
                 valueListenable: likeAmountNotifier,
                 builder: (context, likeAmount, _) {
-                  return Text(likeAmount.toString());
+                  return Text(likeAmount.toString(), style: const TextStyle(fontSize: 18),);
                 },
               ),
-              const SizedBox(width: 15),
+              const SizedBox(width: 5),
               ValueListenableBuilder<bool>(
                 valueListenable: isUserLiked,
                 builder: (context, isLiked, _) {
@@ -118,6 +133,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
                       likeBuilder: (data) => SvgPicture.asset(
                             isLiked ? AppIcons.heartFilled : AppIcons.heart,
                           ),
+                      size: customIconSize+4,
                       onTap: (_) async {
                         if (currentUser?.id?.isNotEmpty ?? false) {
                           toggleLike();

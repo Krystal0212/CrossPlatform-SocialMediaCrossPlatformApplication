@@ -1,10 +1,12 @@
 import 'package:socialapp/presentation/widgets/edit_profile/bottom_rounded_appbar.dart';
 import 'package:socialapp/utils/import.dart';
 
-import '../profile_and_setting/widgets/collection_tab.dart';
+import 'widgets/collection_viewing_tab.dart';
+
 import '../profile_and_setting/widgets/shot_tab.dart';
 import 'cubit/Viewing_state.dart';
 import 'cubit/viewing_cubit.dart';
+import 'widgets/shot_viewing_tab.dart';
 
 class UserViewingProfileScreen extends StatefulWidget {
   final String userId;
@@ -266,14 +268,14 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                         controller: _tabController,
                         children: [
                           if (state is ViewingLoaded)
-                            ShotTab1(userId: state.userModel.id ?? '')
+                            ShotViewingTab1(userId: state.userModel.id ?? '')
                           else
                             const Center(
                                 child: CircularProgressIndicator(
                                     color: AppColors.iris)),
                           // const ShotTab1(),
                           if (state is ViewingLoaded)
-                            CollectionTab1(userId: state.userModel.id ?? '')
+                            CollectionViewingTab1(userId: state.userModel.id ?? '')
                           else
                             const Center(
                                 child: CircularProgressIndicator(

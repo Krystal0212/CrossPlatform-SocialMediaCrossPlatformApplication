@@ -14,7 +14,7 @@ abstract class CommentRepository {
 
   Future<void> removeReplyComment(String postId, String repliedTo, int replyOrder);
 
-  Stream<CommentPostModel> getCommentStream(String postId);
+  Stream<CommentPostModel?> getCommentStream(String postId);
 
   Future<List<CommentPostModel>> fetchMoreComments(
       String postId, String sortBy, DocumentSnapshot lastDoc);

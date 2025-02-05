@@ -42,7 +42,9 @@ class PreferredTopicCubit extends Cubit<PreferredTopicState> {
     User? currentUser = await serviceLocator<AuthRepository>().getCurrentUser();
 
     DateTime now = DateTime.now();
-    String tagName = '${currentUser?.email}_${DateFormat('ddMM').format(now)}';
+    String email = currentUser?.email ?? "";
+    String emailWithoutDomain = email.split('@').first; // Lấy phần trước @
+    String tagName = '${emailWithoutDomain}_${DateFormat('ddMM').format(now)}';
 
     Map<String, bool> mergedMap = convertToMapStringBool(categories);
 

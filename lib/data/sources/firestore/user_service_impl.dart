@@ -29,6 +29,12 @@ class UserServiceImpl extends UserService {
   // ToDo : Reference Define
   CollectionReference get _usersRef => _firestoreDB.collection('User');
 
+  CollectionReference get _notificationRef =>
+      _firestoreDB.collection('Notification');
+
+  CollectionReference get _topicRankBoardRef =>
+      _firestoreDB.collection('TopicRankBoard');
+
   CollectionReference _usersFollowersRef(String uid) {
     return _usersRef.doc(uid).collection('followers');
   }
@@ -80,6 +86,8 @@ class UserServiceImpl extends UserService {
   Future<UserModel?> fetchUserData(String userID) async {
     try {
       DocumentSnapshot userDoc = await _usersRef.doc(userID).get();
+      DocumentSnapshot topicRankBoardSnapshot;
+
 
       if (!userDoc.exists) {
         throw CustomFirestoreException(
@@ -91,9 +99,31 @@ class UserServiceImpl extends UserService {
       Map<String, dynamic> documentMap = userDoc.data() as Map<String, dynamic>;
       documentMap['id'] = userDoc.id;
 
+      topicRankBoardSnapshot = await documentMap['topicRankBoardRef'].get();
+
+      Map<String, String> preferredTopics = {};
+
+      if (topicRankBoardSnapshot.exists) {
+        Map<String, dynamic> rank = Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
+
+        List<MapEntry<String, int>> sortedTopics = rank.entries
+            .map((entry) => MapEntry(entry.key, entry.value as int))
+            .toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+
+        // Convert sorted list into preferred-topics (Map<String, String>)
+        for (int i = 0; i < 5; i++) {
+          preferredTopics[(i + 1).toString()] = sortedTopics[i].key;
+        }
+      }
+
+      documentMap['preferred-topics'] = preferredTopics;
+
       return UserModel.fromMap(documentMap);
     } catch (e) {
-      print('Error during fetching user data: $e');
+      if (kDebugMode) {
+        print('Error during fetching user data: $e');
+      }
       rethrow;
     }
   }
@@ -107,12 +137,30 @@ class UserServiceImpl extends UserService {
       return;
     }
 
-    Map<String, dynamic> userData = addUser.toMap();
-    await _usersRef
-        .doc(currentUser?.uid)
-        .set(userData)
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Error pushing user data: $error"));
+    try {
+      Map<String, dynamic> userData = addUser.toMap();
+      await _usersRef.doc(currentUser?.uid).set(userData);
+      Map<String, int> rankMap = {
+        for (String preferTopic in addUser.preferredTopics.values)
+          preferTopic: 10
+      };
+
+      DocumentReference docRef = await _topicRankBoardRef.add({
+        "rank": rankMap,
+      });
+
+      String newDocId = docRef.id;
+
+      await _usersRef.doc(currentUser?.uid).update({
+        'topicRankBoardRef': _topicRankBoardRef.doc(newDocId),
+      });
+
+      await _notificationRef.doc(currentUser?.uid).set(<String, dynamic>{});
+    } catch (error) {
+      if (kDebugMode) {
+        print("Error adding user data: $error");
+      }
+    }
   }
 
   @override
@@ -125,7 +173,9 @@ class UserServiceImpl extends UserService {
       TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
 
       String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-      print('Uploaded Image URL: $downloadUrl');
+      if (kDebugMode) {
+        print('Uploaded Image URL: $downloadUrl');
+      }
 
       return downloadUrl;
     } catch (e) {

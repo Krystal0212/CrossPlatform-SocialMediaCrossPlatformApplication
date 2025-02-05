@@ -3,23 +3,24 @@ import 'package:socialapp/utils/import.dart';
 abstract class CommentService {
   Future<void> sendComment(String postId, String postOwnerId, String comment);
 
-  Future<int> sendReplyComment(
-      String postId, String postOwnerId, String comment, String repliedTo);
+  Future<int> sendReplyComment(String postId, String postOwnerId,
+      String comment, String repliedTo);
 
   Future<void> removeComment(String postId, String commentId);
 
-  Future<void> removeReplyComment(String postId, String repliedTo, int replyOrder);
+  Future<void> removeReplyComment(String postId, String repliedTo,
+      int replyOrder);
 
-  Future<List<CommentPostModel>> fetchInitialComments(
-      String postId, String sortBy);
+  Future<List<CommentPostModel>> fetchInitialComments(String postId,
+      String sortBy);
 
-  Stream<CommentPostModel> getCommentStream(String postId);
+  Stream<CommentPostModel?> getCommentStream(String postId);
 
-  Future<List<CommentPostModel>> fetchMoreComments(
-      String postId, String sortBy, DocumentSnapshot lastDoc);
+  Future<List<CommentPostModel>> fetchMoreComments(String postId, String sortBy,
+      DocumentSnapshot lastDoc);
 
-  Future<void> syncCommentLikesToFirestore(
-      String postId, Map<String, bool> likedCommentsCache);
+  Future<void> syncCommentLikesToFirestore(String postId,
+      Map<String, bool> likedCommentsCache);
 }
 
 class CommentServiceImpl extends CommentService {
@@ -46,9 +47,11 @@ class CommentServiceImpl extends CommentService {
 
   // ToDo: Service Functions
   @override
-  Future<void> sendComment(
-      String postId, String postOwnerId, String comment) async {
-    if (comment.trim().isEmpty) return;
+  Future<void> sendComment(String postId, String postOwnerId,
+      String comment) async {
+    if (comment
+        .trim()
+        .isEmpty) return;
 
     final user = _auth.currentUser;
     if (user == null) throw Exception("User not logged in");
@@ -82,7 +85,8 @@ class CommentServiceImpl extends CommentService {
         throw Exception("Comment not found");
       }
 
-      if ((commentSnapshot.data() as Map<String, dynamic>)['userRef'] != _usersRef.doc(user.uid)) {
+      if ((commentSnapshot.data() as Map<String, dynamic>)['userRef'] !=
+          _usersRef.doc(user.uid)) {
         throw Exception("You can only delete your own comments");
       }
 
@@ -103,13 +107,15 @@ class CommentServiceImpl extends CommentService {
   @override
   Future<int> sendReplyComment(String postId, String postOwnerId,
       String comment, String repliedTo) async {
-    if (comment.trim().isEmpty) return -1;
+    if (comment
+        .trim()
+        .isEmpty) return -1;
 
     final user = _auth.currentUser;
     if (user == null) throw Exception("User not logged in");
 
     final DocumentReference replyCommentPostRef =
-        _commentPostsRef(postId).doc(repliedTo);
+    _commentPostsRef(postId).doc(repliedTo);
 
     try {
       DocumentSnapshot postSnapshot = await replyCommentPostRef.get();
@@ -121,7 +127,7 @@ class CommentServiceImpl extends CommentService {
 
       // Create the reply comment data
       Map<String, dynamic> replyCommentMap =
-          ReplyCommentPostModel.newReplyComment(
+      ReplyCommentPostModel.newReplyComment(
         content: comment,
         userId: user.uid,
       ).toMap();
@@ -142,17 +148,22 @@ class CommentServiceImpl extends CommentService {
   }
 
   @override
-  Future<void> removeReplyComment(String postId, String repliedTo, int replyOrder) async {
+  Future<void> removeReplyComment(String postId, String repliedTo,
+      int replyOrder) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception("User not logged in");
 
-    final DocumentReference replyCommentPostRef = _commentPostsRef(postId).doc(repliedTo);
+    final DocumentReference replyCommentPostRef = _commentPostsRef(postId).doc(
+        repliedTo);
 
     try {
       DocumentSnapshot postSnapshot = await replyCommentPostRef.get();
-      Map<String, dynamic> postData = postSnapshot.data() as Map<String, dynamic>? ?? {};
+      Map<String, dynamic> postData = postSnapshot.data() as Map<String,
+          dynamic>? ?? {};
 
-      Map<String, dynamic> commentsMap = postData['replyComments'] as Map<String, dynamic>? ?? {};
+      Map<String, dynamic> commentsMap = postData['replyComments'] as Map<
+          String,
+          dynamic>? ?? {};
 
       if (!commentsMap.containsKey(replyOrder.toString())) {
         throw Exception("Reply comment not found");
@@ -176,8 +187,8 @@ class CommentServiceImpl extends CommentService {
 
 
   @override
-  Future<List<CommentPostModel>> fetchInitialComments(
-      String postId, String sortBy) async {
+  Future<List<CommentPostModel>> fetchInitialComments(String postId,
+      String sortBy) async {
     try {
       noMoreNewestComments = false;
       noMoreMostLikedComments = false;
@@ -197,7 +208,7 @@ class CommentServiceImpl extends CommentService {
       List<CommentPostModel> comments = [];
       for (var document in querySnapshot.docs) {
         Map<String, dynamic> documentMap =
-            document.data() as Map<String, dynamic>;
+        document.data() as Map<String, dynamic>;
 
         DocumentReference userRef = document['userRef'];
         DocumentSnapshot userSnapshot = await userRef.get();
@@ -214,7 +225,7 @@ class CommentServiceImpl extends CommentService {
         // Handle replyComments asynchronously
         var replyComments = <String, ReplyCommentPostModel>{};
         for (var key
-            in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
+        in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
           Map<String, dynamic> replyData = documentMap['replyComments'][key];
           DocumentReference replyUserRef = replyData['userRef'];
           DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
@@ -243,57 +254,61 @@ class CommentServiceImpl extends CommentService {
   }
 
   @override
-  Stream<CommentPostModel> getCommentStream(String postId) {
-    return _commentPostsRef(postId)
-        .orderBy('priorityRank')
-        .orderBy('timestamp', descending: true)
-        .limit(1)
-        .snapshots()
-        .asyncMap((snapshot) async {
-      if (snapshot.docs.isNotEmpty) {
-        var document = snapshot.docs.first;
+  Stream<CommentPostModel?> getCommentStream(String postId) {
+      return _commentPostsRef(postId)
+          .orderBy('priorityRank')
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .snapshots()
+          .asyncMap((snapshot) async {
+        if (snapshot.docs.isNotEmpty) {
+          var document = snapshot.docs.first;
 
-        Map<String, dynamic> documentMap =
-            document.data() as Map<String, dynamic>;
+          Map<String, dynamic> documentMap =
+          document.data() as Map<String, dynamic>;
 
-        DocumentReference userRef = document['userRef'];
-        DocumentSnapshot userSnapshot = await userRef.get();
+          DocumentReference userRef = document['userRef'];
+          DocumentSnapshot userSnapshot = await userRef.get();
 
-        String username = userSnapshot['name'];
-        String userAvatar = userSnapshot['avatar'];
+          String username = userSnapshot['name'];
+          String userAvatar = userSnapshot['avatar'];
 
-        documentMap['commentId'] = document.id;
-        documentMap['userId'] = userRef.id;
-        documentMap['username'] = username;
-        documentMap['userAvatar'] = userAvatar;
-        documentMap['documentSnapshot'] = document;
+          documentMap['commentId'] = document.id;
+          documentMap['userId'] = userRef.id;
+          documentMap['username'] = username;
+          documentMap['userAvatar'] = userAvatar;
+          documentMap['documentSnapshot'] = document;
 
-        // Handle replyComments asynchronously
-        var replyComments = <String, ReplyCommentPostModel>{};
-        for (var key
-            in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
-          Map<String, dynamic> replyData = documentMap['replyComments'][key];
-          DocumentReference replyUserRef = replyData['userRef'];
-          DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
+          // Handle replyComments asynchronously
+          var replyComments = <String, ReplyCommentPostModel>{};
+          for (var key
+          in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
+            Map<String, dynamic> replyData = documentMap['replyComments'][key];
+            DocumentReference replyUserRef = replyData['userRef'];
+            DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
 
-          replyData['order'] = key;
-          replyData['userId'] = replyUserRef.id;
-          replyData['username'] = replyUserSnapshot['name'];
-          replyData['userAvatar'] = replyUserSnapshot['avatar'];
-          replyComments[key] = ReplyCommentPostModel.fromMap(replyData);
+            replyData['order'] = key;
+            replyData['userId'] = replyUserRef.id;
+            replyData['username'] = replyUserSnapshot['name'];
+            replyData['userAvatar'] = replyUserSnapshot['avatar'];
+            replyComments[key] = ReplyCommentPostModel.fromMap(replyData);
+          }
+
+          documentMap['replyComments'] = replyComments;
+
+          return CommentPostModel.fromMap(documentMap);
         }
+        if (kDebugMode) {
+          print('Error fetching comments: No new comments found');
+        }
+        return null;
+      });
 
-        documentMap['replyComments'] = replyComments;
-
-        return CommentPostModel.fromMap(documentMap);
-      }
-      throw Exception("No new comments found");
-    });
   }
 
   @override
-  Future<List<CommentPostModel>> fetchMoreComments(
-      String postId, String sortBy, DocumentSnapshot lastDoc) async {
+  Future<List<CommentPostModel>> fetchMoreComments(String postId, String sortBy,
+      DocumentSnapshot lastDoc) async {
     try {
       if (sortBy == "newest" && noMoreNewestComments) {
         throw 'no-more-newest-comments';
@@ -315,7 +330,7 @@ class CommentServiceImpl extends CommentService {
       List<CommentPostModel> comments = [];
       for (var document in querySnapshot.docs) {
         Map<String, dynamic> documentMap =
-            document.data() as Map<String, dynamic>;
+        document.data() as Map<String, dynamic>;
 
         DocumentReference userRef = document['userRef'];
         DocumentSnapshot userSnapshot = await userRef.get();
@@ -329,7 +344,7 @@ class CommentServiceImpl extends CommentService {
         // Handle replyComments asynchronously
         var replyComments = <String, ReplyCommentPostModel>{};
         for (var key
-            in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
+        in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
           Map<String, dynamic> replyData = documentMap['replyComments'][key];
           DocumentReference replyUserRef = replyData['userRef'];
           DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
@@ -369,8 +384,8 @@ class CommentServiceImpl extends CommentService {
   }
 
   @override
-  Future<void> syncCommentLikesToFirestore(
-      String postId, Map<String, bool> likedCommentsCache) async {
+  Future<void> syncCommentLikesToFirestore(String postId,
+      Map<String, bool> likedCommentsCache) async {
     if (likedCommentsCache.isEmpty) {
       // if (kDebugMode) {
       //   print('No likes to sync.');
@@ -387,14 +402,14 @@ class CommentServiceImpl extends CommentService {
       likedCommentsCache.forEach((commentId, isLiked) {
         operations.add(() async {
           final DocumentReference commentRef =
-              _commentPostsRef(postId).doc(commentId);
+          _commentPostsRef(postId).doc(commentId);
           DocumentSnapshot commentSnapshot = await commentRef.get();
           if (!commentSnapshot.exists) {
             return;
           }
 
           Map<String, dynamic> commentData =
-              commentSnapshot.data() as Map<String, dynamic>;
+          commentSnapshot.data() as Map<String, dynamic>;
 
           List<dynamic> currentLikes = commentData['likes'] ?? [];
 
