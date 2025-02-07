@@ -19,7 +19,7 @@ class ShotViewingPostCubit extends Cubit<ShotViewingPostState> {
     try {
 
       List<OnlinePostModel>? posts = await serviceLocator<PostRepository>()
-          .getPostsByUserId(userId);
+          .getAssetPostsByUserId(userId);
       List<PreviewAssetPostModel> imageUrls = [];
 
       if (posts != null) {

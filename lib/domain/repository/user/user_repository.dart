@@ -7,11 +7,12 @@ abstract class UserRepository {
 
   Future<void> addCurrentUserData(UserModel addUserReq);
 
-  Future<void> updateCurrentUserData(UserModel updateUserReq);
+  Future<bool> updateCurrentUserData(UserModel updatedUserData,
+      UserModel previousUserData, Uint8List? newAvatar);
 
   Future<Map<String, dynamic>> getUserRelatedData(String uid);
 
   Future<void> followOrUnfollowUser(String uid, bool? isFollow);
 
-  Future<String>? uploadAvatar(File image, String uid);
+  Future<void> updateCurrentUserNSFWOption(bool isNSFWFilterTurnOn);
 }

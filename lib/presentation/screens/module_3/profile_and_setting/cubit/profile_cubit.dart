@@ -46,7 +46,7 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<List<PreviewAssetPostModel>> getImageUrlsForUserPosts(String userId) async {
     List<OnlinePostModel>? posts =
-        await serviceLocator<PostRepository>().getPostsByUserId(userId);
+        await serviceLocator<PostRepository>().getAssetPostsByUserId(userId);
     List<PreviewAssetPostModel> imageUrls = [];
 
     if (posts != null) {
@@ -60,38 +60,6 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
 
     return imageUrls;
-  }
-
-  Future<void> updateProfile(UserModel updatedUser) async {
-    emit(ProfileLoading());
-    try {
-      await serviceLocator<UserRepository>().updateCurrentUserData(updatedUser);
-      fetchProfile();
-    } catch (e) {
-      emit(ProfileError());
-
-      debugPrint('Failed to update profile: $e');
-    }
-  }
-
-  Future<void> updateProfileWithEmail(UserModel updatedUser) async {
-    emit(ProfileLoading());
-    try {
-      updatedUser.resetState();
-      await serviceLocator<UserRepository>().updateCurrentUserData(updatedUser);
-
-      emit(ProfileEmailChanged());
-    } catch (e) {
-      if (e is FirebaseAuthException) {
-        debugPrint('Failed to update profile\'s email: $e');
-
-        emit(ProfileError());
-      } else {
-        if (kDebugMode) {
-          print(e);
-        }
-      }
-    }
   }
 
   Future<void> signOut() async {

@@ -6,26 +6,44 @@ import '../../collection/collection_viewing_screen.dart';
 import '../cubit/collection_viewing_cubit.dart';
 import '../cubit/collection_viewing_state.dart';
 
-class CollectionViewingTab1 extends StatefulWidget {
+class CollectionViewingTab extends StatefulWidget {
   final String userId;
 
-  const CollectionViewingTab1({super.key, required this.userId});
+  const CollectionViewingTab({super.key, required this.userId});
 
   @override
-  State<CollectionViewingTab1> createState() => _CollectionViewingTab1State();
+  State<CollectionViewingTab> createState() => _CollectionViewingTabState();
 }
 
-class _CollectionViewingTab1State extends State<CollectionViewingTab1>
+class _CollectionViewingTabState extends State<CollectionViewingTab>
     with AutomaticKeepAliveClientMixin {
+
+  late double deviceHeight = 0, deviceWidth = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    double deviceWidth = MediaQuery.of(context).size.width;
+
     return BlocProvider(
       create: (context) => CollectionViewingPostCubit(userId: widget.userId),
       child:
           BlocBuilder<CollectionViewingPostCubit, CollectionViewingPostState>(
         builder: (context, state) {
+          if(state is CollectionViewingPostLoading || state is CollectionViewingPostInitial){
+            return  SizedBox(
+              height: deviceHeight*0.3,
+              child: const Center(child: CircularProgressIndicator(
+                color: AppColors.iris,
+              )),
+            );
+          } else
           if (state is CollectionViewingPostLoaded) {
             if (state.collections.isEmpty) {
               return const Center(child: Text('No collections found.'));
@@ -109,13 +127,7 @@ class _CollectionViewingTab1State extends State<CollectionViewingTab1>
               ),
             );
           }
-          return Center(
-              child: Column(
-            children: [
-              SvgPicture.asset(AppImages.empty),
-              const Text('There is something wrong, can get data.'),
-            ],
-          ));
+          return NoPublicDataAvailablePlaceholder(width: deviceWidth*0.9,);
         },
       ),
     );

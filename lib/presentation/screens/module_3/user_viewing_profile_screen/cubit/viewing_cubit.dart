@@ -67,7 +67,7 @@ class ViewingCubit extends Cubit<ViewingState> {
   Future<List<PreviewAssetPostModel>> getImageUrlsForUserPosts(
       String userId) async {
     List<OnlinePostModel>? posts =
-        await serviceLocator<PostRepository>().getPostsByUserId(userId);
+        await serviceLocator<PostRepository>().getAssetPostsByUserId(userId);
     List<PreviewAssetPostModel> imageUrls = [];
 
     if (posts != null) {

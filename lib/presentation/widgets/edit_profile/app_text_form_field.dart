@@ -5,15 +5,19 @@ import 'package:socialapp/utils/styles/themes.dart';
 class AppTextFormField extends StatelessWidget {
   const AppTextFormField(
       {super.key,
-        required this.controller,
-        required this.label,
-        required this.hintText,
-        required this.width,
-        this.suffixIcon,
-        this.obscureText = false,
-        this.validator,
-        this.textInputAction,
-        this.textAlign, required this.focusNode, required this.onFieldSubmitted});
+      required this.controller,
+      required this.label,
+      required this.hintText,
+      required this.width,
+      this.suffixIcon,
+      this.obscureText = false,
+      this.validator,
+      this.textInputAction,
+        this.keyboardType,
+      this.textAlign,
+      required this.focusNode,
+      required this.onFieldSubmitted,
+      required this.onChanged});
 
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -24,8 +28,10 @@ class AppTextFormField extends StatelessWidget {
   final bool obscureText;
   final FormFieldValidator? validator;
   final TextInputAction? textInputAction;
+  final TextInputType? keyboardType;
   final TextAlign? textAlign;
   final Function(String?) onFieldSubmitted;
+  final Function(String?) onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -34,24 +40,38 @@ class AppTextFormField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppTheme.appLabelStyle,),
-          const SizedBox(height: 10,),
+          Text(
+            label,
+            style: AppTheme.appLabelStyle,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             controller: controller,
             focusNode: focusNode,
             onFieldSubmitted: onFieldSubmitted,
             decoration: InputDecoration(
               hintText: hintText,
+              hintStyle: AppTheme.appHintStyle.copyWith(fontSize: 22),
+              errorStyle: AppTheme.appErrorStyle,
+              errorMaxLines: 2,
+              border: OutlineInputBorder(
+                borderRadius: AppTheme.smallBorderRadius,
+              ),
               contentPadding:
-              const EdgeInsets.symmetric(vertical: 8.0, horizontal: 24.0),
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 24.0),
               suffixIcon: suffixIcon,
             ),
+            onChanged: onChanged,
             obscureText: obscureText,
             validator: validator,
             textInputAction: textInputAction,
-            style: AppTheme.profileCasualStyle.copyWith(color: AppColors.blackOak),
+            style: AppTheme.profileCasualStyle
+                .copyWith(color: AppColors.blackOak, fontSize: 22),
             textAlign: textAlign ?? TextAlign.start,
-            autovalidateMode: AutovalidateMode.onUnfocus,
+            keyboardType: keyboardType,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
         ],
       ),

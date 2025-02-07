@@ -17,8 +17,9 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
-  Future<void> updateCurrentUserData(UserModel updateUserReq) {
-    return serviceLocator<UserService>().updateCurrentUserData(updateUserReq);
+  Future<bool> updateCurrentUserData(UserModel updatedUserData,
+      UserModel previousUserData, Uint8List? newAvatar) {
+    return serviceLocator<UserService>().updateCurrentUserData(updatedUserData, previousUserData, newAvatar);
   }
 
   @override
@@ -32,7 +33,7 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
-  Future<String>? uploadAvatar(File image, String uid) {
-    return serviceLocator<UserService>().uploadAvatar(image, uid);
+  Future<void> updateCurrentUserNSFWOption(bool isNSFWFilterTurnOn) {
+    return serviceLocator<UserService>().updateCurrentUserNSFWOption(isNSFWFilterTurnOn);
   }
 }

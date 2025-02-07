@@ -1,4 +1,3 @@
-import 'package:socialapp/presentation/screens/module_2/comment/comment_screen.dart';
 import 'package:socialapp/utils/import.dart';
 
 import '../cubit/post_detail_cubit.dart';
@@ -118,13 +117,6 @@ class _PostStatsBarState extends State<PostStatsBar> with FlashMessage {
 
                         ),
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      CommentScreen(post: widget.post)
-                              )
-                          );
                         },
                       ),
                     ],

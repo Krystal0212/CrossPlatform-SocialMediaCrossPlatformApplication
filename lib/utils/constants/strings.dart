@@ -16,6 +16,7 @@ class AppStrings {
   static const String successPushDescription =
       'Your file successfully uploaded. You can change whenever you want in the profile section.';
   static const String notSignedInTitle = 'You\'re not sign in';
+  static const String notOnline = 'Please stay online to do this';
   static const String notSignedInLikedDescription =
       'Sign in to do this action';
   static const String notSignedInMessageDescription =
@@ -29,6 +30,9 @@ class AppStrings {
   static const String emailHint = "Email";
   static const String passwordHint = "Password";
   static const String confirmPasswordHint = "Confirm password";
+  static const String currentPasswordHint = "Your Current Password";
+  static const String newPasswordHint = "New Password";
+  static const String newConfirmPasswordHint = "Confirm New Password";
   static const String enterPassword = "Please enter your password";
   static const String forgotPassword = "FORGOT PASSWORD";
   static const String logIn = "LOG IN";
@@ -69,6 +73,7 @@ class AppStrings {
   static const String defaultResetPasswordMessage =
       "We will send you instruction on how to reset your password";
   static const String setNewPassword = "SET NEW PASSWORD";
+  static const String setNewPasswordForGG = "Set new password";
   static const String confirmNewPassword = "REWRITE YOUR NEW PASSWORD";
   static const String typeNewPassword = "Type your new password";
   static const String send = "Send";
@@ -128,6 +133,16 @@ class AppStrings {
   static const String firebaseAuthError = "Firebase Auth error";
   static const String firestoreUserError = "Firestore User error";
 
+  // Setting message
+  static const String saveChange ='SAVE CHANGES';
+  static const String submit = "SUBMIT";
+  static const String noChangeDetected = 'No changes detected';
+  static const String tagNameTooLong = 'Tag name must be at most 15 characters long.';
+  static const String nameTooLong = 'Name must be at most 20 characters long.';
+  static const locationTooLong = 'Location must be at most 30 characters long.';
+  static const String invalidTagName = 'Only lowercase letters, numbers and "_" are allowed';
+  static const String invalidName = 'Only letters and spaces are allowed';
+  static const String tagTaken = 'Tag name is already taken';
   static const String email = 'Email';
   static const String instagram = 'Instagram';
   static const String twitter = 'Twitter';
@@ -135,5 +150,6 @@ class AppStrings {
   static const String paypal = 'Paypal';
   static const String changePassword = 'Change password';
   static const String aboutZineround = 'About Zineround';
+  static const String nsfwFilter = 'NSFW filter';
   static const String termPrivacy = 'Term & privacy';
 }

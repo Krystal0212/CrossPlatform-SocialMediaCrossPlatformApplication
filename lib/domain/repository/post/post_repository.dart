@@ -1,3 +1,4 @@
+import 'package:socialapp/domain/entities/sound.dart';
 import 'package:socialapp/utils/import.dart';
 
 abstract class PostRepository {
@@ -25,7 +26,6 @@ abstract class PostRepository {
 
   Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId);
 
-  Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
 
   Future<void> createAssetPost(String content,
       List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
@@ -35,10 +35,11 @@ abstract class PostRepository {
   Future<void> syncLikesToFirestore(
       Map<String, bool> likedPostsCache);
 
-  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId);
+  Future<List<OnlinePostModel>?> getAssetPostsByUserId(String userId);
 
+  Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(String userId);
 
-// Future<void> deletePost(PostModel post);
+  Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
+      String userId);
 
-// Future<void> updatePostData(UpdatePostReq updatePostReq);
 }

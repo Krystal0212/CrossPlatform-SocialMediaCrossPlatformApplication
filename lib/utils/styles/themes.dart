@@ -38,6 +38,11 @@ class AppTheme {
         gradient: mainGradient,
       );
 
+  static BoxDecoration get gradientDisableFabBoxDecoration => BoxDecoration(
+    borderRadius: BorderRadius.circular(30),
+    gradient: disableGradient,
+  );
+
   static BoxDecoration get splashBackgroundBoxDecoration => const BoxDecoration(
         image: DecorationImage(
             image: AssetImage(AppImages.webSplashBackground),
@@ -102,15 +107,21 @@ class AppTheme {
 
   //ToDo: Style
   static TextStyle get appLabelStyle => GoogleFonts.plusJakartaSans(
-      fontSize: 16,
+      fontSize: 22,
       fontWeight: FontWeight.bold,
       color: labelTextColor,
       letterSpacing: 0.60);
 
   static TextStyle get appHintStyle => GoogleFonts.plusJakartaSans(
-      fontSize: 16,
+      fontSize: 20,
       fontWeight: FontWeight.w700,
       color: hintTextColor,
+      letterSpacing: 0.60);
+
+  static TextStyle get appErrorStyle => GoogleFonts.plusJakartaSans(
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+      color: AppColors.sangoRed,
       letterSpacing: 0.60);
 
   static TextStyle get profileLocationStyle => GoogleFonts.plusJakartaSans(
@@ -188,7 +199,7 @@ class AppTheme {
 
   static TextStyle get gradientShowMoreContentTextStyle =>
       GoogleFonts.plusJakartaSans(
-        fontSize: 15,
+        fontSize: 20,
         fontWeight: FontWeight.w700,
         color: black,
       );
@@ -274,6 +285,15 @@ class AppTheme {
           ..strokeWidth = 2 // Độ dày của viền chữ
           ..color = AppColors.white, // Màu
       );
+
+  static TextStyle get dialogHeaderStyle => GoogleFonts.plusJakartaSans(
+    fontWeight: FontWeight.w400,
+    fontSize: 40,
+    foreground: Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 // Độ dày của viền chữ
+      ..color = AppColors.blackOak, // Màu
+  );
 
   static TextStyle get authNormalStyle => GoogleFonts.plusJakartaSans(
         color: AppColors.kettleman,

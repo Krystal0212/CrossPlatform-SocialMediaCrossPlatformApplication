@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:socialapp/presentation/screens/module_4/message_list/chat_screen.dart';
+import 'package:socialapp/presentation/screens/module_4/message_list/message_list_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -202,7 +203,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const MessageList()));
+                              builder: (context) => const MessageListScreen()));
                     },
                     child: const Text(
                       "Chat cho vui",

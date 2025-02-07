@@ -44,19 +44,7 @@ class ShotPostCubit extends Cubit<ShotPostState> {
     try {
 
       Stream<List<PreviewAssetPostModel>?> postStreams = serviceLocator<PostRepository>()
-          .getPostsByUserIdRealTime(userId);
-
-      // List<PreviewAssetPostModel> imageUrls = [];
-      //
-      // if (posts != null) {
-      //   for (var post in posts) {
-      //     List<PreviewAssetPostModel> imageUrlsForPost = await serviceLocator<PostRepository>()
-      //         .getPostImagesByPostId(post.postId);
-      //     if (imageUrlsForPost.isNotEmpty) {
-      //       imageUrls.addAll(imageUrlsForPost);
-      //     }
-      //   }
-      // }
+          .getAssetPostsByUserIdRealTime(userId);
 
       emit(ShotPostLoaded(postStreams));
     } catch (error) {

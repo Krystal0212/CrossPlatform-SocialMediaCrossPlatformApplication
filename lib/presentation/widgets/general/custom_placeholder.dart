@@ -160,3 +160,126 @@ class NoMorePostsPlaceholder extends StatelessWidget {
     );
   }
 }
+
+class NoPublicDataErrorPlaceholder extends StatelessWidget {
+  final double width;
+
+  const NoPublicDataErrorPlaceholder({super.key, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+            const SizedBox(height: 20),
+
+            Text(
+              'There is something wrong, can\'t get any public data.',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NoPublicDataAvailablePlaceholder extends StatelessWidget {
+  final double width;
+
+   const NoPublicDataAvailablePlaceholder({super.key, required this.width,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+            Text(
+              'No public data available',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProcessingDataPlaceholder extends StatelessWidget {
+  final double width;
+
+  const ProcessingDataPlaceholder({super.key, required this.width,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.empty, height: width*0.5,),
+            Text(
+              'We are processing, wait a little',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NoUserDataAvailablePlaceholder extends StatelessWidget {
+  final double width;
+
+  const NoUserDataAvailablePlaceholder({super.key, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+            Text(
+              'No profile data available',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

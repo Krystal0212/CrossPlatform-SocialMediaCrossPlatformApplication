@@ -23,14 +23,24 @@ class CollectionViewingCubit extends Cubit<CollectionViewingState> {
     emit(CollectionViewingLoaded(imagePreviews, isCurrentUser));
   }
 
-  void updateCollectionName(String title) async{
-    await serviceLocator<CollectionRepository>().updateTitleToCollection(title, collection);
+  void updateCollectionName(String title) async {
+    await serviceLocator<CollectionRepository>()
+        .updateTitleToCollection(title, collection);
   }
 
-  void updateCollectionData(List<PreviewAssetPostModel> imagePreviews) async{
-
+  void updateCollectionData(List<PreviewAssetPostModel> imagePreviews) async {
     collection.assets = imagePreviews;
 
-    await serviceLocator<CollectionRepository>().updateAssetsToCollection(collection);
+    await serviceLocator<CollectionRepository>()
+        .updateAssetsToCollection(collection);
+  }
+
+  void removeOtherUserCollectionFormCurrentUser() async {
+    await serviceLocator<CollectionRepository>().removeOtherUserCollectionFromCurrentUser(collection);
+  }
+
+  void removeCurrentUserCollectionFromCurrentUser() async {
+    await serviceLocator<CollectionRepository>()
+        .removeCurrentUserCollectionFromCurrentUser(collection);
   }
 }

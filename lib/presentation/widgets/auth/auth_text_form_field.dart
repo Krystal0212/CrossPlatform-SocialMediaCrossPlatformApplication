@@ -12,7 +12,7 @@ class AuthTextFormField extends StatelessWidget {
       this.obscureText = false,
       this.validator,
       this.textInputAction,
-      this.textAlign});
+      this.textAlign,  this.focusNode,  this.onFieldSubmitted});
 
   final TextEditingController textEditingController;
   final String hintText;
@@ -20,6 +20,8 @@ class AuthTextFormField extends StatelessWidget {
   final bool obscureText;
   final FormFieldValidator? validator;
   final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onFieldSubmitted;
   final TextAlign? textAlign;
 
   @override
@@ -42,6 +44,8 @@ class AuthTextFormField extends StatelessWidget {
         filled: true,
         suffixIcon: suffixIcon,
       ),
+      focusNode: focusNode,
+      onFieldSubmitted: onFieldSubmitted,
       autovalidateMode: AutovalidateMode.onUnfocus,
       obscureText: obscureText,
       validator: validator,

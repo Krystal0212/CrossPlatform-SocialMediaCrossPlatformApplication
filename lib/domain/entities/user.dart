@@ -5,6 +5,7 @@ class UserModel {
   final String email;
   final String lastName;
   final String location;
+  final bool isNSFWFilterTurnOn;
 
   final String avatar;
   bool emailChanged;
@@ -12,6 +13,7 @@ class UserModel {
   late final Map<String, String> preferredTopics;
 
   UserModel({
+    required this.isNSFWFilterTurnOn,
     this.id,
     required this.name,
     required this.lastName,
@@ -32,17 +34,19 @@ class UserModel {
         avatarChanged = false,
         tagName = '',
         avatar = '',
-        email = '';
+        email = '',
+        isNSFWFilterTurnOn = true;
 
   UserModel.newUser(Map<String, bool> chosenTopics, String? userAvatar,
       String? userEmail, this.tagName)
-      : name = '',
+      : name = tagName.substring(0, tagName.length - 4),
         lastName = '',
         location = '',
         emailChanged = false,
         avatarChanged = false,
         avatar = userAvatar!,
-        email = userEmail!{
+        isNSFWFilterTurnOn = true,
+        email = userEmail! {
     preferredTopics = toPreferredTopic(chosenTopics);
   }
 
@@ -70,6 +74,7 @@ class UserModel {
       ),
       avatar: map['avatar'] ?? '',
       tagName: map['tag-name'] ?? '',
+      isNSFWFilterTurnOn: map['isNSFWFilterTurnOn'] ?? true,
     );
   }
 
@@ -81,6 +86,7 @@ class UserModel {
       'location': location,
       'avatar': avatar,
       'tag-name': tagName,
+      'isNSFWFilterTurnOn': isNSFWFilterTurnOn
     };
   }
 
@@ -95,6 +101,7 @@ class UserModel {
       preferredTopics: preferredTopics,
       email: email,
       tagName: tagName,
+      isNSFWFilterTurnOn: isNSFWFilterTurnOn,
     );
   }
 
@@ -109,6 +116,7 @@ class UserModel {
     List<String>? followers,
     List<String>? followingUsers,
     String? tagName,
+    bool? isNSFWFilterTurnOn,
   }) {
     if (newEmail != null && newEmail != email) {
       emailChanged = true;
@@ -125,6 +133,7 @@ class UserModel {
       preferredTopics: preferredTopics ?? this.preferredTopics,
       email: newEmail ?? email,
       tagName: tagName ?? this.tagName,
+      isNSFWFilterTurnOn: isNSFWFilterTurnOn ?? this.isNSFWFilterTurnOn,
     );
   }
 }

@@ -109,7 +109,8 @@ class FirestoreServiceImpl extends FirestoreService {
       filteredTopics = topicsSnapshot.docs
           .where((doc) {
             String name = (doc.data() as Map<String, dynamic>)['name'] ?? '';
-            return name.toLowerCase().contains(matchValue.toLowerCase());
+            return name.toLowerCase() != 'audio record' &&
+                name.toLowerCase().contains(matchValue.toLowerCase());
           })
           .map((doc) {
             TopicModel topic = TopicModel.fromMap(

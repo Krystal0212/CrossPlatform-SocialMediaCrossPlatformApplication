@@ -97,7 +97,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (bool didPop, Object? result) async {
-          if (!kIsWeb) {
+          if (!kIsWeb && GoRouter.of(context).canPop()) {
             context.pop();
           }
         },

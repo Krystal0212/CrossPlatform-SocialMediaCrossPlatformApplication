@@ -93,4 +93,21 @@ class AuthRepositoryImpl extends AuthRepository {
     return await serviceLocator<AuthFirebaseService>()
         .resetPassword(password, userId);
   }
+
+
+
+  @override
+  bool isCurrentUserGoogleUserWithoutPassword() {
+    return serviceLocator<AuthFirebaseService>().isCurrentUserGoogleUserWithoutPassword();
+  }
+
+  @override
+  Future<void> setPasswordForGoogleUser(String newPassword) async{
+    return await serviceLocator<AuthFirebaseService>().setPasswordForGoogleUser(newPassword);
+  }
+
+  @override
+  Future<void> changePassword(String currentPassword, String newPassword) async{
+    return await serviceLocator<AuthFirebaseService>().changePassword(currentPassword, newPassword);
+  }
 }

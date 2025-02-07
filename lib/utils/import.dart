@@ -80,7 +80,7 @@ export 'package:socialapp/data/repository/deep_link/deep_link_repository_impl.da
 export 'package:socialapp/data/repository/post/comment_repository_impl.dart';
 
 export 'package:socialapp/data/sources/auth/auth_firebase_service.dart';
-export 'package:socialapp/data/sources/firestore/firestore_service.dart';
+export 'package:socialapp/data/sources/firestore/firestore_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/user_service_impl.dart';
 export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';

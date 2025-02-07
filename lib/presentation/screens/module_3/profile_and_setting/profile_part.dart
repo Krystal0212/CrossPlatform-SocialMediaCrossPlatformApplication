@@ -7,6 +7,7 @@ import 'cubit/profile_cubit.dart';
 import 'cubit/profile_state.dart';
 import 'widgets/collection_tab.dart';
 import 'widgets/shot_tab.dart';
+import 'widgets/sound_tab.dart';
 
 class ProfilePart extends StatefulWidget {
   const ProfilePart({super.key});
@@ -17,13 +18,12 @@ class ProfilePart extends StatefulWidget {
 
 class _ProfilePartState extends State<ProfilePart>
     with SingleTickerProviderStateMixin {
-  double avatarRadius = 75;
-  late double appBarBackgroundHeight = avatarRadius * 2 / 0.6;
-  late double appBarContainerHeight = avatarRadius * (1 + 2 / 0.6);
-
-  double xOffset = 0;
-  double yOffset = 0;
-  double scaleFactor = 1;
+  late double avatarRadius = 75,
+      appBarBackgroundHeight = 0,
+      appBarContainerHeight = 0,
+      xOffset = 0,
+      yOffset = 0,
+      scaleFactor = 1;
 
   bool isDrawerOpen = false;
 
@@ -34,10 +34,13 @@ class _ProfilePartState extends State<ProfilePart>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       _onTabChanged();
     });
+
+    appBarBackgroundHeight = avatarRadius * 2 / 0.6;
+    appBarContainerHeight = avatarRadius * (1 + 2 / 0.6);
   }
 
   @override
@@ -71,8 +74,8 @@ class _ProfilePartState extends State<ProfilePart>
         isDrawerOpen = false;
       } else {
         xOffset = 330;
-        yOffset = 120;
-        scaleFactor = 0.7;
+        yOffset = 200;
+        scaleFactor = 0.65;
         isDrawerOpen = true;
       }
     });
@@ -99,7 +102,7 @@ class _ProfilePartState extends State<ProfilePart>
               color: AppColors.white,
               borderRadius: BorderRadius.circular(isDrawerOpen ? 40 : 0.0)),
           child: DefaultTabController(
-            length: 2,
+            length: 3,
             child: NotificationListener<OverscrollIndicatorNotification>(
               onNotification: (overscroll) {
                 overscroll.disallowIndicator();
@@ -266,17 +269,17 @@ class _ProfilePartState extends State<ProfilePart>
                                           : '0 Shots',
                                       onTabSelected: _onTabSelected,
                                     ),
-                                    // ProfileTab(
-                                    //   index: 1,
-                                    //   selectedIndexNotifier:
-                                    //   _selectedIndexNotifier,
-                                    //   label: (state is ProfileLoaded)
-                                    //       ? '${state.recordsNumber} Records'
-                                    //       : '0 Records',
-                                    //   onTabSelected: _onTabSelected,
-                                    // ),
                                     ProfileTab(
                                       index: 1,
+                                      selectedIndexNotifier:
+                                      _selectedIndexNotifier,
+                                      label: (state is ProfileLoaded)
+                                          ? '${state.recordsNumber} Records'
+                                          : '0 Records',
+                                      onTabSelected: _onTabSelected,
+                                    ),
+                                    ProfileTab(
+                                      index: 2,
                                       selectedIndexNotifier:
                                           _selectedIndexNotifier,
                                       label: (state is ProfileLoaded)
@@ -304,18 +307,23 @@ class _ProfilePartState extends State<ProfilePart>
                       return TabBarView(
                         controller: _tabController,
                         children: [
-                          if(state is ProfileLoaded)
-                          ShotTab1(
-                            userId: state.userModel.id ?? ''
-                          ) else
+                          if (state is ProfileLoaded)
+                            ShotTab1(userId: state.userModel.id ?? '')
+                          else
                             const Center(
                                 child: CircularProgressIndicator(
                                     color: AppColors.iris)),
+
+                          if (state is ProfileLoaded)
+                            SoundTab1(userId: state.userModel.id ?? '')
+                          else
+                            const Center(
+                                child: CircularProgressIndicator(
+                                    color: AppColors.iris)),
+
                           // const ShotTab1(),
-                          if(state is ProfileLoaded)
-                          CollectionTab1(
-                            userId:  state.userModel.id ?? ''
-                          )
+                          if (state is ProfileLoaded)
+                            CollectionTab1(userId: state.userModel.id ?? '')
                           else
                             const Center(
                                 child: CircularProgressIndicator(

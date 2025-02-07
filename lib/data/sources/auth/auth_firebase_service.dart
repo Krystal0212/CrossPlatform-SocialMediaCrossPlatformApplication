@@ -31,14 +31,20 @@ abstract class AuthFirebaseService {
   Future<void> reAuthenticationAndChangeEmail(
       String email, String newEmail, String password);
 
-  Future<void> updateCurrentUserAvatarUrl(String avatarUrl);
-
   Future<void> updateAvatarUrl(String avatarUrl);
+
+  bool isCurrentUserGoogleUserWithoutPassword();
+
+  Future<void> setPasswordForGoogleUser(String newPassword);
+
+  Future<void> changePassword(String currentPassword, String newPassword);
 }
 
 class AuthFirebaseServiceImpl extends AuthFirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleAuthProvider _googleProvider = GoogleAuthProvider();
+
+  User? get currentUser => _auth.currentUser;
 
   @override
   Future<void> signInWithEmailAndPassword(String email, String password) async {
@@ -57,7 +63,11 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
         );
       }
 
-      if (!user.emailVerified) {
+      bool isGoogleUser = user.providerData.any(
+              (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID);
+
+
+      if (!user.emailVerified && !isGoogleUser) {
         throw FirebaseAuthException(
           code: 'email-not-verified',
           message:
@@ -461,12 +471,6 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<void> updateCurrentUserAvatarUrl(String avatarUrl) {
-    // TODO: implement updateCurrentUserAvatarUrl
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> resetPassword(String password, String userId) async {
     final url = Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/resetPassword');
     try {
@@ -489,4 +493,108 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       throw 'Error resetting password: $e';
     }
   }
+
+  @override
+  bool isGoogleUserWithoutPassword(User? user) {
+    if (user == null) return false; // No user is signed in
+
+    bool signedInWithGoogle = user.providerData.any(
+          (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID,
+    );
+
+    bool hasPassword = user.providerData.any(
+          (provider) => provider.providerId == EmailAuthProvider.PROVIDER_ID,
+    );
+
+    return signedInWithGoogle && !hasPassword;
+  }
+
+  @override
+  bool isCurrentUserGoogleUserWithoutPassword() {
+    try {
+      User? user = _auth.currentUser;
+
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+          message: 'No user is signed in.',
+        );
+      }
+
+      return isGoogleUserWithoutPassword(user);
+    } catch (error){
+      if (kDebugMode) {
+        print('Error during checking google user without password: $error');
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> setPasswordForGoogleUser(String newPassword) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+          message: 'No user is signed in.',
+        );
+      }
+
+      if (isGoogleUserWithoutPassword(user)) {
+        // Link the email/password provider to the Google account
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: newPassword, // Set the new password here
+        );
+
+        await user.linkWithCredential(credential);
+        if (kDebugMode) {
+          print("Email/Password linked successfully. Password set.");
+        }
+      } else {
+        throw FirebaseAuthException(
+          code: 'user-already-has-password',
+          message: 'User already has an email/password login method.',
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        print('Error setting password: ${e.message}');
+      }
+      throw Exception('Failed to set password: ${e.message}');
+    }
+  }
+
+
+  @override
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(
+            code: 'user-not-found', message: 'No user is signed in.');
+      }
+
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+
+      // Update the password after successful re-authentication
+      await user.updatePassword(newPassword);
+      await user.reload();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-credential') {
+        rethrow;
+      }
+      if (kDebugMode) {
+        print('Error changing password: ${e.message}');
+      }
+      throw Exception('Failed to change password: ${e.message}');
+    }
+  }
+
 }

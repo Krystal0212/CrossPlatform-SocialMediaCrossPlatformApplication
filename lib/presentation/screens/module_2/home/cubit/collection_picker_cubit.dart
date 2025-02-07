@@ -23,7 +23,7 @@ class CollectionPickerCubit extends Cubit<CollectionPickerState> {
     try {
       List<CollectionModel> collections =
       await serviceLocator<CollectionRepository>()
-          .getCollectionsFromUser(userId);
+          .getCollectionsFromCurrentUser(userId);
 
       emit(CollectionPickerPostLoaded(collections));
     } catch (error) {

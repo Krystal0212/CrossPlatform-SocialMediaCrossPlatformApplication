@@ -1,3 +1,4 @@
+import 'package:socialapp/domain/entities/sound.dart';
 import 'package:socialapp/utils/import.dart';
 
 class PostRepositoryImpl extends PostRepository {
@@ -10,10 +11,11 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<List<OnlinePostModel>> getExplorePostsData(
-      {bool isOffline = false,
-      bool skipLocalFetch = false,
-        List<OnlinePostModel>? lastFetchedModels,}) {
+  Future<List<OnlinePostModel>> getExplorePostsData({
+    bool isOffline = false,
+    bool skipLocalFetch = false,
+    List<OnlinePostModel>? lastFetchedModels,
+  }) {
     return serviceLocator.get<PostService>().getExplorePostsData(
         isOffline: isOffline,
         skipLocalFetch: skipLocalFetch,
@@ -33,15 +35,16 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<List<OnlinePostModel>> getFollowingPostsData(
-  {bool isOffline = false,
-  bool skipLocalFetch = false,
-  OnlinePostModel? lastFetchedPost,}){
+  Future<List<OnlinePostModel>> getFollowingPostsData({
+    bool isOffline = false,
+    bool skipLocalFetch = false,
+    OnlinePostModel? lastFetchedPost,
+  }) {
     return serviceLocator.get<PostService>().getFollowingPostsData(
-      isOffline: isOffline,
-      skipLocalFetch: skipLocalFetch,
-      lastFetchedPost: lastFetchedPost,
-    );
+          isOffline: isOffline,
+          skipLocalFetch: skipLocalFetch,
+          lastFetchedPost: lastFetchedPost,
+        );
   }
 
   @override
@@ -60,11 +63,6 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<List<OnlinePostModel>?> getPostsByUserId(String userId) {
-    return serviceLocator.get<PostService>().getPostsByUserId(userId);
-  }
-
-  @override
   Future<void> createSoundPost(String content, String filePath) async {
     return serviceLocator.get<PostService>().createSoundPost(content, filePath);
   }
@@ -76,11 +74,26 @@ class PostRepositoryImpl extends PostRepository {
 
   @override
   Future<void> syncLikesToFirestore(Map<String, bool> likedPostsCache) {
-    return serviceLocator.get<PostService>().syncLikesToFirestore(likedPostsCache);
+    return serviceLocator
+        .get<PostService>()
+        .syncLikesToFirestore(likedPostsCache);
   }
 
   @override
-  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId) {
-    return serviceLocator.get<PostService>().getPostsByUserIdRealTime(userId);
+  Future<List<OnlinePostModel>?> getAssetPostsByUserId(String userId) {
+    return serviceLocator.get<PostService>().getAssetPostsByUserId(userId);
+  }
+
+  @override
+  Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(
+      String userId) {
+    return serviceLocator
+        .get<PostService>()
+        .getAssetPostsByUserIdRealTime(userId);
+  }
+
+  @override
+  Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(String userId) {
+    return serviceLocator.get<PostService>().getSoundPostsByUserIdRealTime(userId);
   }
 }

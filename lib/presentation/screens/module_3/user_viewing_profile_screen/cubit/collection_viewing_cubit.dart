@@ -22,7 +22,7 @@ class CollectionViewingPostCubit extends Cubit<CollectionViewingPostState> {
   Future<void> getCollectionsOfUser() async {
     try {
       List<CollectionModel> collections = await
-      serviceLocator<CollectionRepository>().getCollectionsFromUser(userId);
+      serviceLocator<CollectionRepository>().getCollectionsFromOtherUser(userId);
       emit(CollectionViewingPostLoaded(collections));
     } catch (error) {
       debugPrint('Error fetching collections: $error');

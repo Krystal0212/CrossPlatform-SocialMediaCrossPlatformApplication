@@ -1,5 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 
+import '../../../module_4/message_list/message_list_screen.dart';
+
 class InformationBox extends StatelessWidget {
   final UserModel? userModel;
   final List<String>? userFollowers;
@@ -85,7 +87,13 @@ class InformationBox extends StatelessWidget {
               children: [
                 SvgPicture.asset(AppIcons.gradientDot),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>  const MessageListScreen(),
+                      ),);
+                  },
                   icon: const Icon(
                     Icons.message_outlined,
                     color: AppColors.iris,

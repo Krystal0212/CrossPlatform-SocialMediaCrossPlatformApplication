@@ -261,21 +261,21 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                   ignoring: isDrawerOpen,
                   child: Padding(
                     padding:
-                        EdgeInsets.only(top: 8, bottom: deviceWidth * 0.15),
+                        const EdgeInsets.only(top: 8),
                     child: BlocBuilder<ViewingCubit, ViewingState>(
                         builder: (context, state) {
                       return TabBarView(
                         controller: _tabController,
                         children: [
                           if (state is ViewingLoaded)
-                            ShotViewingTab1(userId: state.userModel.id ?? '')
+                            ShotViewingTab(userId: state.userModel.id ?? '')
                           else
                             const Center(
                                 child: CircularProgressIndicator(
                                     color: AppColors.iris)),
                           // const ShotTab1(),
                           if (state is ViewingLoaded)
-                            CollectionViewingTab1(userId: state.userModel.id ?? '')
+                            CollectionViewingTab(userId: state.userModel.id ?? '')
                           else
                             const Center(
                                 child: CircularProgressIndicator(

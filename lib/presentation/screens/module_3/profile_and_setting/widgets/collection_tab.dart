@@ -17,10 +17,18 @@ class CollectionTab1 extends StatefulWidget {
 
 class _CollectionTab1State extends State<CollectionTab1>
     with AutomaticKeepAliveClientMixin {
+  late double deviceHeight = 0, deviceWidth = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    double deviceWidth = MediaQuery.of(context).size.width;
     return BlocProvider(
       create: (context) => CollectionPostCubit(userId: widget.userId),
       child: BlocBuilder<CollectionPostCubit, CollectionPostState>(
@@ -30,15 +38,23 @@ class _CollectionTab1State extends State<CollectionTab1>
               stream: state.collections,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return SizedBox(
+                    height: deviceHeight * 0.3,
+                    child: const Center(
+                        child: CircularProgressIndicator(
+                      color: AppColors.iris,
+                    )),
+                  );
                 }
 
-                if (snapshot.hasError) {
-                  return const Center(child: Text('There is something wrong, can get data.'));
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No collections found.'));
+                if (snapshot.hasError ||
+                    !snapshot.hasData ||
+                    snapshot.data!.isEmpty) {
+                  return SingleChildScrollView(
+                    child: NoPublicDataAvailablePlaceholder(
+                      width: deviceWidth * 0.9,
+                    ),
+                  );
                 }
 
                 List<CollectionModel> collections = snapshot.data!;
@@ -82,7 +98,8 @@ class _CollectionTab1State extends State<CollectionTab1>
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 CollectionViewingScreen(
-                                                  userId: collection.userData.id!,
+                                                  userId:
+                                                      collection.userData.id!,
                                                   collection: collection,
                                                   isInSavedCollections: true,
                                                 )));
@@ -166,13 +183,13 @@ class RadiusTile extends StatelessWidget {
                 color: dominantColor,
                 child: presentationUrl != null
                     ? CachedNetworkImage(
-                  imageUrl: presentationUrl!,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      Container(color: dominantColor),
-                  errorWidget: (context, url, error) =>
-                  const ImageErrorPlaceholder(),
-                )
+                        imageUrl: presentationUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            Container(color: dominantColor),
+                        errorWidget: (context, url, error) =>
+                            const ImageErrorPlaceholder(),
+                      )
                     : null, // Show only background color if presentationUrl is null
               ),
 
@@ -182,7 +199,8 @@ class RadiusTile extends StatelessWidget {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                     child: Container(
-                      color: dominantColor.withOpacity(0.9), // Keep dominant color with opacity
+                      color: dominantColor
+                          .withOpacity(0.9), // Keep dominant color with opacity
                     ),
                   ),
                 ),
@@ -193,4 +211,3 @@ class RadiusTile extends StatelessWidget {
     );
   }
 }
-

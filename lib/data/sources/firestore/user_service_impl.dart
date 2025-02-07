@@ -10,13 +10,14 @@ abstract class UserService {
 
   Future<void> addCurrentUserData(UserModel addUser);
 
-  Future<void> updateCurrentUserData(UserModel updateUser);
+  Future<bool> updateCurrentUserData(UserModel updatedUserData,
+      UserModel previousUserData, Uint8List? newAvatar);
 
   Future<Map<String, dynamic>> getUserRelatedData(String uid);
 
-  Future<String>? uploadAvatar(File image, String uid);
-
   Future<void> followOrUnfollowUser(String uid, bool? isFollow);
+
+  Future<void> updateCurrentUserNSFWOption(bool isNSFWFilterTurnOn);
 }
 
 class UserServiceImpl extends UserService {
@@ -88,7 +89,6 @@ class UserServiceImpl extends UserService {
       DocumentSnapshot userDoc = await _usersRef.doc(userID).get();
       DocumentSnapshot topicRankBoardSnapshot;
 
-
       if (!userDoc.exists) {
         throw CustomFirestoreException(
           code: 'new-user',
@@ -104,7 +104,8 @@ class UserServiceImpl extends UserService {
       Map<String, String> preferredTopics = {};
 
       if (topicRankBoardSnapshot.exists) {
-        Map<String, dynamic> rank = Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
+        Map<String, dynamic> rank =
+            Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
 
         List<MapEntry<String, int>> sortedTopics = rank.entries
             .map((entry) => MapEntry(entry.key, entry.value as int))
@@ -163,41 +164,111 @@ class UserServiceImpl extends UserService {
     }
   }
 
-  @override
-  Future<String>? uploadAvatar(File image, String uid) async {
+  Future<String> _uploadCurrentUserAvatar(Uint8List image) async {
     try {
-      final storageReference = _storage.ref().child('/user_avatars/$uid');
-
-      UploadTask uploadTask = storageReference.putFile(image);
-
-      TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-
-      String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-      if (kDebugMode) {
-        print('Uploaded Image URL: $downloadUrl');
+      if (currentUser == null) {
+        if (kDebugMode) {
+          throw ("No user is currently signed in.");
+        }
       }
+
+      final storageRef =
+          _storage.ref().child('/user_avatars/${currentUser!.uid}/avatar.webp');
+
+      final SettableMetadata metadata =
+          SettableMetadata(contentType: 'image/webp');
+
+      await storageRef.putData(image, metadata);
+
+      String downloadUrl = await storageRef.getDownloadURL();
 
       return downloadUrl;
     } catch (e) {
+      if (kDebugMode) {
+        print("Error uploading avatar: $e");
+      }
       rethrow;
     }
   }
 
   @override
-  Future<void> updateCurrentUserData(UserModel updateUser) async {
-    if (currentUser == null) {
-      if (kDebugMode) {
-        print("No user is currently signed in.");
-      }
-      return;
-    }
-
+  Future<bool> updateCurrentUserData(UserModel updatedUserData,
+      UserModel previousUserData, Uint8List? newAvatar) async {
     try {
-      await _usersRef.doc(currentUser?.uid).update(updateUser.toMap());
+      if (currentUser == null) {
+        if (kDebugMode) {
+          throw ("No user is currently signed in.");
+        }
+      }
+      bool hasChanges = false;
+      String newName = updatedUserData.name;
+      String lastname = updatedUserData.lastName;
+      String location = updatedUserData.location;
+
+      if (newAvatar != null && newAvatar.isNotEmpty) {
+        String newAvatarUrl = await _uploadCurrentUserAvatar(newAvatar);
+
+        await currentUser!.updatePhotoURL(newAvatarUrl);
+
+        _usersRef.doc(currentUser?.uid).update({
+          'avatar': newAvatarUrl,
+        });
+        hasChanges = true;
+      }
+
+      if (updatedUserData.tagName.isNotEmpty &&
+          updatedUserData.tagName != previousUserData.tagName) {
+
+        final QuerySnapshot existingUsers = await _usersRef
+            .where('tag-name', isEqualTo: updatedUserData.tagName)
+            .get();
+
+        bool isTagNameTaken = existingUsers.docs.isNotEmpty &&
+            existingUsers.docs.any((doc) => doc.id != currentUser?.uid);
+
+        if (isTagNameTaken) {
+          throw(CustomFirestoreException(
+            code: 'tag-name-taken',
+            message: 'Tag name is already taken.',
+          ));
+        }
+
+        _usersRef.doc(currentUser?.uid).update({
+          'tag-name': updatedUserData.tagName,
+        });
+        hasChanges = true;
+      }
+
+      if (newName.isNotEmpty && newName != previousUserData.name) {
+        _usersRef.doc(currentUser?.uid).update({
+          'name': newName,
+        });
+        hasChanges = true;
+      }
+
+      if (lastname.isNotEmpty && lastname != previousUserData.lastName) {
+        _usersRef.doc(currentUser?.uid).update({
+          'lastname': lastname,
+        });
+        hasChanges = true;
+      }
+
+      if (location.isNotEmpty && location != previousUserData.location) {
+        _usersRef.doc(currentUser?.uid).update({
+          'location': location,
+        });
+        hasChanges = true;
+      }
+
+      return hasChanges;
     } catch (e) {
+      if (e is CustomFirestoreException && e.code == 'tag-name-taken') {
+        rethrow;
+      }
       if (kDebugMode) {
         print("Error updating user data: $e");
       }
+      return false;
     }
   }
 
@@ -305,6 +376,31 @@ class UserServiceImpl extends UserService {
       final currentUserFollowingsDoc = await currentUserFollowingsRef.get();
       if (currentUserFollowingsDoc.exists) {
         await currentUserFollowingsRef.delete();
+      }
+    }
+  }
+
+  @override
+  Future<void> updateCurrentUserNSFWOption(bool isNSFWFilterTurnOn) async {
+    try{
+      if (currentUser == null) {
+        if (kDebugMode) {
+          throw ("No user is currently signed in.");
+        }
+      }
+
+      await _usersRef.doc(currentUser!.uid).update({
+        'isNSFWFilterTurnOn': isNSFWFilterTurnOn,
+      });
+
+      //Trigger snapshot
+      final docRef = _usersRef.doc(currentUser!.uid).collection('posts').doc();
+      await docRef.set({});
+      await docRef.delete();
+
+    } catch (error) {
+      if (kDebugMode) {
+        print("Error updating user nsfw option: $error");
       }
     }
   }

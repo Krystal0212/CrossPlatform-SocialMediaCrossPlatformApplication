@@ -79,7 +79,7 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
         String? errorMessage;
 
         return StatefulBuilder(
-          builder: (subContext, setState) {
+          builder: (_, setState) {
             return AlertDialog(
               backgroundColor: AppColors.white,
               title: const Text("Edit Collection Name"),
@@ -98,7 +98,7 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(subContext).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text("Cancel"),
                 ),
                 ElevatedButton(
@@ -115,7 +115,7 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                         .read<CollectionViewingCubit>()
                         .updateCollectionName(newName);
                     collectionTitleNotifier.value = newName;
-                    Navigator.of(subContext).pop();
+                    Navigator.of(dialogContext).pop();
                   },
                   child: const Text("Save",
                       style: TextStyle(color: AppColors.white)),
@@ -128,10 +128,66 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
     );
   }
 
+  Future<bool?> showRemoveCurrentUserCollectionDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text("Are you sure that you want to remove this collection?"),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CollectionViewingCubit>().removeCurrentUserCollectionFromCurrentUser();
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text("Yes",
+                  style: TextStyle(color: AppColors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool?> showRemoveOtherUserCollectionDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text("Are you sure that you want to remove this collection?"),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CollectionViewingCubit>().removeOtherUserCollectionFormCurrentUser();
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text("Yes",
+                  style: TextStyle(color: AppColors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void showCollectionOptionsDialog() {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.white,
           title: const Text("Collection Options"),
@@ -142,7 +198,7 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                 leading: const Icon(Icons.edit),
                 title: const Text("Change Collection Name"),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(dialogContext).pop();
                   showEditTitleDialog();
                 },
               ),
@@ -151,14 +207,70 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                 title: const Text("Adjust Collection"),
                 onTap: () {
                   editingModeNotifier.value = EditingMode.editing;
-                  Navigator.of(context).pop();
+                  Navigator.of(dialogContext).pop();
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.cancel_outlined),
                 title: const Text("Cancel"),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(dialogContext).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool?> showCollectionOptionsDialogForNotOwner() {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text("Collection Options"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!widget.isInSavedCollections)
+                ListTile(
+                  leading: const Icon(
+                    Icons.data_saver_on,
+                  ),
+                  title: const Text("Add to your collections storage"),
+                  onTap: () {
+                    context
+                        .read<CollectionViewingCubit>()
+                        .updateCollectionData(imageDataPreviewsNotifier.value);
+                    showSuccessMessage(
+                        context: context,
+                        title: 'Added to your collections storage');
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                ) else
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline_rounded,
+                ),
+                title: const Text("Remove from collections storage"),
+                onTap: () async {
+                  bool? result = await showRemoveOtherUserCollectionDialog();
+                  if (result == true) {
+                    if(!context.mounted) return;
+                    Navigator.of(dialogContext).pop(true);
+                  }else{
+                    if(!context.mounted) return;
+                    Navigator.of(dialogContext).pop(false);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel_outlined),
+                title: const Text("Cancel"),
+                onTap: () {
+                  Navigator.of(dialogContext).pop(false);
                 },
               ),
             ],
@@ -220,14 +332,18 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                       return Row(
                                         children: [
                                           IconButton(
+                                            onPressed: () async {
+                                              bool? result = await showRemoveCurrentUserCollectionDialog();
+                                              if (result == true) {
+                                                if(!context.mounted) return;
+                                                Navigator.of(context).pop();
+                                              }
+                                            },
                                             icon: const Icon(
-                                                Icons.cancel_outlined,
+                                                Icons.delete_outline_rounded,
                                                 size: 35,
                                                 color: AppColors.blackOak),
-                                            onPressed: () {
-                                              editingModeNotifier.value =
-                                                  EditingMode.cancel;
-                                            },
+
                                           ),
                                           IconButton(
                                             icon: const Icon(
@@ -245,6 +361,16 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                                   EditingMode.finish;
                                             },
                                           ),
+                                          IconButton(
+                                            icon: const Icon(
+                                                Icons.cancel_outlined,
+                                                size: 35,
+                                                color: AppColors.blackOak),
+                                            onPressed: () {
+                                              editingModeNotifier.value =
+                                                  EditingMode.cancel;
+                                            },
+                                          ),
                                         ],
                                       );
                                     } else {
@@ -259,23 +385,19 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                       );
                                     }
                                   });
-                            } else if (!widget.isInSavedCollections) {
-                              return IconButton(
-                                icon: const Icon(Icons.data_saver_on,
-                                    size: 35, color: AppColors.blackOak),
-                                onPressed: () {
-                                  context
-                                      .read<CollectionViewingCubit>()
-                                      .updateCollectionData(
-                                          imageDataPreviewsNotifier.value);
-                                  showSuccessMessage(context: context, title: 'Added to your collections storage');
-                                },
-                              );
                             } else {
                               return IconButton(
-                                icon: const Icon(Icons.data_saver_on,
-                                    size: 35, color: Colors.transparent),
-                                onPressed: () {},
+                                icon: const Icon(Icons.settings_outlined,
+                                    size: 35, color: AppColors.blackOak),
+                                onPressed: () async {
+                                  bool? isTrue = await
+                                  showCollectionOptionsDialogForNotOwner();
+
+                                  if(isTrue == true){
+                                    if(!context.mounted) return;
+                                    Navigator.of(context).pop();
+                                  }
+                                },
                               );
                             }
                           }

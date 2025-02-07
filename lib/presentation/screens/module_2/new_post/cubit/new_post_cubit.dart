@@ -95,13 +95,13 @@ class NewPostCubit extends Cubit<NewPostState>
             if (file.type != 'video/webm') {
               if (!context.mounted) return;
               showAttentionMessage(
-                  context: context, description: AppStrings.videoNotSupported);
+                  context: context, title: AppStrings.videoNotSupported);
               return;
             }
             if (file.size > 60 * 1024 * 1024) {
               if (!context.mounted) return;
               showAttentionMessage(
-                  context: context, description: AppStrings.videoTooLarge);
+                  context: context, title: AppStrings.videoTooLarge);
               return;
             }
 
@@ -317,7 +317,7 @@ class NewPostCubit extends Cubit<NewPostState>
       if (!context.mounted) return;
       showAttentionMessage(
         context: context,
-        description: 'The video file is too large. Maximum size is 60MB.',
+        title: 'The video file is too large. Maximum size is 60MB.',
       );
       return;
     }
@@ -396,7 +396,7 @@ class NewPostCubit extends Cubit<NewPostState>
       Future.microtask(() {
         if (homeContext.mounted) {
           showAttentionMessage(
-              context: homeContext, description: AppStrings.uploading);
+              context: homeContext, title: AppStrings.uploading);
         }
       });
 
@@ -443,7 +443,7 @@ class NewPostCubit extends Cubit<NewPostState>
         Future.microtask(() {
           if (homeContext.mounted) {
             showAttentionMessage(
-                context: homeContext, description: AppStrings.uploading);
+                context: homeContext, title: AppStrings.uploading);
           }
         });
         await serviceLocator<PostRepository>()

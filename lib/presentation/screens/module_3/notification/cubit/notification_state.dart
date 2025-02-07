@@ -6,9 +6,13 @@ class NotificationInitial extends NotificationState {}
 
 class NotificationLoading extends NotificationState {}
 
-class NotificationLoggedOut extends NotificationState{}
+class NotificationLoaded extends NotificationState {
+  final UserModel user;
 
-class NotificationEmailChanged extends NotificationState{}
+  NotificationLoaded(this.user);
+}
+
+class NotificationLoggedOut extends NotificationState{}
 
 class NotificationError extends NotificationState {
 }

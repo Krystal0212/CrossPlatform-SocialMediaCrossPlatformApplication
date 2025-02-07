@@ -16,6 +16,19 @@ mixin FlashMessage {
     );
   }
 
+  void showNotOnlineMassage(
+      {required BuildContext context, required String description}) {
+    PulpFlash.of(context).showMessage(
+      context,
+      inputMessage: Message(
+        status: FlashStatus.error,
+        title: AppStrings.notOnline,
+        description: description,
+        displayDuration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   void showUploadLimitExceededMassage(
       {required BuildContext context}) {
     PulpFlash.of(context).showMessage(
@@ -53,12 +66,12 @@ mixin FlashMessage {
   }
 
   void showAttentionMessage(
-      {required BuildContext context, required String description}) {
+      {required BuildContext context, required String title}) {
     PulpFlash.of(context).showMessage(
       context,
       inputMessage: Message(
         status: FlashStatus.warning,
-        title: description,
+        title: title,
         displayDuration: const Duration(seconds: 8),
       ),
     );

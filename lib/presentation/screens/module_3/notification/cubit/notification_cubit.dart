@@ -4,22 +4,20 @@ import 'notification_state.dart';
 
 class NotificationCubit extends Cubit<NotificationState> {
   NotificationCubit() : super(NotificationInitial()) {
-    // _initialize();
+    _initialize();
   }
 
-  // void _initialize() async {
-  //   await fetchProfile();
-  // }
+  void _initialize() async {
+    await fetchUserData();
+  }
 
-  Future<UserModel> fetchUserData() async {
+  Future<void> fetchUserData() async {
     try {
-      final User? currentUser =
-          await serviceLocator<AuthRepository>().getCurrentUser();
       final UserModel? userModel =
           await serviceLocator<UserRepository>().getCurrentUserData();
 
-      if (currentUser != null && userModel != null) {
-        return userModel;
+      if (userModel != null) {
+        emit(NotificationLoaded(userModel));
       } else {
         throw "User data not found";
       }
@@ -27,7 +25,7 @@ class NotificationCubit extends Cubit<NotificationState> {
       if (kDebugMode) {
         print("Error fetching profile: $e");
       }
-      return UserModel.empty();
+      emit(NotificationError());
     }
   }
 }

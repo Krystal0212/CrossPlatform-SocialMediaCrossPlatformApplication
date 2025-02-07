@@ -110,6 +110,7 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> with Auto
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Material(
       child: BackgroundContainer(
         center: AuthContainer(
@@ -205,7 +206,7 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> with Auto
                             ),
                           );
                         } else {
-                          return const ImageErrorPlaceholder();
+                          return   ProcessingDataPlaceholder(width: deviceWidth*0.9,);
                         }
                       },
                     ),

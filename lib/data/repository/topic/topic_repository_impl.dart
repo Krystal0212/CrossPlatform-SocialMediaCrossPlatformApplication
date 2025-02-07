@@ -1,7 +1,4 @@
-import 'package:socialapp/data/sources/firestore/firestore_service.dart';
-import 'package:socialapp/domain/entities/topic.dart';
-import 'package:socialapp/domain/repository/topic/topic_repository.dart';
-import 'package:socialapp/service_locator.dart';
+import '../../../utils/import.dart';
 
 class TopicRepositoryImpl extends TopicRepository {
   // @override

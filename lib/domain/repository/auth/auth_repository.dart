@@ -31,4 +31,10 @@ abstract class AuthRepository {
   Future<void> sendPasswordResetEmail(String email);
 
   Future<void> resetPassword(String password, String userId);
+
+  bool isCurrentUserGoogleUserWithoutPassword();
+
+  Future<void> setPasswordForGoogleUser(String newPassword);
+
+  Future<void> changePassword(String currentPassword, String newPassword);
 }

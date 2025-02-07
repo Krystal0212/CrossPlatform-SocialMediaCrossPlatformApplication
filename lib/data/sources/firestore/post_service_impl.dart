@@ -3,14 +3,23 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
+import 'package:socialapp/domain/entities/sound.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:path/path.dart' as p;
 import 'package:universal_html/html.dart' as html;
 
 abstract class PostService {
-  Future<List<OnlinePostModel>?> getPostsByUserId(String userId);
+  Future<List<OnlinePostModel>?> getAssetPostsByUserId(String userId);
+
+  Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(
+      String userId);
 
   Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId);
+
+  Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
+      String userId);
+
+  Future<PreviewSoundPostModel> getPostSoundsByPostId(String postId);
 
   Future<List<OnlinePostModel>> getPostsData(
       {required bool isOffline, bool skipLocalFetch = false});
@@ -40,8 +49,6 @@ abstract class PostService {
 
   Future<void> createAssetPost(String content,
       List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
-
-  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId);
 }
 
 class PostServiceImpl extends PostService
@@ -78,6 +85,10 @@ class PostServiceImpl extends PostService
 
   CollectionReference _usersFollowingsRef(String uid) {
     return _usersRef.doc(uid).collection('followings');
+  }
+
+  CollectionReference _usersPostsRef(String uid) {
+    return _usersRef.doc(uid).collection('posts');
   }
 
   CollectionReference _usersCollectionsRef(String uid) {
@@ -254,6 +265,7 @@ class PostServiceImpl extends PostService
       const int amountOfTopicPostInBatch = 9;
       const int amountOfFollowingPostInBatch = 9;
       int amountOfRandomPostInBatch = (currentUserId.isEmpty) ? 20 : 2;
+      bool isNSFWTurnOn = true;
 
       List<QueryDocumentSnapshot<Object?>> topicPosts = [];
       List<QueryDocumentSnapshot<Object?>> followingPosts = [];
@@ -264,6 +276,7 @@ class PostServiceImpl extends PostService
         DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
         DocumentSnapshot topicRankBoardSnapshot =
             await userTopics['topicRankBoardRef'].get();
+        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'];
 
         Map<String, String> preferredTopics = {};
 
@@ -377,6 +390,7 @@ class PostServiceImpl extends PostService
         List<OnlinePostModel> newPosts = [];
 
         for (QueryDocumentSnapshot document in uniquePosts) {
+
           likes = await _fetchSubCollection(document, 'likes');
           userRef = document['userRef'];
           userData = userRef.get();
@@ -388,6 +402,20 @@ class PostServiceImpl extends PostService
 
           Map<String, dynamic> documentMap =
               document.data() as Map<String, dynamic>;
+
+          bool isPostNSFW = false;
+          if (documentMap['media'] != null && documentMap['media'] is Map<String, dynamic>) {
+            documentMap['media'].forEach((key, value) {
+              if (value is Map<String, dynamic> && value['isNSFW'] == true) {
+                isPostNSFW = true;
+              }
+            });
+          }
+
+          // Skip the post if it's NSFW and isNSFWTurnOn is true
+          if (isPostNSFW && isNSFWTurnOn) {
+            continue;
+          }
 
           documentMap['postId'] = document.id;
           documentMap['userId'] = userRef.id;
@@ -833,7 +861,7 @@ class PostServiceImpl extends PostService
   }
 
   @override
-  Future<List<OnlinePostModel>?> getPostsByUserId(String userId) async {
+  Future<List<OnlinePostModel>?> getAssetPostsByUserId(String userId) async {
     List<OnlinePostModel> posts = [];
 
     DocumentReference userRef;
@@ -891,7 +919,8 @@ class PostServiceImpl extends PostService
   }
 
   @override
-  Stream<List<PreviewAssetPostModel>?> getPostsByUserIdRealTime(String userId) {
+  Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(
+      String userId) {
     // Create a reference for the user
     DocumentReference tempUserRef = _usersRef.doc(userId);
 
@@ -939,8 +968,7 @@ class PostServiceImpl extends PostService
 
         for (var post in posts) {
           List<PreviewAssetPostModel> imageUrlsForPost =
-              await serviceLocator<PostRepository>()
-                  .getPostImagesByPostId(post.postId);
+              await getPostImagesByPostId(post.postId);
           if (imageUrlsForPost.isNotEmpty) {
             imageUrls.addAll(imageUrlsForPost);
           }
@@ -1011,6 +1039,114 @@ class PostServiceImpl extends PostService
 
       return imagePreviews;
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
+      String userId) {
+    // Create a reference for the user
+    DocumentReference tempUserRef = _usersRef.doc(userId);
+
+    // Listen to realtime changes for posts matching the user's reference
+    return _postRef
+        .where('userRef', isEqualTo: tempUserRef)
+        .snapshots()
+        .asyncMap((QuerySnapshot postsSnapshot) async {
+      try {
+        if (postsSnapshot.docs.isEmpty) {
+          throw CustomFirestoreException(
+            code: 'no-posts',
+            message: 'No posts exist for this user in Firestore',
+          );
+        }
+
+        List<OnlinePostModel> posts = [];
+
+        for (QueryDocumentSnapshot document in postsSnapshot.docs) {
+          List<String> comments =
+              await _fetchSubCollection(document, 'comments');
+          List<String> likes = await _fetchSubCollection(document, 'likes');
+
+          // Fetch user data from the user reference stored in the document
+          DocumentReference userRef = document['userRef'];
+          DocumentSnapshot userSnapshot = await userRef.get();
+          String username = userSnapshot['name'];
+          String userAvatar = userSnapshot['avatar'];
+
+          // Get the document data and add extra fields
+          Map<String, dynamic> documentMap =
+              document.data() as Map<String, dynamic>;
+          documentMap['postId'] = document.id;
+          documentMap['userId'] = userRef.id;
+          documentMap['username'] = username;
+          documentMap['userAvatar'] = userAvatar;
+          documentMap['comments'] = comments.toSet();
+          documentMap['likes'] = likes.toSet();
+
+          OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+          posts.add(post);
+        }
+
+        List<PreviewSoundPostModel> soundUrls = [];
+
+        for (var post in posts) {
+          try {
+            PreviewSoundPostModel soundUrlsForPost =
+            await getPostSoundsByPostId(post.postId);
+
+            soundUrls.add(soundUrlsForPost);
+
+          } catch (error) {
+            if( error is CustomFirestoreException && error.code == 'no-sound'){
+              continue;
+            }
+            else{
+              rethrow;
+            }
+          }
+        }
+
+        return soundUrls;
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error fetching posts stream for user: $e');
+        }
+        rethrow;
+      }
+    });
+  }
+
+  @override
+  Future<PreviewSoundPostModel> getPostSoundsByPostId(String postId) async {
+    try {
+      DocumentSnapshot postSnapshot = await _postRef.doc(postId).get();
+
+      Map<String, dynamic>? postData =
+          postSnapshot.data() as Map<String, dynamic>?;
+      String? recordUrl = postData?['record'];
+
+      if (recordUrl != null && recordUrl.isNotEmpty) {
+        PreviewSoundPostModel soundUrl = PreviewSoundPostModel(
+          postId: postId,
+          recordUrl: recordUrl,
+        );
+
+        return soundUrl;
+      } else {
+        throw CustomFirestoreException(
+          code: 'no-sound',
+          message: 'No sound found for this post',
+        );
+      }
+    } catch (e) {
+      if(e is CustomFirestoreException && e.code == 'no-sound'){
+        rethrow;
+      }
+      if (kDebugMode) {
+        print('Error getting sound url for post: $e');
+      }
       rethrow;
     }
   }
@@ -1202,16 +1338,24 @@ class PostServiceImpl extends PostService
 
   Future<String> _uploadSoundAndGetUrl(
       String filePath, DocumentReference newPostRef) async {
-    final storageRef =
-        _storage.ref().child('posts/${newPostRef.id}/${p.basename(filePath)}');
+    try {
+      final storageRef = _storage
+          .ref()
+          .child('posts/${newPostRef.id}/${p.basename(filePath)}');
 
-    final SettableMetadata metadata =
-        SettableMetadata(contentType: "audio/wav");
+      final SettableMetadata metadata =
+          SettableMetadata(contentType: "audio/wav");
 
-    await storageRef.putFile(File(filePath), metadata);
+      await storageRef.putFile(File(filePath), metadata);
 
-    String soundUrl = await storageRef.getDownloadURL();
-    return soundUrl;
+      String soundUrl = await storageRef.getDownloadURL();
+      return soundUrl;
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error uploading sound: $error');
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -1222,8 +1366,8 @@ class PostServiceImpl extends PostService
       NewPostModel newPost = NewPostModel(
           content: content,
           timestamp: timestamp,
-          topicRefs: null,
-          media: {},
+          topicRefs: {_topicRef.doc('EvsBU0MQHKWEFrtLzJnn')},
+          media: null,
           record: "",
           userRef: _usersRef.doc(currentUserId));
 
@@ -1234,6 +1378,12 @@ class PostServiceImpl extends PostService
       await newPostRef.update({
         'record': assetUrl,
       });
+
+      await _usersRef
+          .doc(currentUserId)
+          .collection('posts')
+          .doc(newPostRef.id)
+          .set({});
     } catch (error) {
       if (kDebugMode) {
         print('Error uploading sound post: $error');

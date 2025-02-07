@@ -47,3 +47,40 @@ class AuthElevatedButton extends StatelessWidget {
     );
   }
 }
+
+
+class AuthElevatedNoBackgroundButton extends StatelessWidget {
+  const AuthElevatedNoBackgroundButton(
+      {super.key,
+        required this.width,
+        required this.height,
+        required this.inputText,
+        this.onPressed,
+        required this.isLoading,});
+
+  final double width;
+  final double height;
+  final String inputText;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: ElevatedButton(
+        onPressed: isLoading ?(){}: onPressed ,
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent),
+        child:  Text(
+          inputText,
+          style: AppTheme.authSignUpStyle,
+        ),
+      ),
+    );
+  }
+}

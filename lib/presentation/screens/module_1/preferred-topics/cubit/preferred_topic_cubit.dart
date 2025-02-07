@@ -1,6 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 import 'preferred_topic_state.dart';
 import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
 
 // if nhap dai url khi ko signed in
 // if nhap dai url nhung acc da xong pick cac topic tu lau
@@ -41,10 +42,14 @@ class PreferredTopicCubit extends Cubit<PreferredTopicState> {
       BuildContext context, List<Map<TopicModel, bool>> categories) async {
     User? currentUser = await serviceLocator<AuthRepository>().getCurrentUser();
 
-    DateTime now = DateTime.now();
     String email = currentUser?.email ?? "";
-    String emailWithoutDomain = email.split('@').first; // Lấy phần trước @
-    String tagName = '${emailWithoutDomain}_${DateFormat('ddMM').format(now)}';
+    String emailWithoutDomain = email.split('@').first;
+    String dateTag = DateFormat('ddMM').format(DateTime.now());
+
+    Uint8List bytes = utf8.encode(emailWithoutDomain);
+    Digest digest = sha256.convert(bytes);
+    String encryptedPart = digest.toString().substring(0, 4);
+    String tagName = 'user$encryptedPart$dateTag';
 
     Map<String, bool> mergedMap = convertToMapStringBool(categories);
 
@@ -52,7 +57,7 @@ class PreferredTopicCubit extends Cubit<PreferredTopicState> {
       emit(AddUserLoading());
       UserModel userModel = UserModel.newUser(
           mergedMap, currentUser!.photoURL, currentUser.email, tagName );
-      serviceLocator<UserRepository>().addCurrentUserData(userModel);
+      await serviceLocator<UserRepository>().addCurrentUserData(userModel);
       if (!context.mounted) return;
       context.go('/home');
       emit(AddUserSuccess());

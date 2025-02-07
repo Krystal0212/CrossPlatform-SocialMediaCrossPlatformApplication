@@ -55,8 +55,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _isWeb = PlatformConfig.of(context)?.isWeb ?? false;
-    deviceHeight = MediaQuery.of(context).size.height;
-    deviceWidth = MediaQuery.of(context).size.width;
+    final flutterView = PlatformDispatcher.instance.views.first;
+    deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    deviceHeight = flutterView.physicalSize.height;
 
     context.read<VerificationCubit>().managePageState(
         context, widget.isFromSignIn, _verifyMessageChangeNotifier);
@@ -78,110 +79,113 @@ class _VerificationScreenState extends State<VerificationScreen> {
           context.go('/sign-in');
         }
       },
-      child: Material(
-        child: BackgroundContainer(
-          center: AuthSizedBox(
-            isWeb: _isWeb,
-            deviceWidth: deviceWidth,
-            deviceHeight: deviceHeight,
-            child: Stack(
-              children: [
-                AuthHeaderImage(
-                  heightRatio: 0.36,
-                  childAspectRatio: 1.85,
-                  isWeb: _isWeb,
-                ),
-                AuthBody(
-                  isWeb: _isWeb,
-                  marginTop: deviceHeight * 0.26,
-                  height: deviceHeight,
-                  child: AuthScrollView(
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          LinearGradientTitle(
-                            text: AppStrings.verification,
-                            textStyle: AppTheme.forgotPasswordLabelStyle,
-                          ),
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          ValueListenableBuilder(
-                              valueListenable: _verifyMessageChangeNotifier,
-                              builder: (context, value, child) {
-                                return MessageContent(
-                                  text: value,
-                                );
-                              }),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          AuthTextFormField(
-                              textEditingController: _codeController,
-                              hintText: AppStrings.typeCode),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          BlocBuilder<VerificationCubit, VerificationState>(
-                              builder: (context, state) {
-                            return Column(
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    if (state is VerificationLoadingFromSignIn) {
-                                      context.go('/sign-in');
-                                    } else {
-                                      context
-                                          .read<VerificationCubit>()
-                                          .sendVerifyEmail(
-                                              _verifyMessageChangeNotifier);
-                                    }
-                                  },
-                                  child: Text(
-                                    (state is VerificationLoadingFromSignIn)
-                                        ? "Cancel"
-                                        : AppStrings.notReceiveTheCode,
+      child: Scaffold(
+      resizeToAvoidBottomInset: false,
+        body: Material(
+          child: BackgroundContainer(
+            center: AuthSizedBox(
+              isWeb: _isWeb,
+              deviceWidth: deviceWidth,
+              deviceHeight: deviceHeight,
+              child: Stack(
+                children: [
+                  AuthHeaderImage(
+                    heightRatio: 0.36,
+                    childAspectRatio: 1.85,
+                    isWeb: _isWeb,
+                  ),
+                  AuthBody(
+                    isWeb: _isWeb,
+                    marginTop: deviceHeight * 0.26,
+                    height: deviceHeight,
+                    child: AuthScrollView(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            LinearGradientTitle(
+                              text: AppStrings.verification,
+                              textStyle: AppTheme.forgotPasswordLabelStyle,
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            ValueListenableBuilder(
+                                valueListenable: _verifyMessageChangeNotifier,
+                                builder: (context, value, child) {
+                                  return MessageContent(
+                                    text: value,
+                                  );
+                                }),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            AuthTextFormField(
+                                textEditingController: _codeController,
+                                hintText: AppStrings.typeCode),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            BlocBuilder<VerificationCubit, VerificationState>(
+                                builder: (context, state) {
+                              return Column(
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      if (state is VerificationLoadingFromSignIn) {
+                                        context.go('/sign-in');
+                                      } else {
+                                        context
+                                            .read<VerificationCubit>()
+                                            .sendVerifyEmail(
+                                                _verifyMessageChangeNotifier);
+                                      }
+                                    },
+                                    child: Text(
+                                      (state is VerificationLoadingFromSignIn)
+                                          ? "Cancel"
+                                          : AppStrings.notReceiveTheCode,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                AuthElevatedButton(
-                                  width: deviceWidth,
-                                  height: 52,
-                                  inputText:
-                                      state is VerificationLoadingFromSignIn
-                                          ? AppStrings.buttonSendToMyEmail
-                                          : AppStrings.verify,
-                                  onPressed: () async {
-                                    if (state is VerificationLoadingFromSignIn) {
-                                      context
-                                          .read<VerificationCubit>()
-                                          .sendVerifyEmail(
-                                              _verifyMessageChangeNotifier);
-                                    } else {
-                                      context
-                                          .read<VerificationCubit>()
-                                          .verifyByCode(
-                                              context, _codeController.text);
-                                    }
-                                  },
-                                  isLoading: (state is VerificationLoading),
-                                ),
-                              ],
-                            );
-                          }),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          const StacksBottom(),
-                        ],
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  AuthElevatedButton(
+                                    width: deviceWidth,
+                                    height: 52,
+                                    inputText:
+                                        state is VerificationLoadingFromSignIn
+                                            ? AppStrings.buttonSendToMyEmail
+                                            : AppStrings.verify,
+                                    onPressed: () async {
+                                      if (state is VerificationLoadingFromSignIn) {
+                                        context
+                                            .read<VerificationCubit>()
+                                            .sendVerifyEmail(
+                                                _verifyMessageChangeNotifier);
+                                      } else {
+                                        context
+                                            .read<VerificationCubit>()
+                                            .verifyByCode(
+                                                context, _codeController.text);
+                                      }
+                                    },
+                                    isLoading: (state is VerificationLoading),
+                                  ),
+                                ],
+                              );
+                            }),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            const StacksBottom(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
