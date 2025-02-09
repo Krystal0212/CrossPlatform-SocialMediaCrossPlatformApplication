@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:socialapp/utils/import.dart';
 
+import 'chat_page_properties.dart';
+
 class ImageDisplayGrid extends StatelessWidget with AppDialogs {
   final Map<String, dynamic> rawMediaData;
 
@@ -42,12 +44,21 @@ class SingleImageDisplay extends StatelessWidget with AppDialogs {
         ? maxWidth / (imageData['width'] / imageData['height'])
         : imageData['height'];
 
+    bool isNSFWFilterTurnOn =
+        ChatPageUserProperty.of(context).currentUser.isNSFWFilterTurnOn;
+
     return SizedBox(
       width: imageWidth,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
         child: InkWell(
-          onTap: () => showImageDialog(context, imageData['imageUrl']),
+          onTap: () {
+            if (imageData['isNSFW'] && isNSFWFilterTurnOn) {
+              return;
+            }
+
+            showImageDialog(context, imageData['imageUrl']);
+          },
           child:
               imageData['imageUrl'] != null && imageData['imageUrl'].isNotEmpty
                   ? Stack(
@@ -64,7 +75,7 @@ class SingleImageDisplay extends StatelessWidget with AppDialogs {
                           errorWidget: (context, url, error) =>
                               const ImageErrorPlaceholder(),
                         ),
-                        if (imageData['isNSFW'] == true)
+                        if (imageData['isNSFW'] && isNSFWFilterTurnOn)
                           Center(
                             child: BlurredPlaceholder(
                               // maxWidth: maxWidth,
@@ -114,13 +125,21 @@ class ImageGridview extends StatelessWidget with AppDialogs {
       itemBuilder: (context, index) {
         final entry = rawMediaData.entries.elementAt(index);
         final imageData = entry.value;
+
+        bool isNSFWFilterTurnOn =
+            ChatPageUserProperty.of(context).currentUser.isNSFWFilterTurnOn;
         if (imageData['imageUrl'] != null && imageData['imageUrl'].isNotEmpty) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(12.0),
             child: InkWell(
-              onTap: () => showImageDialog(context, imageData['imageUrl']),
-              child: Container(
-                color: Colors.blue,
+              onTap: () {
+                if (imageData['isNSFW'] && isNSFWFilterTurnOn) {
+                  return;
+                }
+
+                showImageDialog(context, imageData['imageUrl']);
+              },
+              child: SizedBox(
                 width: imageWidth,
                 height: imageHeight,
                 child: Stack(

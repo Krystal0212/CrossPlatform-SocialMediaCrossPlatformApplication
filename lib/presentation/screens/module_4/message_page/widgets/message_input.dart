@@ -61,7 +61,7 @@ class MessageInput extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.arrow_upward, size: 40, color: AppTheme.black),
             onPressed: () {
-              bool isUser1 = ChatPageUserProperty.of(context);
+              bool isUser1 = ChatPageUserProperty.of(context).isUser1;
               if (selectedAssetsNotifier.value.isNotEmpty) {
                 context
                     .read<ChatSendCubit>()

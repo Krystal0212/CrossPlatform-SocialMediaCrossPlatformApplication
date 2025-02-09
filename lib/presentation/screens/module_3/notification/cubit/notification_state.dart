@@ -8,8 +8,9 @@ class NotificationLoading extends NotificationState {}
 
 class NotificationLoaded extends NotificationState {
   final UserModel user;
+  final Stream<List<NotificationModel>> notificationListStream;
 
-  NotificationLoaded(this.user);
+  NotificationLoaded(this.user, this.notificationListStream);
 }
 
 class NotificationLoggedOut extends NotificationState{}

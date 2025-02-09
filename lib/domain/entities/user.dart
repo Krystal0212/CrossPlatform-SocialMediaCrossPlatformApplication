@@ -78,6 +78,22 @@ class UserModel {
     );
   }
 
+  factory UserModel.fromFollowingMap(Map<String, dynamic> map) {
+    return UserModel(
+      id: map['id'] ?? '',
+      emailChanged: false,
+      avatarChanged: false,
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      lastName: map['lastname'] ?? '',
+      location: map['location'] ?? '',
+      preferredTopics:{},
+      avatar: map['avatar'] ?? '',
+      tagName: map['tag-name'] ?? '',
+      isNSFWFilterTurnOn: map['isNSFWFilterTurnOn'] ?? true,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,

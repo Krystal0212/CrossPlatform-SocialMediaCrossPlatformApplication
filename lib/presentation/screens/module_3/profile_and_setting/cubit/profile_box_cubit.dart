@@ -27,4 +27,10 @@ class ProfileBoxCubit extends Cubit<ProfileBoxState>
       emit(ProfileBoxError(e.toString()));
     }
   }
+
+  @override
+  Future<void> close() async {
+    super.close();
+    emit(ProfileBoxInitial());
+  }
 }

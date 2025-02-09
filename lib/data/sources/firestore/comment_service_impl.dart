@@ -41,11 +41,121 @@ class CommentServiceImpl extends CommentService {
 
   CollectionReference get _postRef => _firestoreDB.collection('Post');
 
+  CollectionReference get _notificationRef =>
+      _firestoreDB.collection('Notification');
+
   CollectionReference _commentPostsRef(String postId) {
     return _postRef.doc(postId).collection('comments');
   }
 
   // ToDo: Service Functions
+
+  Future<void> _sendPostInteractionNotification(
+      String receiverId, NotificationType type, String postId) async {
+    try {
+      CollectionReference notificationsRef =
+      _notificationRef.doc(receiverId).collection('notifications');
+
+      // Check if the document exists
+      DocumentReference userNotificationsRef = _notificationRef.doc(receiverId);
+      DocumentSnapshot userDocSnapshot = await userNotificationsRef.get();
+
+      // If document doesn't exist, create it
+      if (!userDocSnapshot.exists) {
+        await userNotificationsRef.set({
+          'list': []
+        });
+      }
+
+      // Calculate the timestamp for 15 minutes ago
+      Timestamp fifteenMinutesAgo = Timestamp.fromMillisecondsSinceEpoch(
+          DateTime.now().millisecondsSinceEpoch - (15 * 60 * 1000));
+
+      // Query for existing notifications with the same fromUserRef and postId in the last 15 minutes
+      QuerySnapshot querySnapshot = await notificationsRef
+          .where('fromUserRef', isEqualTo: _usersRef.doc(currentUserId))
+          .where('postId', isEqualTo: postId)
+          .where('timestamp', isGreaterThan: fifteenMinutesAgo) // Check last 15 min
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      // Create a new notification
+      NotificationModel newNotification = NotificationModel.newNotification(
+        type: type.name,
+        fromUserRef: _usersRef.doc(currentUserId),
+        toUserId: receiverId,
+        postId: postId,  // Assuming post.id exists in your model
+        timestamp: Timestamp.now(),
+      );
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Overwrite the latest notification for the same fromUserRef and postId
+        await querySnapshot.docs.first.reference.set(newNotification.toMap());
+      } else {
+        // Add a new notification if no recent one exists
+        await notificationsRef.add(newNotification.toMap());
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error during sending comment notification: $error');
+      }
+    }
+  }
+
+  Future<void> _sendReplyInteractionPostNotification(
+      String userToRepliedId, NotificationType type, String postId) async {
+    try {
+      CollectionReference notificationsRef =
+      _notificationRef.doc(userToRepliedId).collection('notifications');
+
+      // Check if the document exists
+      DocumentReference userNotificationsRef = _notificationRef.doc(userToRepliedId);
+      DocumentSnapshot userDocSnapshot = await userNotificationsRef.get();
+
+      // If document doesn't exist, create it
+      if (!userDocSnapshot.exists) {
+        await userNotificationsRef.set({
+          'list': []  // Initialize with an empty list or necessary default data
+        });
+      }
+
+      // Calculate the timestamp for 15 minutes ago
+      Timestamp fifteenMinutesAgo = Timestamp.fromMillisecondsSinceEpoch(
+          DateTime.now().millisecondsSinceEpoch - (15 * 60 * 1000));
+
+      // Query for existing notifications with the same fromUserRef and postId in the last 15 minutes
+      QuerySnapshot querySnapshot = await notificationsRef
+          .where('fromUserRef', isEqualTo: _usersRef.doc(currentUserId))
+          .where('postId', isEqualTo: postId)
+          .where('timestamp', isGreaterThan: fifteenMinutesAgo) // Check last 15 min
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      // Create a new notification
+      NotificationModel newNotification = NotificationModel.newNotification(
+        type: type.name,
+        fromUserRef: _usersRef.doc(currentUserId),
+        toUserId: userToRepliedId,
+        postId: postId,  // Assuming post.id exists in your model
+        timestamp: Timestamp.now(),
+      );
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Overwrite the latest notification for the same fromUserRef and postId
+        await querySnapshot.docs.first.reference.set(newNotification.toMap());
+      } else {
+        // Add a new notification if no recent one exists
+        await notificationsRef.add(newNotification.toMap());
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error during sending reply comment notification: $error');
+      }
+    }
+  }
+
   @override
   Future<void> sendComment(String postId, String postOwnerId,
       String comment) async {
@@ -56,15 +166,50 @@ class CommentServiceImpl extends CommentService {
     final user = _auth.currentUser;
     if (user == null) throw Exception("User not logged in");
 
+
     try {
       await _commentPostsRef(postId).add(CommentPostModel.newComment(
         content: comment,
         userId: currentUser?.uid,
         priorityRank: (currentUser?.uid != postOwnerId) ? 1 : 0,
       ).toMap());
-      _postRef.doc(postId).update({
+       _postRef.doc(postId).update({
         'commentAmount': FieldValue.increment(1),
       });
+
+      int topicScoreChange = 4;
+
+      DocumentReference userRef = _usersRef.doc(user.uid);
+      DocumentReference? topicRankBoardRef = await userRef.get().then(
+              (snapshot) => snapshot.exists
+              ? snapshot.get('topicRankBoardRef') as DocumentReference?
+              : null);
+
+      if (topicRankBoardRef == null) {
+        throw Exception("User does not have a topicRankBoardRef");
+      }
+
+      DocumentSnapshot topicRankBoardSnapshot = await topicRankBoardRef.get();
+      Map<String, dynamic> rank = topicRankBoardSnapshot.exists
+          ? Map.from(topicRankBoardSnapshot['rank'])
+          : {};
+
+      DocumentReference postRef = _postRef.doc(postId);
+      DocumentSnapshot postSnapshot = await postRef.get();
+
+      List<DocumentReference> topicRefs =
+      List.from(postSnapshot['topicRefs']);
+
+      for (DocumentReference topicRef in topicRefs) {
+        String topicId = topicRef.id;
+
+        // Update rank values
+        rank[topicId] = (rank[topicId] ?? 0) + topicScoreChange ;
+      }
+
+      await topicRankBoardRef.update({'rank': rank});
+
+      await _sendPostInteractionNotification(postOwnerId, NotificationType.comment, postId);
     } catch (e) {
       if (kDebugMode) {
         print("Error sending comment: $e");
@@ -137,6 +282,10 @@ class CommentServiceImpl extends CommentService {
 
       // Update the post document with the new comments map
       await replyCommentPostRef.update({'replyComments': commentsMap});
+
+      DocumentReference replyUserRef = postData['userRef'];
+
+      await _sendReplyInteractionPostNotification(replyUserRef.id, NotificationType.commentReply, postId);
 
       return replyOrder;
     } catch (e) {
@@ -304,6 +453,7 @@ class CommentServiceImpl extends CommentService {
         return null;
       });
 
+
   }
 
   @override
@@ -424,6 +574,8 @@ class CommentServiceImpl extends CommentService {
               'likes': FieldValue.arrayUnion([userId]),
               'likesCount': FieldValue.increment(1),
             });
+            await _sendReplyInteractionPostNotification(
+                commentData['userRef'].id, NotificationType.commentLike, postId);
           } else {
             batch.update(commentRef, {
               'likes': FieldValue.arrayRemove([userId]),

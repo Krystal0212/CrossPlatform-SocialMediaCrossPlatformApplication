@@ -111,7 +111,7 @@ class OnlinePostModel {
       'topicRefs': topicRefs,
       'comments': comments,
       'likes': likes,
-
+      'contentLowercase': content.toLowerCase(),
     };
   }
 

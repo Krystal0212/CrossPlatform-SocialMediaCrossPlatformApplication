@@ -1,4 +1,3 @@
-
 import 'package:socialapp/presentation/screens/module_3/notification/cubit/notification_state.dart';
 import 'package:socialapp/utils/import.dart';
 import 'cubit/notification_cubit.dart';
@@ -22,67 +21,139 @@ class NotificationBase extends StatefulWidget {
   State<NotificationBase> createState() => _NotificationBaseState();
 }
 
-class _NotificationBaseState extends State<NotificationBase> {
+class _NotificationBaseState extends State<NotificationBase> with Methods {
+  double deviceWidth = 0;
+  double deviceHeight = 0;
 
   @override
   void initState() {
     super.initState();
+
+    final flutterView = PlatformDispatcher.instance.views.first;
+    deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    deviceHeight = flutterView.physicalSize.height;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Notifications")),
-      body: BlocBuilder<NotificationCubit, NotificationState>(
-        builder: (context, state) {
-          if (state is NotificationLoading || state is NotificationInitial) {
-            return const Center(child: CircularProgressIndicator());
-          } else
-          if(state is NotificationLoaded){
-            final UserModel user = state.user;
-          String userId = user.id!;
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(deviceHeight * 0.04),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20, right: 16, left: 16),
+          child: AppBar(
+            title: Text(
+              'Notification',
+              style: AppTheme.messageStyle.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 40,
+              ),
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {},
+                icon: SvgPicture.asset(
+                  AppIcons.setting,
+                  width: 40,
+                ),
+              ),
+            ],
+            backgroundColor: AppColors.white,
+          ),
+        ),
+      ),
+      body: Padding(
+        padding:
+            const EdgeInsets.only(left: 30, right: 30, top: 35, bottom: 10),
+        child: BlocBuilder<NotificationCubit, NotificationState>(
+          builder: (context, state) {
+            if (state is NotificationLoading || state is NotificationInitial) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is NotificationLoaded) {
+              return StreamBuilder<List<NotificationModel>>(
+                stream: state.notificationListStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.iris,
+                          ),
+                        ));
+                  }
 
-          return StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance.collection("notifications").doc(userId).snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data?.data() == null) {
-                return const Center(child: Text("No notifications yet"));
-              }
+                  if (!snapshot.hasData ||
+                      snapshot.data == null ||
+                      snapshot.data!.isEmpty) {
+                    return const Center(child: Text("No notifications yet"));
+                  }
 
-              Map<String, dynamic> notifications = snapshot.data!.data() as Map<String, dynamic>;
+                  List<NotificationModel> notifications = snapshot.data!;
 
-              List<Widget> notificationWidgets = notifications.entries.map((entry) {
-                final data = entry.value;
-                return Dismissible(
-                  key: Key(entry.key),
-                  onDismissed: (_) async {
-                    await FirebaseFirestore.instance.collection("notifications").doc(userId).update({
-                      entry.key: FieldValue.delete(),
-                    });
-                  },
-                  background: Container(color: Colors.red),
-                  child: ListTile(
-                    leading: Icon(_getNotificationIcon(data["type"])),
-                    title: Text(_getNotificationText(data)),
-                    subtitle: Text(
-                      _formatTimestamp(data["timestamp"]),
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                );
-              }).toList();
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final NotificationModel notification =
+                          notifications[index];
+                      DocumentReference otherUserRef = notification.fromUserRef;
+                      Future<UserModel> fromUser = context
+                          .read<NotificationCubit>()
+                          .getUserDataFromUserRef(otherUserRef);
+                      return FutureBuilder(
+                          future: fromUser,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.iris,
+                                ),
+                              );
+                            } else if (snapshot.hasData) {
+                              UserModel otherUser = snapshot.data!;
+                              String otherUserAvatar = otherUser.avatar;
+                              String otherUserName = otherUser.name;
 
-              return ListView(children: notificationWidgets);
-            },
-          );
-        }
-        else {
-          return NoUserDataAvailablePlaceholder(width: MediaQuery.of(context).size.width*0.9);
-          }
-        }
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 15),
+                                child: NotificationTile(
+                                  avatarUrl: otherUserAvatar,
+                                  username: otherUserName,
+                                  notification: notification,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          });
+                    },
+                  );
+                },
+              );
+            } else {
+              return NoUserDataAvailablePlaceholder(
+                width: MediaQuery.of(context).size.width * 0.9,
+              );
+            }
+          },
+        ),
       ),
     );
   }
+}
+
+class NotificationTile extends StatelessWidget with Methods {
+  final String avatarUrl;
+  final String username;
+  final NotificationModel notification;
+
+  const NotificationTile({
+    super.key,
+    required this.avatarUrl,
+    required this.username,
+    required this.notification,
+  });
 
   IconData _getNotificationIcon(String type) {
     switch (type) {
@@ -101,27 +172,113 @@ class _NotificationBaseState extends State<NotificationBase> {
     }
   }
 
-  String _getNotificationText(Map<String, dynamic> data) {
-    String fromUser = data["fromUserId"];
-    switch (data["type"]) {
+  String _getNotificationText(String data) {
+    switch (data) {
       case "like":
-        return "$fromUser liked your post.";
+        return "liked your post.";
       case "comment":
-        return "$fromUser commented on your post.";
-      case "add_to_collection":
-        return "$fromUser added your post to a collection.";
-      case "message":
-        return "$fromUser sent you a message.";
-      case "send_asset":
-        return "$fromUser sent you a file.";
+        return "commented on your post.";
+      case "commentLike":
+        return "liked your comment in a post.";
+      case "textMessage":
+        return "sent you a message text.";
+      case "singleImageMessage":
+        return "sent you an image.";
+      case "multipleImageMessage":
+        return "sent you some images.";
+      case "commentReply":
+        return "replied to your comment in a post.";
       default:
         return "You have a new notification.";
     }
   }
 
-  String _formatTimestamp(Timestamp timestamp) {
-    DateTime date = timestamp.toDate();
-    return "${date.hour}:${date.minute}, ${date.day}/${date.month}/${date.year}";
+  void handleTap(BuildContext context) async {
+    if (notification.type == "like" ||
+        notification.type == "commentReply" ||
+        notification.type == "comment" ||
+        notification.type == "commentLike") {
+      OnlinePostModel post = await serviceLocator.get<PostRepository>().getDataFromPostId(notification.postId!);
+      UserModel currentUser = (await serviceLocator.get<UserRepository>().getCurrentUserData())!;
+
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) =>  PostDetailScreen(
+                post: post,
+                currentUser: currentUser,
+              )));
+    }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.iris.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        child: InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () { handleTap(context);},
+          borderRadius: BorderRadius.circular(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 35, // Increased size
+                backgroundColor: AppColors.iris,
+                backgroundImage: CachedNetworkImageProvider(avatarUrl),
+              ),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 20,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            username,
+                            style: AppTheme.blackUsernameMobileStyle.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 25,
+                            ),
+                          ),
+                          Text(
+                            _getNotificationText(notification.type),
+                            style: AppTheme.blackHeaderMobileStyle
+                                .copyWith(fontSize: 19, color: AppColors.iris),
+                          ),
+                          const SizedBox(
+                            height: 15,
+                          ),
+                          Text(
+                            calculateTimeFromNow(notification.timestamp),
+                            style: AppTheme.blackHeaderMobileStyle
+                                .copyWith(fontSize: 19),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 40,
+                      child: Center(
+                        child: Icon(_getNotificationIcon(notification.type),
+                            size: 35, color: AppColors.blackOak),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

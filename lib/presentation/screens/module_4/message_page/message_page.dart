@@ -6,9 +6,9 @@ import 'cubit/image_cubit.dart';
 import 'cubit/image_state.dart';
 import 'widgets/chat_page_properties.dart';
 
-
 class ChatPage extends StatefulWidget {
   final bool isUser1;
+  final UserModel currentUser;
   final String receiverUserEmail, receiverUserID, receiverAvatar;
 
   const ChatPage(
@@ -16,7 +16,8 @@ class ChatPage extends StatefulWidget {
       required this.receiverUserEmail,
       required this.receiverUserID,
       required this.receiverAvatar,
-      required this.isUser1});
+      required this.isUser1,
+      required this.currentUser});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -49,8 +50,6 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
     super.dispose();
   }
 
-
-
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       final position = _scrollController.position.minScrollExtent;
@@ -65,11 +64,16 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
   @override
   Widget build(BuildContext context) {
     return ChatPageUserProperty(
-      isUser1: widget.isUser1,
+      chatPageUserPropertyData: ChatPageUserPropertyData(
+        currentUser: widget.currentUser,
+        isUser1: widget.isUser1,
+      ),
       child: BlocProvider(
-        create: (context) {final chatSendCubit = ChatSendCubit();
-        chatSendCubit.initialize(); // Initialize the cubit asynchronously
-        return chatSendCubit;},
+        create: (context) {
+          final chatSendCubit = ChatSendCubit();
+          chatSendCubit.initialize(); // Initialize the cubit asynchronously
+          return chatSendCubit;
+        },
         child: Scaffold(
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(kToolbarHeight + 5),
@@ -83,13 +87,17 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                   leading: IconButton(
                     style: ButtonStyle(
                       elevation: WidgetStateProperty.all(0.0),
-                      //Remove tap effect
+                      // Remove tap effect
                       overlayColor: WidgetStateProperty.all(Colors.transparent),
                     ),
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    icon: SvgPicture.asset(AppIcons.backButton),
+                    icon: SvgPicture.asset(
+                      AppIcons.backButton,
+                      width: 75,
+                      height: 75,
+                    ),
                   ),
                   title: Text(
                     widget.receiverUserEmail,
@@ -134,29 +142,39 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                         builder: (context, assetList, _) {
                           return BlocBuilder<ChatSendCubit, ChatSendState>(
                               builder: (context, state) {
-                                if (state is ChatSendInProgress) {
-                                  return Container(
-                                      height: 50,
-                                      color: AppColors.corona,
-                                      child: Center(child: Text('Uploading image...',style: AppTheme.blackUsernameStyle,)));
-                                } else if (state is ChatSendSuccess) {
-                                  _scrollToBottom();
-                                  return Container(
-                                      height: 50,
-                                      color: AppColors.monstrousGreen,
-                                      child:  Center(child: Text('Image sent successfully!',style: AppTheme.blackUsernameStyle,)));
-                                } else if (state is ChatSendFailure) {
-                                  return Container(
-                                      height: 50,
-                                      color: AppColors.pelati,
-                                      child:
-                                       Center(child: Text('Failed to send image, please try again', style: AppTheme.blackUsernameStyle,)));
-                                }
-                              return SizedBox(
-                                height: (assetList.isNotEmpty) ? 275 : 0,
-                              );
+                            if (state is ChatSendInProgress) {
+                              return Container(
+                                  height: 50,
+                                  color: AppColors.corona,
+                                  child: Center(
+                                      child: Text(
+                                    'Uploading image...',
+                                    style: AppTheme.blackUsernameStyle,
+                                  )));
+                            } else if (state is ChatSendSuccess) {
+                              _scrollToBottom();
+                              return Container(
+                                  height: 50,
+                                  color: AppColors.monstrousGreen,
+                                  child: Center(
+                                      child: Text(
+                                    'Image sent successfully!',
+                                    style: AppTheme.blackUsernameStyle,
+                                  )));
+                            } else if (state is ChatSendFailure) {
+                              return Container(
+                                  height: 50,
+                                  color: AppColors.pelati,
+                                  child: Center(
+                                      child: Text(
+                                    'Failed to send image, please try again',
+                                    style: AppTheme.blackUsernameStyle,
+                                  )));
                             }
-                          );
+                            return SizedBox(
+                              height: (assetList.isNotEmpty) ? 275 : 0,
+                            );
+                          });
                         }),
                     // Message input
                     MessageInput(

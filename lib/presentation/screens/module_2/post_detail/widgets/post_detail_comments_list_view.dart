@@ -62,18 +62,29 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.white,
-          title: const Text('Manage Comment', style: TextStyle(fontWeight: FontWeight.bold),),
-          content: const Text('What do you want to do with this comment?',style: TextStyle(fontSize: 20)),
+          title: const Text(
+            'Manage Comment',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text('What do you want to do with this comment?',
+              style: TextStyle(fontSize: 20)),
           actions: <Widget>[
             TextButton(
-              child: const Icon(Icons.cancel, color: AppColors.iris,size: customIconSize+4,),
+              child: const Icon(
+                Icons.cancel,
+                color: AppColors.iris,
+                size: customIconSize + 4,
+              ),
               onPressed: () {
-                Navigator.of(dialogContext)
-                    .pop();
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
-              child: const Icon(Icons.delete, color: AppColors.iris,size: customIconSize+4,),
+              child: const Icon(
+                Icons.delete,
+                color: AppColors.iris,
+                size: customIconSize + 4,
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 _showDeleteConfirmationDialog(
@@ -98,9 +109,13 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.white,
-          title: const Text('Are you sure?', style: TextStyle(fontWeight: FontWeight.bold),),
+          title: const Text(
+            'Are you sure?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: const Text(
-              'This action cannot be undone. Do you really want to delete the comment?',style: TextStyle(fontSize: 20)),
+              'This action cannot be undone. Do you really want to delete the comment?',
+              style: TextStyle(fontSize: 20)),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
@@ -124,89 +139,8 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
                     print('Error deleting comment: $error');
                   }
                 }
-                if(!context.mounted) return;
+                if (!context.mounted) return;
 
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> showActionDialogForReplyComment(BuildContext context, String postId,
-      String commentId, Map<String, ReplyCommentPostModel> replyComments,
-      String replyOrder) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          title: const Text('Manage Comment', style: TextStyle(fontWeight: FontWeight.bold),),
-          content: const Text('What do you want to do with this comment?', style: TextStyle(fontSize: 20),),
-          actions: <Widget>[
-            TextButton(
-              child: const Icon(Icons.cancel, color: AppColors.iris, size: customIconSize+4,),
-              onPressed: () {
-                Navigator.of(dialogContext)
-                    .pop();
-              },
-            ),
-            TextButton(
-              child: const Icon(Icons.delete, color: AppColors.iris,size: customIconSize+4,),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _showDeleteConfirmationDialogForReplyComment(
-                    context, postId, commentId, replyComments, replyOrder);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showDeleteConfirmationDialogForReplyComment(
-      BuildContext context,
-      String postId,
-      String commentId,
-      Map<String, ReplyCommentPostModel> replyComments,
-      String replyOrder) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          title: const Text('Are you sure?', style: TextStyle(fontWeight: FontWeight.bold),),
-          content: const Text(
-              'This action cannot be undone. Do you really want to delete the comment?',style: TextStyle(fontSize: 20)),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () async {
-                try {
-                  await serviceLocator
-                      .get<CommentRepository>()
-                      .removeReplyComment(postId, commentId, int.parse(replyOrder));
-
-                  setState(() {
-                    replyComments.remove(replyOrder);
-                  });
-                } catch (error) {
-                  if (kDebugMode) {
-                    print('Error deleting reply comment: $error');
-                  }
-                }
-                if(!context.mounted) return;
                 Navigator.of(context).pop(); // Close the dialog
               },
             ),
@@ -244,32 +178,32 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
       final String currentMode = sortByNotifier.value;
 
       try {
-        if(newComment != null){
-        if (currentMode == "newest") {
-          bool shouldAdd = !_currentComments
-              .any((comment) => comment.commentId == newComment.commentId);
-          if (shouldAdd) {
-            _currentComments = [newComment, ..._currentComments];
-          }
-          _commentsStreamController.add(List.from(_currentComments));
-        } else if (currentMode == "mostLiked") {
-          if (_currentComments.isEmpty) {
-            _currentComments = [newComment, ..._currentComments];
-            _commentsStreamController.add(List.from(_currentComments));
-          } else {
-            final int minLikes = _currentComments.last.likes.length;
-
-            bool shouldAdd = (newComment.likes.length >= minLikes) &&
-                (!_currentComments.any(
-                    (comment) => comment.commentId == newComment.commentId));
-
+        if (newComment != null) {
+          if (currentMode == "newest") {
+            bool shouldAdd = !_currentComments
+                .any((comment) => comment.commentId == newComment.commentId);
             if (shouldAdd) {
-              _currentComments.add(newComment);
-
+              _currentComments = [newComment, ..._currentComments];
+            }
+            _commentsStreamController.add(List.from(_currentComments));
+          } else if (currentMode == "mostLiked") {
+            if (_currentComments.isEmpty) {
+              _currentComments = [newComment, ..._currentComments];
               _commentsStreamController.add(List.from(_currentComments));
+            } else {
+              final int minLikes = _currentComments.last.likes.length;
+
+              bool shouldAdd = (newComment.likes.length >= minLikes) &&
+                  (!_currentComments.any(
+                      (comment) => comment.commentId == newComment.commentId));
+
+              if (shouldAdd) {
+                _currentComments.add(newComment);
+
+                _commentsStreamController.add(List.from(_currentComments));
+              }
             }
           }
-        }
         }
       } catch (error) {
         if (kDebugMode) {
@@ -538,13 +472,18 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
                                                                     .iris,
                                                               ),
                                                               onPressed: () {
-                                                                selectedReplyCommentIdNotifier
-                                                                    .value = (selectedReplyCommentId ==
-                                                                        comment
-                                                                            .commentId)
-                                                                    ? null
-                                                                    : comment
-                                                                        .commentId;
+                                                                if (selectedReplyCommentId ==
+                                                                    comment
+                                                                        .commentId) {
+                                                                  selectedReplyCommentIdNotifier
+                                                                          .value =
+                                                                      null;
+                                                                } else {
+                                                                  selectedReplyCommentIdNotifier
+                                                                          .value =
+                                                                      comment
+                                                                          .commentId;
+                                                                }
                                                               },
                                                             ),
                                                             const SizedBox(
@@ -630,132 +569,40 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
                                               itemCount:
                                                   comment.replyComments.length,
                                               itemBuilder: (context, index) {
-                                                ReplyCommentPostModel
+                                                ReplyCommentPostModel?
                                                     replyComment =
                                                     comment.replyComments[
-                                                        index.toString()]!;
-                                                ValueNotifier<bool>
-                                                    isThisReplyUserLiked =
-                                                    ValueNotifier<bool>(
-                                                  replyComment.likes.contains(
-                                                      widget.currentUser.id ??
-                                                          ''),
-                                                );
-                                                return Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 80),
-                                                  child: GestureDetector(
-                                                    onLongPress: () {
-                                                      if (replyComment.userId ==
-                                                          widget.currentUser.id) {
-                                                        showActionDialogForReplyComment(
-                                                            context,
-                                                            widget.post.postId,
-                                                            comment.commentId!,
-                                                            comment.replyComments,
-                                                            replyComment.order!);
-                                                      }
-                                                    },
-                                                    child: Card(
-                                                        color: AppColors.white,
-                                                        margin: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 8,
-                                                            horizontal: 10),
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            12)),
-                                                        elevation: 3,
-                                                        child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(20),
-                                                            child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .end,
-                                                                    children: [
-                                                                      Text(
-                                                                          'replied to ${comment.username}',
-                                                                          style: AppTheme
-                                                                              .blackHeaderMobileStyle
-                                                                              .copyWith(fontSize: 16))
-                                                                    ],
-                                                                  ),
-                                                                  Text(
-                                                                    replyComment
-                                                                        .content,
-                                                                    style: AppTheme
-                                                                        .blackHeaderCommentMobileStyle
-                                                                        .copyWith(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .normal,
-                                                                    ),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height: 10),
-                                                                  Padding(
-                                                                    padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            5),
-                                                                    child:
-                                                                        ValueListenableBuilder(
-                                                                      valueListenable:
-                                                                          isThisReplyUserLiked,
-                                                                      builder:
-                                                                          (context,
-                                                                              isLiked,
-                                                                              _) {
-                                                                        return Row(
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.center,
-                                                                          children: [
-                                                                            CircleAvatar(
-                                                                              backgroundImage:
-                                                                                  CachedNetworkImageProvider(replyComment.userAvatar!),
-                                                                              radius:
-                                                                                  25,
-                                                                            ),
-                                                                            const SizedBox(
-                                                                                width: 8),
-                                                                            Expanded(
-                                                                              child:
-                                                                                  Column(
-                                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                children: [
-                                                                                  Text(replyComment.username!, style: AppTheme.blackHeaderMobileStyle),
-                                                                                  Text(
-                                                                                    "${replyComment.likes.length} likes",
-                                                                                    style: AppTheme.blackHeaderMobileStyle.copyWith(fontSize: 16),
-                                                                                  ),
-                                                                                ],
-                                                                              ),
-                                                                            ),
-                                                                            const SizedBox(
-                                                                                width: 16),
-                                                                            Text(
-                                                                                calculateTimeFromNow(comment.timestamp),
-                                                                                style: AppTheme.blackHeaderMobileStyle.copyWith(fontSize: 16)),
-                                                                          ],
-                                                                        );
-                                                                      },
-                                                                    ),
-                                                                  ),
-                                                                ]))),
-                                                  ),
-                                                );
+                                                        index.toString()];
+
+                                                if (replyComment != null) {
+                                                  ValueNotifier<bool>
+                                                      isThisReplyUserLiked =
+                                                      ValueNotifier<bool>(
+                                                    replyComment.likes.contains(
+                                                        widget.currentUser.id ??
+                                                            ''),
+                                                  );
+
+                                                  return CommentCard(
+                                                    comment: comment,
+                                                    isUserLiked: isUserLiked,
+                                                    selectedReplyCommentIdNotifier:
+                                                        selectedReplyCommentIdNotifier,
+                                                    selectedReplyCommentId:
+                                                        selectedReplyCommentId,
+                                                    currentUser:
+                                                        widget.currentUser,
+                                                    replyComment: replyComment,
+                                                    post: widget.post,
+                                                    isThisReplyUserLiked:
+                                                        isThisReplyUserLiked,
+                                                  );
+                                                }
+
+                                                return const SizedBox.shrink();
                                               })
+
+
                                         ],
 
                                         // Show reply text field if this comment is selected
@@ -851,5 +698,223 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
         ),
       );
     });
+  }
+}
+
+class CommentCard extends StatefulWidget {
+  final CommentPostModel comment;
+  final ReplyCommentPostModel replyComment;
+  final ValueNotifier<bool> isUserLiked;
+  final ValueNotifier<String?> selectedReplyCommentIdNotifier;
+  final OnlinePostModel post;
+  final ValueNotifier<bool> isThisReplyUserLiked;
+
+  final String? selectedReplyCommentId;
+  final UserModel currentUser;
+
+  const CommentCard({
+    super.key,
+    required this.comment,
+    required this.isUserLiked,
+    required this.selectedReplyCommentIdNotifier,
+    required this.selectedReplyCommentId,
+    required this.currentUser,
+    required this.replyComment,
+    required this.post,
+    required this.isThisReplyUserLiked,
+  });
+
+  @override
+  State<CommentCard> createState() => _CommentCardState();
+}
+
+class _CommentCardState extends State<CommentCard> with FlashMessage, Methods {
+  Future<void> showActionDialogForReplyComment(
+      BuildContext context,
+      String postId,
+      String commentId,
+      Map<String, ReplyCommentPostModel> replyComments,
+      String replyOrder) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text(
+            'Manage Comment',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'What do you want to do with this comment?',
+            style: TextStyle(fontSize: 20),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Icon(
+                Icons.cancel,
+                color: AppColors.iris,
+                size: customIconSize + 4,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Icon(
+                Icons.delete,
+                color: AppColors.iris,
+                size: customIconSize + 4,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _showDeleteConfirmationDialogForReplyComment(
+                    context, postId, commentId, replyComments, replyOrder);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialogForReplyComment(
+      BuildContext context,
+      String postId,
+      String commentId,
+      Map<String, ReplyCommentPostModel> replyComments,
+      String replyOrder) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text(
+            'Are you sure?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+              'This action cannot be undone. Do you really want to delete the comment?',
+              style: TextStyle(fontSize: 20)),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () async {
+                try {
+                  await serviceLocator
+                      .get<CommentRepository>()
+                      .removeReplyComment(
+                          postId, commentId, int.parse(replyOrder));
+
+                  setState(() {
+                    replyComments.remove(replyOrder);
+                  });
+                } catch (error) {
+                  if (kDebugMode) {
+                    print('Error deleting reply comment: $error');
+                  }
+                }
+                if (!context.mounted) return;
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 80),
+      child: GestureDetector(
+        onLongPress: () {
+          if (widget.replyComment.userId == widget.currentUser.id) {
+            showActionDialogForReplyComment(
+                context,
+                widget.post.postId,
+                widget.comment.commentId!,
+                widget.comment.replyComments,
+                widget.replyComment.order!);
+          }
+        },
+        child: Card(
+            color: AppColors.white,
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 3,
+            child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text('replied to ${widget.comment.username}',
+                              style: AppTheme.blackHeaderMobileStyle
+                                  .copyWith(fontSize: 16))
+                        ],
+                      ),
+                      Text(
+                        widget.replyComment.content,
+                        style: AppTheme.blackHeaderCommentMobileStyle.copyWith(
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: ValueListenableBuilder(
+                          valueListenable: widget.isThisReplyUserLiked,
+                          builder: (context, isLiked, _) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      widget.replyComment.userAvatar!),
+                                  radius: 25,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(widget.replyComment.username!,
+                                          style:
+                                              AppTheme.blackHeaderMobileStyle),
+                                      Text(
+                                        "${widget.replyComment.likes.length} likes",
+                                        style: AppTheme.blackHeaderMobileStyle
+                                            .copyWith(fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Text(
+                                    calculateTimeFromNow(
+                                        widget.comment.timestamp),
+                                    style: AppTheme.blackHeaderMobileStyle
+                                        .copyWith(fontSize: 16)),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ]))),
+      ),
+    );
   }
 }

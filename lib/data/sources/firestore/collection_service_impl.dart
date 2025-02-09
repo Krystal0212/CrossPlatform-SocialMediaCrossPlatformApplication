@@ -12,9 +12,11 @@ abstract class CollectionService {
   Future<void> updateTitleToCollection(
       String title, CollectionModel collection);
 
-  Future<void> removeOtherUserCollectionFromCurrentUser(CollectionModel collection);
+  Future<void> removeOtherUserCollectionFromCurrentUser(
+      CollectionModel collection);
 
-  Future<void> removeCurrentUserCollectionFromCurrentUser(CollectionModel collection);
+  Future<void> removeCurrentUserCollectionFromCurrentUser(
+      CollectionModel collection);
 
   Future<List<CollectionModel>> getCollectionsFromCurrentUser(String uid);
 
@@ -42,6 +44,9 @@ class CollectionServiceImpl extends CollectionService {
   CollectionReference _usersCollectionsRef(String uid) {
     return _usersRef.doc(uid).collection('collections');
   }
+
+  CollectionReference get _notificationRef =>
+      _firestoreDB.collection('Notification');
 
   // ToDo: Service Functions
 
@@ -180,7 +185,10 @@ class CollectionServiceImpl extends CollectionService {
         if (collectionSnapshot.exists && collectionSnapshot.data() != null) {
           userRef = collectionSnapshot['userRef'];
 
-          if ((collectionSnapshot['isPublic'] ?? false) && currentUser?.uid != userRef.id) {
+          if(userRef.id != currentUser?.uid){
+
+          if ((collectionSnapshot['isPublic'] ?? false) &&
+              currentUser?.uid != userRef.id) {
             // Fetch user reference and data
             userSnapshot = await userRef.get();
             Map<String, String> preferredTopics = {};
@@ -293,7 +301,7 @@ class CollectionServiceImpl extends CollectionService {
                 isNSFW: isNSFW);
             collections.add(collection);
           }
-        }
+        }}
       }
 
       return collections;
@@ -487,116 +495,115 @@ class CollectionServiceImpl extends CollectionService {
               await _collectionRef.doc(collectionId).get();
 
           if (collectionSnapshot.exists && collectionSnapshot.data() != null) {
-              // Fetch user reference and data
-              DocumentReference userRef = collectionSnapshot['userRef'];
-              DocumentSnapshot userSnapshot = await userRef.get();
-              Map<String, dynamic> documentMap =
-                  userSnapshot.data() as Map<String, dynamic>;
+            // Fetch user reference and data
+            DocumentReference userRef = collectionSnapshot['userRef'];
+            DocumentSnapshot userSnapshot = await userRef.get();
+            Map<String, dynamic> documentMap =
+                userSnapshot.data() as Map<String, dynamic>;
 
-              // Fetch preferred topics from the topicRankBoard document
-              Map<String, String> preferredTopics = {};
-              DocumentReference topicRankBoardRef =
-                  documentMap['topicRankBoardRef'] as DocumentReference;
-              DocumentSnapshot topicRankBoardSnapshot =
-                  await topicRankBoardRef.get();
+            // Fetch preferred topics from the topicRankBoard document
+            Map<String, String> preferredTopics = {};
+            DocumentReference topicRankBoardRef =
+                documentMap['topicRankBoardRef'] as DocumentReference;
+            DocumentSnapshot topicRankBoardSnapshot =
+                await topicRankBoardRef.get();
 
-              if (topicRankBoardSnapshot.exists) {
-                Map<String, dynamic> rank =
-                    Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
+            if (topicRankBoardSnapshot.exists) {
+              Map<String, dynamic> rank =
+                  Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
 
-                // Sort topics by rank value in descending order
-                List<MapEntry<String, int>> sortedTopics = rank.entries
-                    .map((entry) => MapEntry(entry.key, entry.value as int))
-                    .toList()
-                  ..sort((a, b) => b.value.compareTo(a.value));
+              // Sort topics by rank value in descending order
+              List<MapEntry<String, int>> sortedTopics = rank.entries
+                  .map((entry) => MapEntry(entry.key, entry.value as int))
+                  .toList()
+                ..sort((a, b) => b.value.compareTo(a.value));
 
-                // Convert sorted list into preferredTopics (Map<String, String>)
-                for (int i = 0; i < sortedTopics.length && i < 5; i++) {
-                  preferredTopics[(i + 1).toString()] = sortedTopics[i].key;
-                }
+              // Convert sorted list into preferredTopics (Map<String, String>)
+              for (int i = 0; i < sortedTopics.length && i < 5; i++) {
+                preferredTopics[(i + 1).toString()] = sortedTopics[i].key;
               }
+            }
 
-              // Update documentMap with preferred topics
-              documentMap['preferred-topics'] = preferredTopics;
-              documentMap['id'] = userRef.id;
+            // Update documentMap with preferred topics
+            documentMap['preferred-topics'] = preferredTopics;
+            documentMap['id'] = userRef.id;
 
-              UserModel userData = UserModel.fromMap(documentMap);
-              List<PreviewAssetPostModel> assets = [];
+            UserModel userData = UserModel.fromMap(documentMap);
+            List<PreviewAssetPostModel> assets = [];
 
-              List<dynamic> assetsList =
-                  collectionSnapshot['assets'] as List<dynamic>;
+            List<dynamic> assetsList =
+                collectionSnapshot['assets'] as List<dynamic>;
 
-              String? presentationUrl, dominantColor;
-              bool isNSFW = false;
-              double shotsNumber = assetsList.length.toDouble();
-              Timestamp? latestTimestamp;
+            String? presentationUrl, dominantColor;
+            bool isNSFW = false;
+            double shotsNumber = assetsList.length.toDouble();
+            Timestamp? latestTimestamp;
 
-              for (Map<String, dynamic> assetMap
-                  in assetsList.map((e) => Map<String, dynamic>.from(e))) {
-                PreviewAssetPostModel asset =
-                    PreviewAssetPostModel.fromMap(assetMap);
-                assets.add(asset);
+            for (Map<String, dynamic> assetMap
+                in assetsList.map((e) => Map<String, dynamic>.from(e))) {
+              PreviewAssetPostModel asset =
+                  PreviewAssetPostModel.fromMap(assetMap);
+              assets.add(asset);
 
-                // Fetch the post document associated with this asset
-                DocumentSnapshot postSnapshot =
-                    await _postRef.doc(asset.postId).get();
-                if (postSnapshot.exists && postSnapshot.data() != null) {
-                  Map<String, dynamic> postData =
-                      postSnapshot.data() as Map<String, dynamic>;
+              // Fetch the post document associated with this asset
+              DocumentSnapshot postSnapshot =
+                  await _postRef.doc(asset.postId).get();
+              if (postSnapshot.exists && postSnapshot.data() != null) {
+                Map<String, dynamic> postData =
+                    postSnapshot.data() as Map<String, dynamic>;
 
-                  // Check if the post has a timestamp
-                  if (postData.containsKey('timestamp') &&
-                      postData['timestamp'] is Timestamp) {
-                    Timestamp currentTimestamp =
-                        postData['timestamp'] as Timestamp;
+                // Check if the post has a timestamp
+                if (postData.containsKey('timestamp') &&
+                    postData['timestamp'] is Timestamp) {
+                  Timestamp currentTimestamp =
+                      postData['timestamp'] as Timestamp;
 
-                    // Check if this is the latest timestamp
-                    if (latestTimestamp == null ||
-                        currentTimestamp.compareTo(latestTimestamp) > 0) {
-                      latestTimestamp = currentTimestamp;
+                  // Check if this is the latest timestamp
+                  if (latestTimestamp == null ||
+                      currentTimestamp.compareTo(latestTimestamp) > 0) {
+                    latestTimestamp = currentTimestamp;
 
-                      // Extract the presentation URL if media is valid
-                      if (postData.containsKey('media') &&
-                          postData['media'] is Map<String, dynamic>) {
-                        Map<String, dynamic> mediaMap =
-                            postData['media'] as Map<String, dynamic>;
+                    // Extract the presentation URL if media is valid
+                    if (postData.containsKey('media') &&
+                        postData['media'] is Map<String, dynamic>) {
+                      Map<String, dynamic> mediaMap =
+                          postData['media'] as Map<String, dynamic>;
 
-                        // Use the first media item
-                        Map<String, dynamic> firstMediaMap =
-                            mediaMap.values.first as Map<String, dynamic>;
-                        if (firstMediaMap['type'] == 'image' &&
-                            firstMediaMap['imageUrl'] != null) {
-                          presentationUrl = firstMediaMap['imageUrl'] as String;
-                          dominantColor =
-                              firstMediaMap['dominantColor'] as String;
-                          isNSFW = firstMediaMap['isNSFW'];
-                        } else if (firstMediaMap['type'] == 'video' &&
-                            firstMediaMap['thumbnailUrl'] != null) {
-                          presentationUrl =
-                              firstMediaMap['thumbnailUrl'] as String;
-                          dominantColor =
-                              firstMediaMap['dominantColor'] as String;
-                          isNSFW = firstMediaMap['isNSFW'];
-                        }
+                      // Use the first media item
+                      Map<String, dynamic> firstMediaMap =
+                          mediaMap.values.first as Map<String, dynamic>;
+                      if (firstMediaMap['type'] == 'image' &&
+                          firstMediaMap['imageUrl'] != null) {
+                        presentationUrl = firstMediaMap['imageUrl'] as String;
+                        dominantColor =
+                            firstMediaMap['dominantColor'] as String;
+                        isNSFW = firstMediaMap['isNSFW'];
+                      } else if (firstMediaMap['type'] == 'video' &&
+                          firstMediaMap['thumbnailUrl'] != null) {
+                        presentationUrl =
+                            firstMediaMap['thumbnailUrl'] as String;
+                        dominantColor =
+                            firstMediaMap['dominantColor'] as String;
+                        isNSFW = firstMediaMap['isNSFW'];
                       }
                     }
                   }
                 }
               }
+            }
 
-              // Create a CollectionModel from the collection document data
-              CollectionModel collectionModel = CollectionModel(
-                  collectionId: collectionSnapshot.id,
-                  title: collectionSnapshot['title'],
-                  assets: assets,
-                  userData: userData,
-                  presentationUrl: presentationUrl,
-                  dominantColor: dominantColor,
-                  shotsNumber: shotsNumber.toInt(),
-                  isPublic: collectionSnapshot['isPublic'],
-                  isNSFW: isNSFW);
-              collections.add(collectionModel);
-
+            // Create a CollectionModel from the collection document data
+            CollectionModel collectionModel = CollectionModel(
+                collectionId: collectionSnapshot.id,
+                title: collectionSnapshot['title'],
+                assets: assets,
+                userData: userData,
+                presentationUrl: presentationUrl,
+                dominantColor: dominantColor,
+                shotsNumber: shotsNumber.toInt(),
+                isPublic: collectionSnapshot['isPublic'],
+                isNSFW: isNSFW);
+            collections.add(collectionModel);
           }
         }
 
@@ -704,6 +711,7 @@ class CollectionServiceImpl extends CollectionService {
       await userCollectionRef.set({'dummy': true});
 
       await userCollectionRef.set({});
+
     } catch (error) {
       if (kDebugMode) {
         print("Error adding/updating collection: $error");
@@ -739,8 +747,9 @@ class CollectionServiceImpl extends CollectionService {
   }
 
   @override
-  Future<void> removeOtherUserCollectionFromCurrentUser(CollectionModel collection) async {
-    try{
+  Future<void> removeOtherUserCollectionFromCurrentUser(
+      CollectionModel collection) async {
+    try {
       String collectionId = collection.collectionId;
 
       var collectionRef = _collectionRef.doc(collectionId);
@@ -751,7 +760,7 @@ class CollectionServiceImpl extends CollectionService {
           .doc(collectionRef.id);
 
       await userCollectionRef.delete();
-    } catch (error){
+    } catch (error) {
       if (kDebugMode) {
         print("Error removing collection: $error");
       }
@@ -759,8 +768,9 @@ class CollectionServiceImpl extends CollectionService {
   }
 
   @override
-  Future<void> removeCurrentUserCollectionFromCurrentUser(CollectionModel collection) async {
-    try{
+  Future<void> removeCurrentUserCollectionFromCurrentUser(
+      CollectionModel collection) async {
+    try {
       String collectionId = collection.collectionId;
 
       var collectionRef = _collectionRef.doc(collectionId);
@@ -773,7 +783,7 @@ class CollectionServiceImpl extends CollectionService {
           .doc(collectionRef.id);
 
       await userCollectionRef.delete();
-    } catch (error){
+    } catch (error) {
       if (kDebugMode) {
         print("Error removing collection: $error");
       }

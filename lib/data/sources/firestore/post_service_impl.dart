@@ -16,6 +16,8 @@ abstract class PostService {
 
   Future<List<PreviewAssetPostModel>> getPostImagesByPostId(String postId);
 
+  Future<List<PreviewSoundPostModel>> getSoundPostsByUserId(String userId);
+
   Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
       String userId);
 
@@ -49,6 +51,14 @@ abstract class PostService {
 
   Future<void> createAssetPost(String content,
       List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
+
+  Future<OnlinePostModel> getDataFromPostId(String postId);
+
+  Future<void> addViewCount(String postId);
+
+  Future<List<OnlinePostModel>> searchPost(String query);
+
+  Future<void> reduceTopicRanksOfPostForCurrentUser(String postId);
 }
 
 class PostServiceImpl extends PostService
@@ -75,6 +85,9 @@ class PostServiceImpl extends PostService
   CollectionReference get _postRef => _firestoreDB.collection('Post');
 
   CollectionReference get _topicRef => _firestoreDB.collection('Topic');
+
+  CollectionReference get _notificationRef =>
+      _firestoreDB.collection('Notification');
 
   Query<Object?> get _latestPostsQuery =>
       _postRef.orderBy('timestamp', descending: true);
@@ -390,7 +403,6 @@ class PostServiceImpl extends PostService
         List<OnlinePostModel> newPosts = [];
 
         for (QueryDocumentSnapshot document in uniquePosts) {
-
           likes = await _fetchSubCollection(document, 'likes');
           userRef = document['userRef'];
           userData = userRef.get();
@@ -404,7 +416,8 @@ class PostServiceImpl extends PostService
               document.data() as Map<String, dynamic>;
 
           bool isPostNSFW = false;
-          if (documentMap['media'] != null && documentMap['media'] is Map<String, dynamic>) {
+          if (documentMap['media'] != null &&
+              documentMap['media'] is Map<String, dynamic>) {
             documentMap['media'].forEach((key, value) {
               if (value is Map<String, dynamic> && value['isNSFW'] == true) {
                 isPostNSFW = true;
@@ -593,6 +606,14 @@ class PostServiceImpl extends PostService
     const double timeDecayFactor = 50.0;
 
     try {
+      bool isNSFWTurnOn = true;
+      if (currentUser != null) {
+        // Fetch topic posts
+        DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
+        await userTopics['topicRankBoardRef'].get();
+        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'];
+      }
+
       List<Map<String, dynamic>> postDataList = [];
 
       for (QueryDocumentSnapshot postDoc in posts) {
@@ -610,6 +631,21 @@ class PostServiceImpl extends PostService
           likeAmount = postData['likeAmount'] ?? 0;
           viewAmount = postData['viewAmount'] ?? 0;
           commentAmount = postData['commentAmount'] ?? 0;
+
+          bool isPostNSFW = false;
+          if (postData['media'] != null &&
+              postData['media'] is Map<String, dynamic>) {
+            postData['media'].forEach((key, value) {
+              if (value is Map<String, dynamic> && value['isNSFW'] == true) {
+                isPostNSFW = true;
+              }
+            });
+          }
+
+          // Skip the post if it's NSFW and isNSFWTurnOn is true
+          if (isPostNSFW && isNSFWTurnOn) {
+            continue;
+          }
         } catch (error) {
           if (kDebugMode) {
             print("Error in processing post data: $error");
@@ -680,28 +716,39 @@ class PostServiceImpl extends PostService
     try {
       List<QueryDocumentSnapshot<Object?>> topicPosts = [];
       List<QueryDocumentSnapshot<Object?>> followingPosts = [];
+      bool isNSFWTurnOn = true;
 
       if (currentUser != null) {
         QuerySnapshot followingsRef =
             await _usersFollowingsRef(currentUserId).get();
+        DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
+        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'];
+
         List<String> followingIds = [];
         if (followingsRef.docs.isNotEmpty) {
           followingIds = followingsRef.docs.map((doc) => doc.id).toList();
         }
-        final userRefs = followingIds.map((id) {
-          return _usersRef.doc(id);
-        }).toList();
 
-        Query query = _postRef
-            .where('userRef', whereIn: userRefs)
-            .orderBy('timestamp', descending: true)
-            .limit(10);
-        if (lastFetchedPost != null) {
-          query = query.startAfterDocument(lastFetchedPost.documentSnapshot!);
+        final userRefs = followingIds.map((id) => _usersRef.doc(id)).toList();
+
+        if (userRefs.isNotEmpty) {
+          Query followingQuery = _postRef
+              .where('userRef', whereIn: userRefs)
+              .orderBy('timestamp', descending: true)
+              .limit(10);
+
+          if (lastFetchedPost != null) {
+            followingQuery = followingQuery
+                .startAfterDocument(lastFetchedPost.documentSnapshot!);
+          }
+
+          QuerySnapshot followingPostsQuery = await followingQuery.get();
+          followingPosts = followingPostsQuery.docs;
+        } else {
+          if (kDebugMode) {
+            print("No userRefs available, skipping query.");
+          }
         }
-        QuerySnapshot followingPostsQuery = await query.get();
-
-        followingPosts = followingPostsQuery.docs;
       }
 
       if (followingPosts.isEmpty) {
@@ -728,6 +775,21 @@ class PostServiceImpl extends PostService
 
         Map<String, dynamic> documentMap =
             document.data() as Map<String, dynamic>;
+
+        bool isPostNSFW = false;
+        if (documentMap['media'] != null &&
+            documentMap['media'] is Map<String, dynamic>) {
+          documentMap['media'].forEach((key, value) {
+            if (value is Map<String, dynamic> && value['isNSFW'] == true) {
+              isPostNSFW = true;
+            }
+          });
+        }
+
+        // Skip the post if it's NSFW and isNSFWTurnOn is true
+        if (isPostNSFW && isNSFWTurnOn) {
+          continue;
+        }
 
         documentMap['postId'] = document.id;
         documentMap['userId'] = userRef.id;
@@ -768,6 +830,53 @@ class PostServiceImpl extends PostService
     return file;
   }
 
+  Future<void> _sendPostInteractionNotification(
+      String receiverId, NotificationType type, String postId) async {
+    try {
+      CollectionReference notificationsRef =
+          _notificationRef.doc(receiverId).collection('notifications');
+
+      // Check if the document exists
+      DocumentReference userNotificationsRef = _notificationRef.doc(receiverId);
+      DocumentSnapshot userDocSnapshot = await userNotificationsRef.get();
+
+      // If document doesn't exist, create it
+      if (!userDocSnapshot.exists) {
+        await userNotificationsRef.set({'list': []});
+      }
+
+      Timestamp fifteenMinutesAgo = Timestamp.fromMillisecondsSinceEpoch(
+          DateTime.now().millisecondsSinceEpoch - (15 * 60 * 1000));
+
+      QuerySnapshot querySnapshot = await notificationsRef
+          .where('fromUserRef', isEqualTo: _usersRef.doc(currentUserId))
+          .where('postId', isEqualTo: postId)
+          .where('timestamp',
+              isGreaterThan: fifteenMinutesAgo) // Check last 15 min
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      NotificationModel newNotification = NotificationModel.newNotification(
+        type: type.name,
+        fromUserRef: _usersRef.doc(currentUserId),
+        toUserId: receiverId,
+        postId: postId,
+        timestamp: Timestamp.now(),
+      );
+
+      if (querySnapshot.docs.isNotEmpty) {
+        await querySnapshot.docs.first.reference.set(newNotification.toMap());
+      } else {
+        await notificationsRef.add(newNotification.toMap());
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error during sending notification: $error');
+      }
+    }
+  }
+
   bool isLikeSyncing = false;
 
   @override
@@ -781,7 +890,7 @@ class PostServiceImpl extends PostService
 
     try {
       String userId = currentUserId;
-      int topicScoreChange = 1;
+      int topicScoreChange = 2;
 
       DocumentReference userRef = _usersRef.doc(userId);
       DocumentReference? topicRankBoardRef = await userRef.get().then(
@@ -822,6 +931,7 @@ class PostServiceImpl extends PostService
         // Like system updates
         DocumentReference likeRef = postRef.collection('likes').doc(userId);
         DocumentSnapshot likeSnapshot = await likeRef.get();
+        String receiverId = postSnapshot['userRef'].id;
 
         if (isLiked) {
           if (!likeSnapshot.exists) {
@@ -829,6 +939,11 @@ class PostServiceImpl extends PostService
             batch.update(postRef, {
               'likeAmount': FieldValue.increment(1),
             });
+            await _sendPostInteractionNotification(
+              receiverId,
+              NotificationType.like,
+              postId,
+            );
           }
         } else {
           if (likeSnapshot.exists) {
@@ -871,42 +986,41 @@ class PostServiceImpl extends PostService
     List<String> comments, likes;
 
     try {
-      DocumentReference tempUserRef = _usersRef.doc(userId);
-
-      QuerySnapshot postsSnapshot =
-          await _postRef.where('userRef', isEqualTo: tempUserRef).get();
+      QuerySnapshot postsSnapshot = await _usersPostsRef(userId).get();
 
       if (postsSnapshot.docs.isEmpty) {
-        throw CustomFirestoreException(
-          code: 'no-posts',
-          message: 'No posts exist for this user in Firestore',
-        );
+        return [];
       }
 
-      for (QueryDocumentSnapshot document in postsSnapshot.docs) {
+      List<String> postIds = postsSnapshot.docs.map((doc) => doc.id).toList();
+
+      for (var postId in postIds) {
+        DocumentSnapshot document = await _postRef.doc(postId).get();
         comments = await _fetchSubCollection(document, 'comments');
         likes = await _fetchSubCollection(document, 'likes');
-
-        userRef = document['userRef'];
-        userData = userRef.get();
-        await userData.then((value) {
-          username = value['name'];
-          userAvatar = value['avatar'];
-        });
 
         Map<String, dynamic> documentMap =
             document.data() as Map<String, dynamic>;
 
-        documentMap['postId'] = document.id;
-        documentMap['userId'] = userRef.id;
-        documentMap['username'] = username;
-        documentMap['userAvatar'] = userAvatar;
-        documentMap['comments'] = comments.toSet();
-        documentMap['likes'] = likes.toSet();
+        if (documentMap['media'] != null) {
+          userRef = documentMap['userRef'];
+          userData = userRef.get();
+          await userData.then((value) {
+            username = value['name'];
+            userAvatar = value['avatar'];
+          });
 
-        OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+          documentMap['postId'] = document.id;
+          documentMap['userId'] = userRef.id;
+          documentMap['username'] = username;
+          documentMap['userAvatar'] = userAvatar;
+          documentMap['comments'] = comments.toSet();
+          documentMap['likes'] = likes.toSet();
 
-        posts.add(post);
+          OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+
+          posts.add(post);
+        }
       }
 
       return posts;
@@ -919,69 +1033,118 @@ class PostServiceImpl extends PostService
   }
 
   @override
+  Future<OnlinePostModel> getDataFromPostId(String postId) async {
+    try {
+      DocumentSnapshot postSnapshot = await _postRef.doc(postId).get();
+      Map<String, dynamic> postData =
+          postSnapshot.data() as Map<String, dynamic>;
+
+      if (postData.isEmpty) {
+        throw CustomFirestoreException(
+          code: 'no-posts',
+          message: 'No posts exist for this user in Firestore',
+        );
+      }
+
+      List<String> comments =
+          await _fetchSubCollection(postSnapshot, 'comments');
+      List<String> likes = await _fetchSubCollection(postSnapshot, 'likes');
+
+      DocumentReference userRef = postData['userRef'];
+      DocumentSnapshot userData = await userRef.get();
+      String username = userData['name'];
+      String userAvatar = userData['avatar'];
+
+      postData['postId'] = postSnapshot.id;
+      postData['userId'] = userRef.id;
+      postData['username'] = username;
+      postData['userAvatar'] = userAvatar;
+      postData['comments'] = comments.toSet();
+      postData['likes'] = likes.toSet();
+
+      OnlinePostModel post = OnlinePostModel.fromMap(postData);
+
+      return post;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching post for user by user id: $e');
+      }
+      rethrow;
+    }
+  }
+
+  @override
   Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(
       String userId) {
-    // Create a reference for the user
-    DocumentReference tempUserRef = _usersRef.doc(userId);
-
-    // Listen to realtime changes for posts matching the user's reference
-    return _postRef
-        .where('userRef', isEqualTo: tempUserRef)
-        .snapshots()
-        .asyncMap((QuerySnapshot postsSnapshot) async {
-      try {
-        if (postsSnapshot.docs.isEmpty) {
-          throw CustomFirestoreException(
-            code: 'no-posts',
-            message: 'No posts exist for this user in Firestore',
-          );
-        }
-
-        List<OnlinePostModel> posts = [];
-
-        for (QueryDocumentSnapshot document in postsSnapshot.docs) {
-          List<String> comments =
-              await _fetchSubCollection(document, 'comments');
-          List<String> likes = await _fetchSubCollection(document, 'likes');
-
-          // Fetch user data from the user reference stored in the document
-          DocumentReference userRef = document['userRef'];
-          DocumentSnapshot userSnapshot = await userRef.get();
-          String username = userSnapshot['name'];
-          String userAvatar = userSnapshot['avatar'];
-
-          // Get the document data and add extra fields
-          Map<String, dynamic> documentMap =
-              document.data() as Map<String, dynamic>;
-          documentMap['postId'] = document.id;
-          documentMap['userId'] = userRef.id;
-          documentMap['username'] = username;
-          documentMap['userAvatar'] = userAvatar;
-          documentMap['comments'] = comments.toSet();
-          documentMap['likes'] = likes.toSet();
-
-          OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
-          posts.add(post);
-        }
-
-        List<PreviewAssetPostModel> imageUrls = [];
-
-        for (var post in posts) {
-          List<PreviewAssetPostModel> imageUrlsForPost =
-              await getPostImagesByPostId(post.postId);
-          if (imageUrlsForPost.isNotEmpty) {
-            imageUrls.addAll(imageUrlsForPost);
+    try {
+      // Listen to realtime changes for posts matching the user's reference
+      return _usersPostsRef(userId)
+          .snapshots()
+          .asyncMap((QuerySnapshot userPostsSnapshot) async {
+        try {
+          if (userPostsSnapshot.docs.isEmpty) {
+            return [];
           }
-        }
 
-        return imageUrls;
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error fetching posts stream for user: $e');
+          List<String> postIds =
+              userPostsSnapshot.docs.map((doc) => doc.id).toList();
+
+          List<OnlinePostModel> posts = [];
+
+          for (var postId in postIds) {
+            DocumentSnapshot document = await _postRef.doc(postId).get();
+
+            List<String> comments =
+                await _fetchSubCollection(document, 'comments');
+            List<String> likes = await _fetchSubCollection(document, 'likes');
+
+            Map<String, dynamic> documentMap =
+                document.data() as Map<String, dynamic>;
+
+            if (documentMap['media'] != null) {
+              // Fetch user data from the user reference stored in the document
+              DocumentReference userRef = documentMap['userRef'];
+              DocumentSnapshot userSnapshot = await userRef.get();
+              String username = userSnapshot['name'];
+              String userAvatar = userSnapshot['avatar'];
+
+              // Get the document data and add extra fields
+              documentMap['postId'] = document.id;
+              documentMap['userId'] = userRef.id;
+              documentMap['username'] = username;
+              documentMap['userAvatar'] = userAvatar;
+              documentMap['comments'] = comments.toSet();
+              documentMap['likes'] = likes.toSet();
+
+              OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+              posts.add(post);
+            }
+          }
+
+          List<PreviewAssetPostModel> imageUrls = [];
+
+          for (var post in posts) {
+            List<PreviewAssetPostModel> imageUrlsForPost =
+                await getPostImagesByPostId(post.postId);
+            if (imageUrlsForPost.isNotEmpty) {
+              imageUrls.addAll(imageUrlsForPost);
+            }
+          }
+
+          return imageUrls;
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error fetching posts stream for user - sub step: $e');
+          }
+          rethrow;
         }
-        rethrow;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching posts stream for user: $e');
       }
-    });
+      rethrow;
+    }
   }
 
   @override
@@ -1044,31 +1207,28 @@ class PostServiceImpl extends PostService
   }
 
   @override
-  Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
-      String userId) {
-    // Create a reference for the user
-    DocumentReference tempUserRef = _usersRef.doc(userId);
+  Future<List<PreviewSoundPostModel>> getSoundPostsByUserId(
+      String userId) async {
+    try {
+      QuerySnapshot postsSnapshot = await _usersPostsRef(userId).get();
 
-    // Listen to realtime changes for posts matching the user's reference
-    return _postRef
-        .where('userRef', isEqualTo: tempUserRef)
-        .snapshots()
-        .asyncMap((QuerySnapshot postsSnapshot) async {
-      try {
-        if (postsSnapshot.docs.isEmpty) {
-          throw CustomFirestoreException(
-            code: 'no-posts',
-            message: 'No posts exist for this user in Firestore',
-          );
-        }
+      if (postsSnapshot.docs.isEmpty) {
+        return [];
+      }
 
-        List<OnlinePostModel> posts = [];
+      List<String> postIds = postsSnapshot.docs.map((doc) => doc.id).toList();
 
-        for (QueryDocumentSnapshot document in postsSnapshot.docs) {
-          List<String> comments =
-              await _fetchSubCollection(document, 'comments');
-          List<String> likes = await _fetchSubCollection(document, 'likes');
+      List<OnlinePostModel> posts = [];
 
+      for (var postId in postIds) {
+        DocumentSnapshot document = await _postRef.doc(postId).get();
+        List<String> comments = await _fetchSubCollection(document, 'comments');
+        List<String> likes = await _fetchSubCollection(document, 'likes');
+
+        Map<String, dynamic> documentMap =
+            document.data() as Map<String, dynamic>;
+
+        if (documentMap['record'] != null) {
           // Fetch user data from the user reference stored in the document
           DocumentReference userRef = document['userRef'];
           DocumentSnapshot userSnapshot = await userRef.get();
@@ -1076,8 +1236,6 @@ class PostServiceImpl extends PostService
           String userAvatar = userSnapshot['avatar'];
 
           // Get the document data and add extra fields
-          Map<String, dynamic> documentMap =
-              document.data() as Map<String, dynamic>;
           documentMap['postId'] = document.id;
           documentMap['userId'] = userRef.id;
           documentMap['username'] = username;
@@ -1088,34 +1246,113 @@ class PostServiceImpl extends PostService
           OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
           posts.add(post);
         }
+      }
 
-        List<PreviewSoundPostModel> soundUrls = [];
+      List<PreviewSoundPostModel> soundUrls = [];
 
-        for (var post in posts) {
-          try {
-            PreviewSoundPostModel soundUrlsForPost =
-            await getPostSoundsByPostId(post.postId);
-
-            soundUrls.add(soundUrlsForPost);
-
-          } catch (error) {
-            if( error is CustomFirestoreException && error.code == 'no-sound'){
-              continue;
-            }
-            else{
-              rethrow;
-            }
+      // Fetch sound URLs for each post
+      for (OnlinePostModel post in posts) {
+        try {
+          PreviewSoundPostModel soundUrlsForPost =
+              await getPostSoundsByPostId(post.postId);
+          soundUrls.add(soundUrlsForPost);
+        } catch (error) {
+          if (error is CustomFirestoreException && error.code == 'no-sound') {
+            continue; // Skip posts without sound
+          } else {
+            rethrow; // Rethrow unexpected errors
           }
         }
-
-        return soundUrls;
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error fetching posts stream for user: $e');
-        }
-        rethrow;
       }
-    });
+
+      return soundUrls;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching posts for user: $e');
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
+      String userId) {
+    try {
+      // Listen to realtime changes for posts matching the user's reference
+      return _usersPostsRef(userId)
+          .snapshots()
+          .asyncMap((QuerySnapshot userPostsSnapshot) async {
+        try {
+          if (userPostsSnapshot.docs.isEmpty) {
+            return [];
+          }
+
+          List<String> postIds =
+              userPostsSnapshot.docs.map((doc) => doc.id).toList();
+
+          List<OnlinePostModel> posts = [];
+
+          for (var postId in postIds) {
+            DocumentSnapshot document = await _postRef.doc(postId).get();
+
+            List<String> comments =
+                await _fetchSubCollection(document, 'comments');
+            List<String> likes = await _fetchSubCollection(document, 'likes');
+            Map<String, dynamic> documentMap =
+                document.data() as Map<String, dynamic>;
+
+            if (documentMap['record'] != null) {
+              // Fetch user data from the user reference stored in the document
+              DocumentReference userRef = documentMap['userRef'];
+              DocumentSnapshot userSnapshot = await userRef.get();
+              String username = userSnapshot['name'];
+              String userAvatar = userSnapshot['avatar'];
+
+              // Get the document data and add extra fields
+              documentMap['postId'] = document.id;
+              documentMap['userId'] = userRef.id;
+              documentMap['username'] = username;
+              documentMap['userAvatar'] = userAvatar;
+              documentMap['comments'] = comments.toSet();
+              documentMap['likes'] = likes.toSet();
+
+              OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+              posts.add(post);
+            }
+          }
+
+          List<PreviewSoundPostModel> soundUrls = [];
+
+          for (var post in posts) {
+            try {
+              PreviewSoundPostModel soundUrlsForPost =
+                  await getPostSoundsByPostId(post.postId);
+
+              soundUrls.add(soundUrlsForPost);
+            } catch (error) {
+              if (error is CustomFirestoreException &&
+                  error.code == 'no-sound') {
+                continue;
+              } else {
+                rethrow;
+              }
+            }
+          }
+
+          return soundUrls;
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error fetching sound posts stream for user - sub step: $e');
+          }
+          rethrow;
+        }
+      });
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error fetching sound posts stream for user: $error');
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -1141,7 +1378,7 @@ class PostServiceImpl extends PostService
         );
       }
     } catch (e) {
-      if(e is CustomFirestoreException && e.code == 'no-sound'){
+      if (e is CustomFirestoreException && e.code == 'no-sound') {
         rethrow;
       }
       if (kDebugMode) {
@@ -1235,6 +1472,8 @@ class PostServiceImpl extends PostService
           userRef: _usersRef.doc(currentUserId));
 
       DocumentReference newPostRef = await _postRef.add(newPost.toMap());
+
+      // Trigger stream update
       _usersRef
           .doc(currentUserId)
           .collection('posts')
@@ -1388,6 +1627,169 @@ class PostServiceImpl extends PostService
       if (kDebugMode) {
         print('Error uploading sound post: $error');
       }
+    }
+  }
+
+  @override
+  Future<void> addViewCount(String postId) async {
+    try {
+      String userId = currentUserId;
+      int topicScoreChange = 1;
+
+      if (userId.isEmpty) return;
+
+      DocumentReference userRef = _usersRef.doc(userId);
+      DocumentReference? topicRankBoardRef = await userRef.get().then(
+          (snapshot) => snapshot.exists
+              ? snapshot.get('topicRankBoardRef') as DocumentReference?
+              : null);
+
+      if (topicRankBoardRef == null) {
+        throw Exception("User does not have a topicRankBoardRef");
+      }
+
+      DocumentSnapshot topicRankBoardSnapshot = await topicRankBoardRef.get();
+      Map<String, dynamic> rank = topicRankBoardSnapshot.exists
+          ? Map.from(topicRankBoardSnapshot['rank'])
+          : {};
+
+      DocumentReference postRef = _postRef.doc(postId);
+      DocumentSnapshot postSnapshot = await postRef.get();
+
+      await postRef.update({
+        'viewAmount': FieldValue.increment(1), // Increase view count by 1
+      });
+
+      List<DocumentReference> topicRefs = List.from(postSnapshot['topicRefs']);
+
+      for (DocumentReference topicRef in topicRefs) {
+        String topicId = topicRef.id;
+
+        // Update rank values
+        rank[topicId] = (rank[topicId] ?? 0) + topicScoreChange;
+      }
+
+      await topicRankBoardRef.update({'rank': rank});
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error adding view count: $error');
+      }
+    }
+  }
+
+  @override
+  Future<List<OnlinePostModel>> searchPost(String query) async {
+    List<OnlinePostModel> posts = [];
+    try {
+      QuerySnapshot snapshot = await _postRef
+          .where('contentLowercase',
+              isGreaterThanOrEqualTo: query.toLowerCase())
+          .limit(20)
+          .get();
+
+      bool isNSFWTurnOn = true;
+
+      if (currentUser != null) {
+        DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
+        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'];
+      }
+
+      for (QueryDocumentSnapshot document in snapshot.docs) {
+        Map<String, dynamic> documentMap =
+            document.data() as Map<String, dynamic>;
+
+        String content = documentMap['content'] ?? '';
+        if (!content.toLowerCase().contains(query.toLowerCase())) {
+          continue; // Skip if content does not match
+        }
+
+        // Fetch user data
+        DocumentReference userRef = document['userRef'];
+        var userData = await userRef.get();
+        String username = userData['name'];
+        String userAvatar = userData['avatar'];
+
+        // Fetch likes
+        var likes = await _fetchSubCollection(document, 'likes');
+
+        // Check if post contains NSFW media
+        bool isPostNSFW = false;
+        if (documentMap['media'] != null &&
+            documentMap['media'] is Map<String, dynamic>) {
+          documentMap['media'].forEach((key, value) {
+            if (value is Map<String, dynamic> && value['isNSFW'] == true) {
+              isPostNSFW = true;
+            }
+          });
+        }
+
+        // Skip the post if it's NSFW and user has NSFW filter enabled
+        if (isPostNSFW && isNSFWTurnOn) {
+          continue;
+        }
+
+        // Add additional data to the documentMap
+        documentMap['postId'] = document.id;
+        documentMap['userId'] = userRef.id;
+        documentMap['username'] = username;
+        documentMap['userAvatar'] = userAvatar;
+        documentMap['comments'] = likes.toSet();
+        documentMap['likes'] = <String>{};
+
+        // Create a model from the document map and add it to the posts list
+        OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+        posts.add(post);
+      }
+
+      return posts;
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error finding posts: $error');
+      }
+      return [];
+    }
+  }
+
+  @override
+  Future<void> reduceTopicRanksOfPostForCurrentUser(String postId) async {
+    try {
+      if (currentUserId.isEmpty) return;
+
+      int topicScoreChange = 5;
+
+      DocumentSnapshot postSnapshot = await _postRef.doc(postId).get();
+
+      Map<String, dynamic>? postData =
+          postSnapshot.data() as Map<String, dynamic>?;
+
+      DocumentReference userRef = _usersRef.doc(currentUserId);
+      DocumentReference? topicRankBoardRef = await userRef.get().then(
+          (snapshot) => snapshot.exists
+              ? snapshot.get('topicRankBoardRef') as DocumentReference?
+              : null);
+
+      if (topicRankBoardRef == null) {
+        throw Exception("User does not have a topicRankBoardRef");
+      }
+
+      DocumentSnapshot topicRankBoardSnapshot = await topicRankBoardRef.get();
+      Map<String, dynamic> rank = topicRankBoardSnapshot.exists
+          ? Map.from(topicRankBoardSnapshot['rank'])
+          : {};
+
+      List<DocumentReference> topicRefs = List.from(postSnapshot['topicRefs']);
+
+      for (DocumentReference topicRef in topicRefs) {
+        String topicId = topicRef.id;
+        rank[topicId] = (rank[topicId] ?? 0) - topicScoreChange;
+      }
+
+      await topicRankBoardRef.update({'rank': rank});
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error update topic rank for user: $e');
+      }
+      rethrow;
     }
   }
 }

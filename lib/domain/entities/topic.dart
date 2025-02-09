@@ -19,6 +19,7 @@ class TopicModel{
     return {
       'name': name,
       'url': thumbnailUrl,
+      'nameLowercase': name.toLowerCase(),
     };
   }
 

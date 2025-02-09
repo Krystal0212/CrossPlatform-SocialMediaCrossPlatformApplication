@@ -34,14 +34,16 @@ class _PostDetailInfoState extends State<PostDetailInfo> with Methods, FlashMess
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          BackButton(
-
-            color: AppColors.erieBlack,
-            style: AppTheme.actionNoEffectCircleButtonStyle,
+          IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+              FocusScope.of(context).unfocus();
+            },
+            icon: const Icon(Icons.arrow_back_sharp, size: 30, color: AppColors.erieBlack,),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 20.0),

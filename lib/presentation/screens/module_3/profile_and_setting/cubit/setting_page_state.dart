@@ -12,3 +12,5 @@ class SettingPartLoaded extends SettingPartState {
 
   SettingPartLoaded( {required this.user, required this.isGoogleUserWithoutPassword});
 }
+
+class SettingPartNotSignedIn extends SettingPartState {}

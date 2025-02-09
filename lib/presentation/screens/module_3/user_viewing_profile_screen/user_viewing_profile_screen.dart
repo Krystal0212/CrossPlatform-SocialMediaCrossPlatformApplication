@@ -7,6 +7,7 @@ import '../profile_and_setting/widgets/shot_tab.dart';
 import 'cubit/Viewing_state.dart';
 import 'cubit/viewing_cubit.dart';
 import 'widgets/shot_viewing_tab.dart';
+import 'widgets/sound_viewing_tab.dart';
 
 class UserViewingProfileScreen extends StatefulWidget {
   final String userId;
@@ -34,7 +35,7 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       _onTabChanged();
     });
@@ -72,7 +73,7 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
         body: Container(
           color: AppColors.white,
           child: DefaultTabController(
-            length: 2,
+            length: 3,
             child: NotificationListener<OverscrollIndicatorNotification>(
               onNotification: (overscroll) {
                 overscroll.disallowIndicator();
@@ -110,7 +111,8 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                                     padding: const EdgeInsets.only(left: 40.0, top: 35),
                                     child: IconButton(
                                       onPressed: () {
-                                        context.pop();
+                                        Navigator.pop(context);
+                                        FocusScope.of(context).unfocus();
                                       },
                                         icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30,),
                                     ),
@@ -229,17 +231,17 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                                           : '0 Shots',
                                       onTabSelected: _onTabSelected,
                                     ),
-                                    // ProfileTab(
-                                    //   index: 1,
-                                    //   selectedIndexNotifier:
-                                    //   _selectedIndexNotifier,
-                                    //   label: (state is ProfileLoaded)
-                                    //       ? '${state.recordsNumber} Records'
-                                    //       : '0 Records',
-                                    //   onTabSelected: _onTabSelected,
-                                    // ),
                                     ProfileTab(
                                       index: 1,
+                                      selectedIndexNotifier:
+                                      _selectedIndexNotifier,
+                                      label: (state is ViewingLoaded)
+                                          ? '${state.recordsNumber} Records'
+                                          : '0 Records',
+                                      onTabSelected: _onTabSelected,
+                                    ),
+                                    ProfileTab(
+                                      index: 2,
                                       selectedIndexNotifier:
                                           _selectedIndexNotifier,
                                       label: (state is ViewingLoaded)
@@ -273,7 +275,12 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                             const Center(
                                 child: CircularProgressIndicator(
                                     color: AppColors.iris)),
-                          // const ShotTab1(),
+                          if (state is ViewingLoaded)
+                            SoundViewingTab(userId: state.userModel.id ?? '')
+                          else
+                            const Center(
+                                child: CircularProgressIndicator(
+                                    color: AppColors.iris)),
                           if (state is ViewingLoaded)
                             CollectionViewingTab(userId: state.userModel.id ?? '')
                           else

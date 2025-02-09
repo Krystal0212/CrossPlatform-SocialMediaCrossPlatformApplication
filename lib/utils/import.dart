@@ -86,6 +86,8 @@ export 'package:socialapp/data/sources/deep_link/deep_link_service.dart';
 export 'package:socialapp/data/sources/firestore/collection_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/post_service_impl.dart';
 export 'package:socialapp/data/sources/firestore/comment_service_impl.dart';
+export 'package:socialapp/data/sources/firestore/chat_service_impl.dart';
+
 
 // Domain
 export 'package:socialapp/domain/repository/post/post_repository.dart';
@@ -101,12 +103,14 @@ export 'package:socialapp/domain/entities/topic.dart';
 export 'package:socialapp/domain/entities/post.dart';
 export 'package:socialapp/domain/entities/comment.dart';
 export 'package:socialapp/domain/entities/message.dart';
+export 'package:socialapp/domain/entities/notification.dart';
 
 // Presentation Screens and Self Widgets
 export 'package:socialapp/presentation/screens/module_1/module_1_exports.dart';
 export 'package:socialapp/presentation/screens/module_2/module_2_exports.dart';
 export 'package:socialapp/presentation/screens/module_3/module_3_exports.dart';
 export 'package:socialapp/presentation/screens/module_4/module_4_exports.dart';
+
 
 // General Widgets
 export 'package:socialapp/presentation/widgets/general/custom_scroll_view.dart';
@@ -126,3 +130,5 @@ export 'package:socialapp/presentation/widgets/general/linear_gradient_title.dar
 export 'package:socialapp/presentation/widgets/forgot_password/message_content.dart';
 export 'package:socialapp/presentation/widgets/forgot_password/stacks_bottom.dart';
 export 'package:socialapp/presentation/widgets/edit_profile/app_text_form_field.dart';
+export 'package:socialapp/presentation/widgets/play_record.dart';
+export 'package:socialapp/presentation/widgets/play_video/video_player_detail.dart';

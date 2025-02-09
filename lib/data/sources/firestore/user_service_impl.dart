@@ -70,7 +70,7 @@ class UserServiceImpl extends UserService {
   @override
   Future<UserModel?> getCurrentUserData() async {
     try {
-      return await fetchUserData(currentUser!.uid);
+      return await fetchUserData(currentUser?.uid);
     } on CustomFirestoreException catch (error) {
       if (error.code == 'new-user') {
         rethrow;
@@ -84,7 +84,7 @@ class UserServiceImpl extends UserService {
 
   // No need add to repository
   @override
-  Future<UserModel?> fetchUserData(String userID) async {
+  Future<UserModel?> fetchUserData(String? userID) async {
     try {
       DocumentSnapshot userDoc = await _usersRef.doc(userID).get();
       DocumentSnapshot topicRankBoardSnapshot;
@@ -125,7 +125,7 @@ class UserServiceImpl extends UserService {
       if (kDebugMode) {
         print('Error during fetching user data: $e');
       }
-      rethrow;
+      return null;
     }
   }
 

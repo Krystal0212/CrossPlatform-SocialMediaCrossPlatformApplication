@@ -62,6 +62,7 @@ class CollectionModel {
       'assets': assets.map((post) => post.toMap()).toList(),
       'userRef': _usersRef.doc(userData.id),
       'isPublic': isPublic,
+      'titleLowercase': title.toLowerCase(),
     };
   }
 }

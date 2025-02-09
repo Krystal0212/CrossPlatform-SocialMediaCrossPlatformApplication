@@ -292,6 +292,16 @@ class HomeCubit extends Cubit<HomeState> {
     return currentUser;
   }
 
+  Future<void> showLessSimilarPosts(String postId) async {
+    try {
+      await serviceLocator<PostRepository>().reduceTopicRanksOfPostForCurrentUser( postId);
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error update less similar posts for user: $error');
+      }
+    }
+  }
+
   @override
   Future<void> close() {
     triggerSync();

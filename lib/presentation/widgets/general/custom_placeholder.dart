@@ -223,6 +223,97 @@ class NoPublicDataAvailablePlaceholder extends StatelessWidget {
   }
 }
 
+class NoContactsAvailablePlaceholder extends StatelessWidget {
+  final double width;
+
+  const NoContactsAvailablePlaceholder({super.key, required this.width,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+            Text(
+              'No contacts available',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NoFollowingsPlaceholder extends StatelessWidget {
+  final double width;
+
+  const NoFollowingsPlaceholder({super.key, required this.width,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+            Text(
+              'Your followings list is empty, please follow someone or search their tag names to add contact',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NoUserResultPlaceholder extends StatelessWidget {
+  final double width;
+
+  const NoUserResultPlaceholder({super.key, required this.width,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      width: width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: width*0.5,),
+            Text(
+              'There is no user match your result',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
 class ProcessingDataPlaceholder extends StatelessWidget {
   final double width;
 

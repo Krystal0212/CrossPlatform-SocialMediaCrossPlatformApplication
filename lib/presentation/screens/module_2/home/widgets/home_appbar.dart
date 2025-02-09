@@ -3,6 +3,7 @@ import 'package:socialapp/utils/import.dart';
 import '../../new_post/website_new_post_dialog.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
+import '../providers/home_properties_provider.dart';
 import 'home_appbar_segmented_tab_controller.dart';
 
 class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -59,7 +60,8 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     // Left Section (centered horizontally at the top)
                     Align(
-                      alignment: isCompactView? Alignment.topLeft : Alignment.center,
+                      alignment:
+                          isCompactView ? Alignment.topLeft : Alignment.center,
                       child: LeftSection(
                         deviceWidth: deviceWidth,
                         sidePartWidth: sidePartWidth,
@@ -87,7 +89,8 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
 
                     // Action Buttons (centered horizontally at the bottom)
                     Align(
-                      alignment: isCompactView? Alignment.topRight : Alignment.center,
+                      alignment:
+                          isCompactView ? Alignment.topRight : Alignment.center,
                       child: HomeAppBarActionButtons(
                         rightWidth: isCompactView
                             ? compactActionButtonsWidth
@@ -105,20 +108,19 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           bottom: isCompactView
               ? PreferredSize(
-            preferredSize: const Size.fromHeight(40),
-            child: HomeAppBarSegmentedTabControl(
-              deviceWidth: deviceWidth,
-              controlWidth: controlWidth,
-              controlHeight: controlHeight,
-              isCompactView: isCompactView,
-              tabController: tabController,
-            ),
-          )
+                  preferredSize: const Size.fromHeight(40),
+                  child: HomeAppBarSegmentedTabControl(
+                    deviceWidth: deviceWidth,
+                    controlWidth: controlWidth,
+                    controlHeight: controlHeight,
+                    isCompactView: isCompactView,
+                    tabController: tabController,
+                  ),
+                )
               : null,
         );
       },
     );
-
   }
 
   @override
@@ -130,7 +132,8 @@ class LeftSection extends StatelessWidget {
   final double deviceWidth, sectionWidth, sidePartWidth, searchBarWidth;
   final bool isCompactView, isLargeView;
 
-  const LeftSection({
+
+  LeftSection({
     required this.deviceWidth,
     required this.sidePartWidth,
     required this.searchBarWidth,
@@ -142,6 +145,8 @@ class LeftSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController searchController = HomePropertiesProvider.of(context)!.searchController;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -160,13 +165,14 @@ class LeftSection extends StatelessWidget {
             ],
           ),
         CustomSearchBar(
+          controller: searchController,
           searchBarHeight: 46,
           searchBarWidth: isCompactView
               ? searchBarWidth
               : !isLargeView
                   ? sidePartWidth
                   : sidePartWidth - 55 - deviceWidth * 0.015,
-          onSearchDebounce: (String ) {  },
+          onSearchDebounce: (String) {},
         ),
       ],
     );
@@ -275,8 +281,8 @@ class HomeAppBarActionButtons extends StatelessWidget {
                     context: homeContext,
                     builder: (BuildContext context) {
                       return CreateNewPostDialogContent(
-                        
-                        currentUser: currentUser!, homeContext: context,
+                        currentUser: currentUser!,
+                        homeContext: context,
                       );
                     },
                   );
@@ -287,17 +293,19 @@ class HomeAppBarActionButtons extends StatelessWidget {
               ),
             ] else ...[
               CircularIconButton(
-                  icon: SvgPicture.asset(AppIcons.createNewPost, width: 46),
-                  onPressed: () {
-                    showDialog(
-                      context: homeContext,
-                      builder: (BuildContext context) {
-                        return CreateNewPostDialogContent(
-                          currentUser: currentUser!, homeContext: homeContext,
-                        );
-                      },
-                    );
-                  }, ),
+                icon: SvgPicture.asset(AppIcons.createNewPost, width: 46),
+                onPressed: () {
+                  showDialog(
+                    context: homeContext,
+                    builder: (BuildContext context) {
+                      return CreateNewPostDialogContent(
+                        currentUser: currentUser!,
+                        homeContext: homeContext,
+                      );
+                    },
+                  );
+                },
+              ),
             ],
             SizedBox(
               width: 46,
@@ -407,5 +415,3 @@ class HomeAppBarActionButtons extends StatelessWidget {
     );
   }
 }
-
-

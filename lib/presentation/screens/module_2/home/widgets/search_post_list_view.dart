@@ -1,27 +1,28 @@
 import 'package:inview_notifier_list/inview_notifier_list.dart';
-import 'package:socialapp/presentation/screens/module_2/home/cubit/tab_cubit.dart';
+import 'package:socialapp/presentation/screens/module_2/home/widgets/search_post_header.dart';
 import 'package:socialapp/utils/import.dart';
 
+import '../cubit/search_cubit.dart';
 import '../providers/home_properties_provider.dart';
-import 'post_header.dart';
-import 'post_bottom.dart';
 import 'post_assets.dart';
+import 'post_bottom.dart';
+import 'post_header.dart';
 
-class PostListView extends StatefulWidget {
+class SearchPostListView extends StatefulWidget {
   final List<OnlinePostModel> posts;
-  final TabCubit tabCubit;
+  final SearchCubit searchCubit;
 
-  const PostListView({
+  const SearchPostListView({
     super.key,
     required this.posts,
-    required this.tabCubit,
+    required this.searchCubit,
   });
 
   @override
-  State<PostListView> createState() => _PostListViewState();
+  State<SearchPostListView> createState() => _SearchPostListViewState();
 }
 
-class _PostListViewState extends State<PostListView>
+class _SearchPostListViewState extends State<SearchPostListView>
     with AutomaticKeepAliveClientMixin {
   late final ValueNotifier<List<OnlinePostModel>> postListNotifier;
   late final ValueNotifier<bool> isLoadingNotifier;
@@ -35,39 +36,16 @@ class _PostListViewState extends State<PostListView>
   late bool isCompactView, isSignedIn, isWeb;
   late ScrollController scrollController;
 
-  Timer? _viewTimer;
   final Map<String, Timer?> _viewTimers = {};
 
 
   @override
   void initState() {
     super.initState();
-    scrollController = ScrollController()..addListener(loadMore);
+    scrollController = ScrollController();
     postListNotifier = ValueNotifier(widget.posts);
     isLoadingNotifier = ValueNotifier(false);
     canBeFetched = true; // Initialize as true
-  }
-
-  void loadMore() async {
-    if (scrollController.offset >=
-            scrollController.position.maxScrollExtent - 100 &&
-        !scrollController.position.outOfRange &&
-        !isLoadingNotifier.value &&
-        canBeFetched) {
-      isLoadingNotifier.value = true;
-
-      try {
-        List<OnlinePostModel> morePosts = await widget.tabCubit.loadMorePosts();
-        if (morePosts.isNotEmpty) {
-          postListNotifier.value =
-              ([...postListNotifier.value, ...morePosts]).toSet().toList();
-        } else {
-          canBeFetched = false; // No more data available
-        }
-      } finally {
-        isLoadingNotifier.value = false;
-      }
-    }
   }
 
   @override
@@ -90,7 +68,6 @@ class _PostListViewState extends State<PostListView>
 
   @override
   void dispose() {
-    scrollController.removeListener(loadMore);
     postListNotifier.dispose();
     isLoadingNotifier.dispose();
 
@@ -107,7 +84,7 @@ class _PostListViewState extends State<PostListView>
 
     _viewTimers[postId] = Timer(const Duration(seconds: 15), () {
       if (mounted) {
-        widget.tabCubit.addViewCount(postId);
+        widget.searchCubit.addViewCount(postId);
         _viewTimers.remove(postId);
       }
     });
@@ -116,12 +93,6 @@ class _PostListViewState extends State<PostListView>
   void _stopViewTimer(String postId) {
     _viewTimers[postId]?.cancel();
     _viewTimers.remove(postId);
-  }
-
-  void removePostFromList(String postId) {
-    final List<OnlinePostModel> updatedPostList = List.from(postListNotifier.value);
-    updatedPostList.removeWhere((post) => post.postId == postId);
-    postListNotifier.value = List.from(updatedPostList);
   }
 
   @override
@@ -157,7 +128,7 @@ class _PostListViewState extends State<PostListView>
                   itemCount: postList.length + (isLoading ? 1 : 0) + (canBeFetched ? 0 : 1),
                   isInViewPortCondition: (double deltaTop, double deltaBottom, double viewPortDimension) {
                     bool isValid = deltaTop < (0.4 * viewPortDimension) &&
-                    deltaBottom > (0.4 * viewPortDimension);
+                        deltaBottom > (0.4 * viewPortDimension);
 
                     return isValid;
                   },
@@ -215,7 +186,7 @@ class _PostListViewState extends State<PostListView>
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  PostHeader(post: postDetail, onDeletePost: removePostFromList,),
+                                  SearchPostHeader(post: postDetail),
                                   PostAsset(
                                     post: postDetail,
                                     postWidth: postWidth,

@@ -1,12 +1,13 @@
 import 'package:socialapp/utils/import.dart';
 
 class HomeProperties {
-  final UserModel? user;
+  final UserModel? currentUser;
   final ValueNotifier<UserModel?> currentUserNotifier;
   final double listBodyWidth;
+  final TextEditingController searchController;
 
   HomeProperties(  {required this.listBodyWidth,
-    required this.currentUserNotifier, required this.user,
+    required this.currentUserNotifier, required this.currentUser, required this.searchController,
   });
 }
 

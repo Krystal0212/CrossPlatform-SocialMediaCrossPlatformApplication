@@ -16,7 +16,7 @@ abstract class AppTextStyle {
   );
 
   static const TextStyle timestampStyle = TextStyle(
-      fontSize: 18,
+      fontSize: 20,
       color:AppColors.blackOak,
   );
 

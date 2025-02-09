@@ -85,6 +85,7 @@ dependencies:
   audio_video_progress_bar: ^2.0.3
   rxdart: ^0.28.0
   dropdown_button2: ^2.3.9
+  inview_notifier_list: ^3.0.0
 
 
 dependency_overrides:

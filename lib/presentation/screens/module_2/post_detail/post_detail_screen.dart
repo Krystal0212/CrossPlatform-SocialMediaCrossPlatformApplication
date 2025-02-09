@@ -49,6 +49,44 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
     commentAmountNotifier = ValueNotifier(widget.post.commentAmount);
   }
 
+  void showPostOptionsDialogForOwner() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text("Post Options"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text("Change Post Content"),
+                onTap: () {
+                  Navigator.of(dialogContext).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: const Text("Delete This Post"),
+                onTap: () {
+                  Navigator.of(dialogContext).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel_outlined),
+                title: const Text("Cancel"),
+                onTap: () {
+                  Navigator.of(dialogContext).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -63,12 +101,17 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              PostDetailInfo(post: widget.post, currentUser: widget.currentUser,),
+              PostDetailInfo(
+                post: widget.post,
+                currentUser: widget.currentUser,
+              ),
               PostDetailContent(
                 post: widget.post,
                 user: widget.currentUser,
               ),
-              PostDetailAsset(post: widget.post),
+              PostDetailAsset(
+                post: widget.post,
+              ),
               PostStatsBar(
                 post: widget.post,
                 currentUser: widget.currentUser,
@@ -79,10 +122,10 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
                 commentAmountNotifier: commentAmountNotifier,
               ),
               PostDetailCommentsListView(
-
                 post: widget.post,
                 currentUser: widget.currentUser,
-              )
+              ),
+              const SizedBox(height: 190),
             ]),
       ),
     )));

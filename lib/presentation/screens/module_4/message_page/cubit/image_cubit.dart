@@ -7,7 +7,7 @@ import '../../../../../data/sources/firestore/chat_service_impl.dart';
 import 'image_state.dart';
 
 class ChatSendCubit extends Cubit<ChatSendState> with ClassificationMixin {
-  final ChatService _chatService = ChatService();
+  final ChatService _chatService = ChatServiceImpl();
 
   bool _isImagePickerActive = false;
 

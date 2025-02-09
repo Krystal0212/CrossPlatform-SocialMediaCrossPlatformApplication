@@ -276,7 +276,7 @@ class _NSFWToggleScreenState extends State<NSFWToggleScreen> {
                   isLoading.value = true; // Set loading to true before operation
                   await context.read<NSFWToggleScreenCubit>().updateNSFWFilter(isNSFWFilterTurnOn.value);
                   isLoading.value = false; // Set loading to false after completion
-                  Navigator.pop(context, isNSFWFilterTurnOn.value); // Submit with new value
+                  Navigator.pop(context, true); // Submit with new value
                 },
                 isLoading: loading, // Update button state based on loading
               );

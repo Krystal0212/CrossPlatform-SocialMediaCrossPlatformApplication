@@ -7,7 +7,6 @@ import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
-import 'package:socialapp/presentation/screens/module_4/message_list/chat_screen.dart';
 import 'package:socialapp/presentation/screens/module_4/message_list/message_list_screen.dart';
 
 class NotificationScreen extends StatefulWidget {

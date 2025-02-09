@@ -47,7 +47,15 @@ class _ProfileBoxBaseState extends State<ProfileBoxBase> {
       alignment: Alignment.topCenter,
       child: BlocBuilder<ProfileBoxCubit, ProfileBoxState>(
           builder: (context, state) {
-        if (state is ProfileBoxLoaded) {
+        if (state is ProfileBoxLoading) {
+          return SizedBox(
+            height: deviceHeight * 0.3,
+            child: const Center(
+                child: CircularProgressIndicator(
+              color: AppColors.iris,
+            )),
+          );
+        } else if (state is ProfileBoxLoaded) {
           userDataNotifier.value = state.user;
           return Padding(
             padding: const EdgeInsets.only(top: 20),
@@ -80,13 +88,14 @@ class _ProfileBoxBaseState extends State<ProfileBoxBase> {
                             children: [
                               Text(
                                 avatarData.name,
-                                style: AppTheme.profileCasualStyle.copyWith(fontSize: 30),
+                                style: AppTheme.profileCasualStyle
+                                    .copyWith(fontSize: 30),
                               ),
                               const SizedBox(height: 5),
                               Text(
                                 'Tag: ${avatarData.tagName}',
-
-                                style: AppTheme.profileCasualStyle.copyWith(fontSize: 20),
+                                style: AppTheme.profileCasualStyle
+                                    .copyWith(fontSize: 20),
                               )
                             ],
                           ),
@@ -102,8 +111,9 @@ class _ProfileBoxBaseState extends State<ProfileBoxBase> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        EditProfile(userDataNotifier: userDataNotifier,)));
+                                    builder: (context) => EditProfile(
+                                          userDataNotifier: userDataNotifier,
+                                        )));
                           },
                         )
                       ],

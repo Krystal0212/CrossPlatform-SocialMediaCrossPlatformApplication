@@ -3,7 +3,7 @@ import 'package:socialapp/utils/import.dart';
 import 'setting_page_state.dart';
 
 class SettingPartCubit extends Cubit<SettingPartState> {
-  UserModel currentUser = UserModel.empty();
+  UserModel? currentUser;
 
   SettingPartCubit() : super(SettingPartInitial()) {
     loadData();
@@ -11,11 +11,16 @@ class SettingPartCubit extends Cubit<SettingPartState> {
 
   void loadData() async {
     currentUser =
-    (await serviceLocator.get<UserService>().getCurrentUserData())!;
+    await serviceLocator.get<UserService>().getCurrentUserData();
     bool isRawGoogleUser = _checkGoogleUserWithoutPassword();
 
-    emit(SettingPartLoaded(
-        isGoogleUserWithoutPassword: isRawGoogleUser, user: currentUser));
+    if(currentUser != null) {
+      emit(SettingPartLoaded(
+        isGoogleUserWithoutPassword: isRawGoogleUser, user: currentUser!));
+    }
+    else {
+      emit(SettingPartNotSignedIn());
+    }
   }
 
   bool _checkGoogleUserWithoutPassword() {

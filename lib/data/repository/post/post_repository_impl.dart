@@ -96,4 +96,29 @@ class PostRepositoryImpl extends PostRepository {
   Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(String userId) {
     return serviceLocator.get<PostService>().getSoundPostsByUserIdRealTime(userId);
   }
+
+  @override
+  Future<OnlinePostModel> getDataFromPostId(String postId) {
+    return serviceLocator.get<PostService>().getDataFromPostId(postId);
+  }
+
+  @override
+  Future<List<PreviewSoundPostModel>> getSoundPostsByUserId(String userId) {
+    return serviceLocator.get<PostService>().getSoundPostsByUserId(userId);
+  }
+
+  @override
+  Future<void> addViewCount(String postId) {
+    return serviceLocator.get<PostService>().addViewCount(postId);
+  }
+
+  @override
+  Future<List<OnlinePostModel>> searchPost(String query) {
+    return serviceLocator.get<PostService>().searchPost(query);
+  }
+
+  @override
+  Future<void> reduceTopicRanksOfPostForCurrentUser(String postId) {
+    return serviceLocator.get<PostService>().reduceTopicRanksOfPostForCurrentUser(postId);
+  }
 }

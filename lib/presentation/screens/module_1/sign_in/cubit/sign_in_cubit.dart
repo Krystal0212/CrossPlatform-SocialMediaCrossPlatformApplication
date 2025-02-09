@@ -34,21 +34,19 @@ class SignInCubit extends Cubit<SignInState> {
     }
   }
 
-  void reset() {
-    emit(SignInInitial());
-  }
-
-  void loginWithEmailAndPassword(BuildContext context,
-      GlobalKey<FormState> formKey, {required String email, required String password}) async {
+  void loginWithEmailAndPassword(
+      BuildContext context, GlobalKey<FormState> formKey,
+      {required String email, required String password}) async {
     try {
       if (formKey.currentState!.validate()) {
         emit(SignInLoading());
         await serviceLocator<AuthRepository>()
             .signInWithEmailAndPassword(email, password);
-        await serviceLocator<UserRepository>().getCurrentUserData();
-        emit(SignInSuccess());
+        UserModel? currentUser =
+            await serviceLocator<UserRepository>().getCurrentUserData();
+        if (currentUser != null) {
+          if (!context.mounted) return;
 
-        if (context.mounted) {
           context.go('/home');
         }
       }
@@ -72,7 +70,8 @@ class SignInCubit extends Cubit<SignInState> {
       } else {
         emit(SignInFailure());
         if (context.mounted) {
-          _showAlertDialog(context, AppStrings.authError, 'Try again later');
+          _showAlertDialog(context, AppStrings.authError,
+              'Invalid password or email. Try again later');
         }
       }
     }

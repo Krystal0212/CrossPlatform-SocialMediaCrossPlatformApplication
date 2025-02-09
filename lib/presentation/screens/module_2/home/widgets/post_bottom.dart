@@ -36,7 +36,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    currentUser = HomePropertiesProvider.of(context)?.user;
+    currentUser = HomePropertiesProvider.of(context)?.currentUser;
     isUserLiked = ValueNotifier<bool>(
       widget.post.likes.contains(currentUser?.id ?? ''),
     );

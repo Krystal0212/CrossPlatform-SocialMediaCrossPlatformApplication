@@ -214,17 +214,28 @@ class _SegmentedTabControlState extends State<_SegmentedTabControl>
   }
 
   void _calculateTotalFlex() {
-    _totalFlex =
-        widget.tabs.fold(0, (previousValue, tab) => previousValue + tab.flex);
+    _totalFlex = widget.tabs.fold(0, (previousValue, tab) {
+      if (tab.isHidden != true) {
+        return previousValue + tab.flex;
+      }
+      return previousValue;
+    });
   }
+
 
   void _calculateFlexFactors() {
     int collectedFlex = 0;
+
     for (int i = 0; i < widget.tabs.length; i++) {
-      collectedFlex += widget.tabs[i].flex;
+      var tab = widget.tabs[i];
+
+      if (tab.isHidden == true) continue; // Skip hidden tabs
+
+      collectedFlex += tab.flex;
       flexFactors.add(collectedFlex / _totalFlex);
     }
   }
+
 
   @override
   void didUpdateWidget(_SegmentedTabControl oldWidget) {
@@ -285,9 +296,12 @@ class _SegmentedTabControlState extends State<_SegmentedTabControl>
     double computedWidth = 0;
     double alignmentStartX = 0;
 
-    for (int index = 0; index < _controller!.length - 1; index++) {
-      final tab = widget.tabs[index];
-      final nextTab = widget.tabs[index + 1];
+    // Iterate through only visible tabs (isHidden != true)
+    List<SegmentTab> visibleTabs = widget.tabs.where((tab) => tab.isHidden != true).toList();
+
+    for (int index = 0; index < visibleTabs.length - 1; index++) {
+      final tab = visibleTabs[index];
+      final nextTab = visibleTabs[index + 1];
 
       final tabWidth = (tab.flex / _totalFlex) * _maxWidth;
       final nextTabWidth = (nextTab.flex / _totalFlex) * _maxWidth;
@@ -304,8 +318,10 @@ class _SegmentedTabControlState extends State<_SegmentedTabControl>
 
       computedWidth += tabWidth;
     }
+
     alignmentXRanges.add(DoubleRange(alignmentStartX, computedWidth));
   }
+
 
   Alignment _animationValueToAlignment(double? value) {
     if (value == null) {
@@ -378,6 +394,11 @@ class _SegmentedTabControlState extends State<_SegmentedTabControl>
           final indicatorWidth =
               ((_maxWidth - widget.indicatorPadding.horizontal) / _totalFlex) *
                   widget.tabs[_internalIndex].flex;
+
+          final currentTab = widget.tabs[_internalIndex];
+          if (currentTab.isHidden == true) {
+            return const SizedBox.shrink();
+          }
 
           return ClipRRect(
             borderRadius:
@@ -609,6 +630,9 @@ class _Labels extends StatelessWidget {
           tabs.length,
           (index) {
             final tab = tabs[index];
+            if (tab.isHidden == true) {
+              return const SizedBox.shrink();
+            }
             return Flexible(
               flex: tab.flex,
               child: InkWell(
@@ -664,7 +688,8 @@ class _SqueezeAnimated extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<EdgeInsets>(
+
+      return TweenAnimationBuilder<EdgeInsets>(
       curve: Curves.decelerate,
       tween: Tween(
         begin: EdgeInsets.zero,
@@ -683,6 +708,7 @@ class _SqueezeAnimated extends StatelessWidget {
 class SegmentTab {
   const SegmentTab({
     required this.label,
+    this.isHidden,
     this.color,
     this.gradient,
     this.selectedTextColor,
@@ -704,4 +730,5 @@ class SegmentTab {
   final Color? textColor;
   final Color? splashColor;
   final Color? splashHighlightColor;
+  final bool? isHidden;
 }

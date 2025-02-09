@@ -39,7 +39,18 @@ abstract class PostRepository {
 
   Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(String userId);
 
+  Future<List<PreviewSoundPostModel>> getSoundPostsByUserId(
+      String userId);
+
   Stream<List<PreviewSoundPostModel>?> getSoundPostsByUserIdRealTime(
       String userId);
+
+  Future<OnlinePostModel> getDataFromPostId(String postId);
+
+  Future<void> addViewCount(String postId);
+
+  Future<List<OnlinePostModel>> searchPost(String query);
+
+  Future<void> reduceTopicRanksOfPostForCurrentUser(String postId);
 
 }

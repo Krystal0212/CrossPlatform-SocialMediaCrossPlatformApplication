@@ -58,6 +58,8 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
 
   final ValueNotifier<bool> isLoading = ValueNotifier(true);
   final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
+  final TextEditingController searchController = TextEditingController();
+
 
   @override
   void initState() {
@@ -131,8 +133,9 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
           }
           return HomePropertiesProvider(
             homeProperties: HomeProperties(
+              searchController: searchController,
                 currentUserNotifier: currentUserNotifier,
-                user: currentUserNotifier.value,
+                currentUser: currentUserNotifier.value,
                 listBodyWidth: listBodyWidth),
             child: Scaffold(
               appBar: HomeScreenAppBar(

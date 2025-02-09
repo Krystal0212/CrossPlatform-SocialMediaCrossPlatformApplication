@@ -4,45 +4,38 @@ import 'package:socialapp/utils/import.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class DurationState {
-  const DurationState(
-      {required this.progress, required this.buffered, required this.total});
-
-  final Duration progress;
-  final Duration buffered;
-  final Duration total;
-}
-
-class VideoPlayerDetailWidget extends StatefulWidget {
+class VideoPlayerWidget extends StatefulWidget {
   final String? videoUrl, thumbnailUrl;
+  final bool isNSFWAllowed;
   final Color dominantColor;
   final double height, width;
 
-  const VideoPlayerDetailWidget({
+  VideoPlayerWidget({
     super.key,
     this.videoUrl,
     required this.height,
     required this.width,
     required this.dominantColor,
     this.thumbnailUrl,
+    required this.isNSFWAllowed,
   });
 
   @override
-  State<VideoPlayerDetailWidget> createState() =>
-      _VideoPlayerPreviewWidgetState();
+  State<VideoPlayerWidget> createState() => _VideoPlayerPreviewWidgetState();
 }
 
-class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> with SingleTickerProviderStateMixin  {
+class _VideoPlayerPreviewWidgetState extends State<VideoPlayerWidget>
+    with SingleTickerProviderStateMixin {
   late VideoPlayerController _controller;
   late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
   double ratioThreshold = (kIsWeb) ? 0.7 : 1;
+
   Stream<DurationState>? durationState;
 
   final ValueNotifier<bool> isInitialized = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isTimeout = ValueNotifier<bool>(false);
   final ValueNotifier<double> currentPosition = ValueNotifier<double>(0.0);
-  final ValueNotifier<bool> isHovering = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> isHovering = ValueNotifier<bool>(true);
   final ValueNotifier<bool> isPlaying = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isMuted = ValueNotifier<bool>(false);
   Timer? _timeoutTimer;
@@ -73,11 +66,6 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> with
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
     );
 
     if (widget.videoUrl != null) {
@@ -131,6 +119,13 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> with
         if (mounted) {
           currentPosition.value =
               _controller.value.position.inSeconds.toDouble();
+
+          if (_controller.value.position >= _controller.value.duration) {
+            _controller.seekTo(Duration.zero);
+            isPlaying.value = false;
+            _controller.pause();
+            isHovering.value = true;
+          }
         }
       }
     });
@@ -151,11 +146,20 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> with
     }
   }
 
+  void _startVisibilityTimeout() {
+    _timeoutTimer = Timer(const Duration(seconds: 8), () {
+      if (mounted) {
+        isHovering.value = false;
+      }
+    });
+  }
+
   void _togglePlayPause() {
     if (isPlaying.value) {
       _controller.pause();
     } else {
       _controller.play();
+      _startVisibilityTimeout();
     }
     isPlaying.value = !isPlaying.value;
   }
@@ -167,185 +171,194 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerDetailWidget> with
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isTimeout,
-      builder: (context, timeout, child) {
-        if (timeout) {
-          return const ImageErrorPlaceholder();
-        }
+    if (widget.isNSFWAllowed) {}
+    return AspectRatio(
+      aspectRatio: widget.width / widget.height,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isTimeout,
+        builder: (context, timeout, child) {
+          if (timeout) {
+            return const ImageErrorPlaceholder();
+          }
 
-        return ValueListenableBuilder<bool>(
-          valueListenable: isInitialized,
-          builder: (context, initialized, child) {
-            if (!initialized) {
-            return Stack(
-              children: [
-                Shimmer.fromColors(
-                  baseColor: widget.dominantColor,
-                  highlightColor: AppColors.white,
-                  child: Container(
-                    width: widget.width,
-                    height: widget.height,
-                    color: widget.dominantColor,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
+          return ValueListenableBuilder<bool>(
+            valueListenable: isInitialized,
+            builder: (context, initialized, child) {
+              if (!initialized) {
+                return Stack(
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: widget.dominantColor,
+                      highlightColor: AppColors.white,
+                      child: Container(
+                        width: widget.width,
+                        height: widget.height,
+                        color: widget.dominantColor,
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            );
-            }
+                  ],
+                );
+              }
 
-            return Container(
-              width: widget.width,
-              height: widget.height,
-              color: widget.dominantColor,
-              child: GestureDetector(
-                onTap: () {
-                  // Toggle hover state on tap for mobile users
-                  isHovering.value = !isHovering.value;
-                },
-                child: MouseRegion(
-                  onEnter: (_) => isHovering.value = true,
-                  onExit: (_) => isHovering.value = false,
-                  child: SizedBox(
-                    width: widget.width,
-                    height: widget.height,
-                    child: Stack(
-                      children: [
-                        VisibilityDetector(
-                          key: const Key('video-player'),
-                          onVisibilityChanged: (visibilityInfo) {
-                            double visibleFraction =
-                                visibilityInfo.visibleFraction;
-                            if (visibleFraction >= ratioThreshold) {
-                              if (mounted) {
-                                isHovering.value = !isHovering.value;
-                                _controller.play();
-                                if (!isPlaying.value) {
-                                  isPlaying.value = true;
-                                }
-                              }
-                            } else {
-                              if (mounted) {
-                                _controller.pause();
-                                if (isPlaying.value) {
-                                  isPlaying.value = false;
-                                }
-                              }
-                            }
-                          },
-                          child: SizedBox(
+              return Container(
+                width: widget.width,
+                height: widget.height,
+                color: widget.dominantColor,
+                child: GestureDetector(
+                  onTap: () {
+                    // Toggle hover state on tap for mobile users
+                    isHovering.value = !isHovering.value;
+                  },
+                  child: MouseRegion(
+                    onEnter: (_) => isHovering.value = true,
+                    onExit: (_) => isHovering.value = false,
+                    child: SizedBox(
+                      width: widget.width,
+                      height: widget.height,
+                      child: Stack(
+                        children: [
+                          SizedBox(
                             width: widget.width,
                             height: widget.height,
                             child: AspectRatio(
                               aspectRatio: _controller.value.aspectRatio,
-                              child: VideoPlayer(_controller),
+                              child:  VisibilityDetector(
+                                      key: Key(widget.videoUrl ?? 'video-key'),
+                                      onVisibilityChanged: (visibilityInfo) {
+                                        double visibleFraction =
+                                            visibilityInfo.visibleFraction;
+                                        if (visibleFraction >= ratioThreshold) {
+                                          if (mounted) {
+                                            isHovering.value = true;
+                                            _controller.play();
+                                            _startVisibilityTimeout();
+
+                                            if (!isPlaying.value) {
+                                              isPlaying.value = true;
+                                            }
+                                          }
+                                        } else {
+                                          if (mounted) {
+                                            isHovering.value = false;
+                                            _controller.pause();
+                                            if (isPlaying.value) {
+                                              isPlaying.value = false;
+                                            }
+                                          }
+                                        }
+                                      },
+                                      child: VideoPlayer(_controller)),
                             ),
                           ),
-                        ),
-                        ValueListenableBuilder<bool>(
-                          valueListenable: isHovering,
-                          builder: (context, hovering, child) {
-                            return AnimatedOpacity(
-                              opacity: hovering ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: ValueListenableBuilder<bool>(
-                                      valueListenable: isPlaying,
-                                      builder: (context, playing, child) {
-                                        return IconButton(
-                                          icon: Icon(playing
-                                              ? Icons.pause
-                                              : Icons.play_arrow),
-                                          onPressed: _togglePlayPause,
-                                          color: AppColors.tropicalBreeze,
-                                          iconSize: 50.0,
-                                        );
-                                      },
+                          ValueListenableBuilder<bool>(
+                            valueListenable: isHovering,
+                            builder: (context, hovering, child) {
+                              return AnimatedOpacity(
+                                opacity: hovering ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 300),
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: ValueListenableBuilder<bool>(
+                                        valueListenable: isPlaying,
+                                        builder: (context, playing, child) {
+                                          return IconButton(
+                                            icon: Icon(playing
+                                                ? Icons.pause
+                                                : Icons.play_arrow),
+                                            onPressed: _togglePlayPause,
+                                            color: AppColors.tropicalBreeze,
+                                            iconSize: 50.0,
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                        // Separate notifier listening for hovering status for other UI elements
-                        ValueListenableBuilder<bool>(
-                          valueListenable: isHovering,
-                          builder: (context, hovering, child) {
-                            return AnimatedOpacity(
-                              opacity: hovering ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: Stack(
-                                children: [
-                                  Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: ValueListenableBuilder<bool>(
-                                      valueListenable: isMuted,
-                                      builder: (context, muted, child) {
-                                        return IconButton(
-                                          icon: Icon(muted
-                                              ? Icons.volume_off
-                                              : Icons.volume_up),
-                                          onPressed: _toggleMute,
-                                          color: AppColors.bleachSilk,
-                                        );
-                                      },
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                          // Separate notifier listening for hovering status for other UI elements
+                          ValueListenableBuilder<bool>(
+                            valueListenable: isHovering,
+                            builder: (context, hovering, child) {
+                              return AnimatedOpacity(
+                                opacity: hovering ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 300),
+                                child: Stack(
+                                  children: [
+                                    Positioned(
+                                      top: 10,
+                                      right: 10,
+                                      child: ValueListenableBuilder<bool>(
+                                        valueListenable: isMuted,
+                                        builder: (context, muted, child) {
+                                          return IconButton(
+                                            icon: Icon(muted
+                                                ? Icons.volume_off
+                                                : Icons.volume_up),
+                                            onPressed: _toggleMute,
+                                            color: AppColors.bleachSilk,
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    bottom: 10,
-                                    left: 10,
-                                    right: 10,
-                                    child: StreamBuilder<DurationState>(
-                                      stream: durationState,
-                                      builder: (context, snapshot) {
-                                        final durationState = snapshot.data;
-                                        final progress =
-                                            durationState?.progress ??
-                                                Duration.zero;
-                                        final buffered =
-                                            durationState?.buffered ??
-                                                Duration.zero;
-                                        final total =
-                                            durationState?.total ?? Duration.zero;
-                                        return ProgressBar(
-                                          thumbColor: AppColors.systemShockBlue,
-                                          thumbGlowColor: AppColors.white,
-                                          progressBarColor: AppColors.lightIris,
-                                          baseBarColor: AppColors.white,
-                                          timeLabelLocation:
-                                              TimeLabelLocation.above,
-                                          timeLabelTextStyle:
-                                              AppTheme.signInWhiteText,
-                                          progress: progress,
-                                          buffered: buffered,
-                                          total: total,
-                                          onSeek: (duration) {
-                                            _controller.seekTo(duration);
-                                          },
-                                        );
-                                      },
+                                    Positioned(
+                                      bottom: 10,
+                                      left: 10,
+                                      right: 10,
+                                      child: StreamBuilder<DurationState>(
+                                        stream: durationState,
+                                        builder: (context, snapshot) {
+                                          final durationState = snapshot.data;
+                                          final progress =
+                                              durationState?.progress ??
+                                                  Duration.zero;
+                                          final buffered =
+                                              durationState?.buffered ??
+                                                  Duration.zero;
+                                          final total = durationState?.total ??
+                                              Duration.zero;
+                                          return ProgressBar(
+                                            thumbColor:
+                                                AppColors.systemShockBlue,
+                                            thumbGlowColor: AppColors.white,
+                                            progressBarColor:
+                                                AppColors.lightIris,
+                                            baseBarColor: AppColors.white,
+                                            timeLabelLocation:
+                                                TimeLabelLocation.above,
+                                            timeLabelTextStyle:
+                                                AppTheme.signInWhiteText,
+                                            progress: progress,
+                                            buffered: buffered,
+                                            total: total,
+                                            onSeek: (duration) {
+                                              _controller.seekTo(duration);
+                                              _controller.play();
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

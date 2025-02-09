@@ -4,17 +4,16 @@ import 'package:socialapp/utils/import.dart';
 import '../../mobile_navigator/providers/mobile_navigator_provider.dart';
 import '../cubit/home_cubit.dart';
 
-class PostHeader extends StatefulWidget {
-  const PostHeader({super.key, required this.post, required this.onDeletePost});
+class SearchPostHeader extends StatefulWidget {
+  const SearchPostHeader({super.key, required this.post});
 
   final OnlinePostModel post;
-  final Function(String) onDeletePost;
 
   @override
-  State<PostHeader> createState() => _PostHeaderState();
+  State<SearchPostHeader> createState() => _SearchPostHeaderState();
 }
 
-class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
+class _SearchPostHeaderState extends State<SearchPostHeader> with Methods, FlashMessage {
   bool isExpanded = false;
   late String truncatedContent, postContent;
   late ValueNotifier<bool> isExpandedNotifier;
@@ -63,119 +62,6 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
     super.dispose();
   }
 
-  void showPostOptionsDialogForOwner(UserModel currentUser) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          title: const Text("Post Options"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.switch_access_shortcut_add_sharp),
-                title: const Text("Go to the post detail"),
-                onTap: () {
-                  Navigator.of(dialogContext).pop();
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PostDetailScreen(
-                        post: widget.post,
-                        currentUser: currentUser,
-                      )));
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.cancel_outlined),
-                title: const Text("Cancel"),
-                onTap: () {
-                  Navigator.of(dialogContext).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<bool?> showPostOptionsDialogForOtherUser(UserModel currentUser) {
-    return showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          title: const Text("Post Options"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.switch_access_shortcut_add_sharp),
-                title: const Text("Go to the post detail"),
-                onTap: () {
-                  Navigator.of(dialogContext).pop();
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PostDetailScreen(
-                        post: widget.post,
-                        currentUser: currentUser,
-                      )));
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.note_alt_outlined),
-                title: const Text("Show less similar posts like this"),
-                onTap: () async {
-                  try {
-                    await context
-                        .read<HomeCubit>()
-                        .showLessSimilarPosts(widget.post.postId);
-                    showSuccessMessage(
-                        context: context,
-                        title: 'You will see less contents like this');
-                    Navigator.of(dialogContext).pop(true);
-                  } catch (error) {
-                    Navigator.of(dialogContext).pop(false);
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.cancel_outlined),
-                title: const Text("Cancel"),
-                onTap: () {
-                  Navigator.of(dialogContext).pop(false); // Only pop once
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void showPostOptionsDialogForNotSignedUser() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          title: const Text("Post Options"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.cancel_outlined),
-                title: const Text("Cancel"),
-                onTap: () {
-                  Navigator.of(dialogContext).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     String timeAgo = calculateTimeFromNow(widget.post.timestamp);
@@ -205,7 +91,7 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
                 child: CircleAvatar(
                   radius: 30,
                   backgroundImage:
-                      CachedNetworkImageProvider(widget.post.userAvatarUrl),
+                  CachedNetworkImageProvider(widget.post.userAvatarUrl),
                 ),
               ),
               const SizedBox(width: 8),
@@ -237,14 +123,14 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
                       if (currentUser != null) {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
-                                  post: widget.post,
-                                  currentUser: currentUser,
-                                )));
+                              post: widget.post,
+                              currentUser: currentUser,
+                            )));
                       } else {
                         showNotSignedInMassage(
                             context: context,
                             description:
-                                AppStrings.notSignedInCollectionDescription);
+                            AppStrings.notSignedInCollectionDescription);
                       }
                     },
                     child: Text(
@@ -257,25 +143,6 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
                 ],
               ),
               const Spacer(),
-              IconButton(
-                  onPressed: () async {
-                    if (isSignedIn && currentUser?.id == userOwnerId) {
-                      showPostOptionsDialogForOwner(currentUser!);
-                    } else if (isSignedIn && currentUser?.id != userOwnerId) {
-                      bool? shouldShowLessSimilarPosts =
-                          await showPostOptionsDialogForOtherUser(currentUser!);
-                      if (shouldShowLessSimilarPosts ?? false) {
-                        widget.onDeletePost(widget.post.postId);
-                      }
-                    } else {
-                      showPostOptionsDialogForNotSignedUser();
-                    }
-                  },
-                  icon: const Icon(
-                    Icons.more_horiz_rounded,
-                    color: AppColors.erieBlack,
-                    size: 30,
-                  ))
             ],
           ),
           if (postContent.isNotEmpty) ...[
@@ -291,27 +158,26 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
                   },
                   child: isExpanded
                       ? RichText(
-                          text: _buildHashtagText(postContent),
-                        )
+                    text: _buildHashtagText(postContent),
+                  )
                       : RichText(
-                          text: TextSpan(
-                            children: [
-                              ..._buildContentSpans(truncatedContent),
-                              TextSpan(
-                                text: 'show more',
-                                style: AppTheme.showMoreTextStyle,
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    isExpandedNotifier.value = true;
-                                  },
-                              ),
-                            ],
-                          ),
+                    text: TextSpan(
+                      children: [
+                        ..._buildContentSpans(truncatedContent),
+                        TextSpan(
+                          text: 'show more',
+                          style: AppTheme.showMoreTextStyle,
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              isExpandedNotifier.value = true;
+                            },
                         ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
-            const SizedBox(height: 25),
           ],
         ],
       ),
@@ -331,8 +197,6 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
     content = content.replaceAll('\\n', '\n');
     final lines = content.split('\n');
 
-    final TextEditingController searchController = HomePropertiesProvider.of(context)!.searchController;
-
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
       int lastMatchEnd = 0;
@@ -350,7 +214,6 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
           style: AppTheme.highlightedHashtagStyle,
           recognizer: TapGestureRecognizer()
             ..onTap = () {
-            searchController.text = match.group(0)!;
               if (kDebugMode) {
                 print('Clicked hashtag: ${match.group(0)}');
               }

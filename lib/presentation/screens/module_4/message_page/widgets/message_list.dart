@@ -9,7 +9,7 @@ import 'message_image_grid_display.dart';
 class MessageList extends StatelessWidget {
   final String receiverUserID, receiverAvatar;
   final ScrollController scrollController;
-  final ChatService chatService = ChatService();
+  final ChatService chatService = ChatServiceImpl();
 
   MessageList({
     super.key,
@@ -115,7 +115,7 @@ class MessageItem extends StatelessWidget {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
     Map<String, dynamic>? nextData =
         nextDocument?.data() as Map<String, dynamic>?;
-    final bool isUser1 = ChatPageUserProperty.of(context);
+    final bool isUser1 = ChatPageUserProperty.of(context).isUser1;
 
     final Map<String, dynamic> layoutData = chatService.getMessageLayoutData(
       data,

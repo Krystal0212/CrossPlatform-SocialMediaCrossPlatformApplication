@@ -6,13 +6,15 @@ class CustomSearchBar extends StatefulWidget {
   final Duration debounceDuration;
   final String? label;
   final EdgeInsets? padding;
+  final TextEditingController? controller;  // Accept external controller
+
 
   const CustomSearchBar({
     super.key,
     required this.searchBarWidth,
     required this.searchBarHeight,
     required this.onSearchDebounce,
-    this.debounceDuration = const Duration(milliseconds: 500), this.label, this.padding
+    this.debounceDuration = const Duration(milliseconds: 500), this.label, this.padding, this.controller
   });
 
   @override
@@ -28,7 +30,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
   @override
   void initState() {
     super.initState();
-    searchController = TextEditingController();
+    searchController = widget.controller ?? TextEditingController();
     searchController.addListener(_onSearchTextChanged);
   }
 
@@ -42,7 +44,9 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
   @override
   void dispose() {
     searchController.removeListener(_onSearchTextChanged);
-    searchController.dispose();
+    if(widget.controller == null) {
+      searchController.dispose();
+    }
     _debounceTimer?.cancel(); // Cancel any active debounce timer
     super.dispose();
   }
@@ -75,6 +79,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           controller: searchController,
           decoration: InputDecoration(
             labelText: widget.label ?? 'Search',
+              labelStyle: AppTheme.blackUsernameMobileStyle.copyWith(color: AppColors.trolleyGrey),
               contentPadding: EdgeInsets.only(
                 bottom: widget.searchBarHeight / 2,  // HERE THE IMPORTANT PART
               ),
