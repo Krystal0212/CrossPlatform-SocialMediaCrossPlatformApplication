@@ -107,8 +107,6 @@ class ReplyCommentPostModel {
   final String content;
   final Timestamp timestamp;
   final Set<String> likes;
-  final Map<String, ImageData>? media;
-  final String? record;
 
   ReplyCommentPostModel({
     this.order,
@@ -118,8 +116,6 @@ class ReplyCommentPostModel {
     required this.timestamp,
     required this.likes,
     this.userId,
-    this.media,
-    this.record,
   });
 
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
@@ -129,15 +125,9 @@ class ReplyCommentPostModel {
   ReplyCommentPostModel.newReplyComment({
     required this.content,
     required this.userId,
-    this.media,
-    this.record,
   })  : timestamp = Timestamp.now(),
         likes = {},
-        order = null,
-        assert(
-          !(media != null && record != null),
-          'Either media or record can be provided, but not both.',
-        );
+        order = null;
 
   factory ReplyCommentPostModel.fromMap(Map<String, dynamic> map) {
     return ReplyCommentPostModel(
@@ -148,12 +138,6 @@ class ReplyCommentPostModel {
       content: map['content'] as String,
       timestamp: map['timestamp'] as Timestamp,
       likes: Set<String>.from(map['likes'] ?? {}),
-      media: map['media'] != null
-          ? (map['media'] as Map<String, dynamic>).map(
-              (key, value) => MapEntry(key, ImageData.fromMap(value)),
-            )
-          : null,
-      record: map['record'] as String?,
     );
   }
 
@@ -163,8 +147,6 @@ class ReplyCommentPostModel {
       'content': content,
       'timestamp': timestamp,
       'likes': likes,
-      'media': media?.map((key, value) => MapEntry(key, value.toMap())),
-      'record': record,
     };
   }
 

@@ -51,7 +51,6 @@ class NotificationModel {
       "postId": postId,
       "chatRoomId": chatRoomId,
       "timestamp": timestamp,
-      "titleLowercase": type.toLowerCase(),
     };
   }
 

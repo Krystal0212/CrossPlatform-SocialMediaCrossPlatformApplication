@@ -202,8 +202,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     }
   }
 
-  Future<void> sendVerificationEmail(
-      String recipientEmail, String accessToken) async {
+  Future<void> sendVerificationEmail(String recipientEmail, String accessToken) async {
     final Uri url =
         Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailWithOTP');
     final String otpCode = generateOtp();
