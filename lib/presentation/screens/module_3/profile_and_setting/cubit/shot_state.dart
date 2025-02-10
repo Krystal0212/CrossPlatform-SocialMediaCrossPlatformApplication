@@ -8,8 +8,9 @@ class  ShotPostLoading extends  ShotPostState {}
 
 class  ShotPostLoaded extends  ShotPostState {
   final Stream<List<PreviewAssetPostModel>?> postStreams;
+  final UserModel? currentUser;
 
-   ShotPostLoaded(this.postStreams);
+   ShotPostLoaded(this.postStreams, this.currentUser);
 }
 
 class  ShotPostError extends  ShotPostState {}

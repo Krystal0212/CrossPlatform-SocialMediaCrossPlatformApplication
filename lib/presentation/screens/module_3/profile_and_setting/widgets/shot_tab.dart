@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:socialapp/utils/import.dart';
 
 import '../../../../widgets/display_images/display_image.dart';
@@ -16,7 +14,7 @@ class ShotTab1 extends StatefulWidget {
 }
 
 class _ShotTab1State extends State<ShotTab1>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, FlashMessage, Methods  {
   late double deviceHeight = 0, deviceWidth = 0;
 
   @override
@@ -93,17 +91,42 @@ class _ShotTab1State extends State<ShotTab1>
                                       bool isNSFW = imagePreviews[index].isNSFW;
                                       Color dominantColor = Color(int.parse(
                                           '0x${imagePreviews[index].dominantColor}'));
+                                      String? videoUrl =
+                                          imagePreviews[index].videoUrl;
 
-                                      return ImageDisplayerWidget(
-                                        width: imageWidth,
-                                        height: imageHeight,
-                                        imageUrl: imagePreviews[index]
-                                            .mediasOrThumbnailUrl,
-                                        isVideo: isVideo,
-                                        isNSFWAllowed: (isNSFW &&
-                                            (currentUser?.isNSFWFilterTurnOn ??
-                                                true)),
-                                        dominantColor: dominantColor,
+                                      bool isNSFWAllowed = (isNSFW && (currentUser?.isNSFWFilterTurnOn ?? true));
+
+                                      return GestureDetector(
+                                        onLongPress: () {
+                                          if (currentUser != null && !isNSFWAllowed) {
+                                            Navigator.of(context).push(PageRouteBuilder(
+                                              pageBuilder: (context, animation, secondaryAnimation) => PostDetailScreen(
+                                                postId: imagePreviews[index].postId,
+                                                currentUser: currentUser,
+                                                searchController: TextEditingController(),
+                                              ),
+                                              transitionDuration: Duration.zero, // No animation on push
+                                              reverseTransitionDuration: Duration.zero, // No animation on pop
+                                            ));
+
+                                          } else {
+                                            showNotSignedInMessage(
+                                                context: context,
+                                                description:
+                                                AppStrings.notSignedInCollectionDescription);
+                                          }
+                                        },
+
+                                        child: ImageDisplayerWidget(
+                                          width: imageWidth,
+                                          height: imageHeight,
+                                          imageUrl: imagePreviews[index]
+                                              .mediasOrThumbnailUrl,
+                                          isVideo: isVideo,
+                                          isNSFWAllowed: isNSFWAllowed,
+                                          dominantColor: dominantColor,
+                                          videoUrl: isVideo ? videoUrl : null,
+                                        ),
                                       );
                                     } else {
                                       return const SizedBox.shrink();

@@ -3,8 +3,12 @@ import 'package:socialapp/utils/import.dart';
 class MobileNavigatorProperties {
   final VoidCallback navigateToCurrentUserProfile;
   final void Function(String) navigateToOtherUserProfile;
+  final VoidCallback navigateToHome;
 
-  MobileNavigatorProperties({required this.navigateToOtherUserProfile, required this.navigateToCurrentUserProfile,
+  MobileNavigatorProperties({
+    required this.navigateToHome,
+    required this.navigateToOtherUserProfile,
+    required this.navigateToCurrentUserProfile,
   });
 }
 
@@ -18,7 +22,8 @@ class MobileNavigatorPropertiesProvider extends InheritedWidget {
   });
 
   static MobileNavigatorProperties? of(BuildContext context) {
-    final provider = context.dependOnInheritedWidgetOfExactType<MobileNavigatorPropertiesProvider>();
+    final provider = context.dependOnInheritedWidgetOfExactType<
+        MobileNavigatorPropertiesProvider>();
     return provider?.mobileNavigatorProperties;
   }
 

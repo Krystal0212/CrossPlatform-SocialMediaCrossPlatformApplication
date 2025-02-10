@@ -84,7 +84,7 @@ class _SettingPartBaseState extends State<SettingPartBase> with FlashMessage {
                                     : AppStrings.changePassword,
                                 onPressed: () async {
                                   if (isOffline) {
-                                    showNotOnlineMassage(
+                                    showNotOnlineMessage(
                                         context: context, description: '');
                                   } else if (isGoogleUserWithoutPassword) {
                                     bool isPasswordJustSet =
@@ -115,7 +115,7 @@ class _SettingPartBaseState extends State<SettingPartBase> with FlashMessage {
                                   title: AppStrings.nsfwFilter,
                                   onPressed: () async {
                                     if (isOffline) {
-                                      showNotOnlineMassage(
+                                      showNotOnlineMessage(
                                           context: context, description: '');
                                     } else if (state is SettingPartLoaded) {
                                       bool? isOptionSubmit = await showDialog<bool>(

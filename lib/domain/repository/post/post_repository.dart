@@ -53,4 +53,8 @@ abstract class PostRepository {
 
   Future<void> reduceTopicRanksOfPostForCurrentUser(String postId);
 
+  Future<void> updatePostContent(String newContent, String postId);
+
+  Future<void> deletePost(String postId);
+
 }

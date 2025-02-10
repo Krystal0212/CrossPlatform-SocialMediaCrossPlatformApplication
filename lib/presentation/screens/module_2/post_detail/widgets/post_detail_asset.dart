@@ -26,6 +26,8 @@ class PostDetailAsset extends StatelessWidget {
         bool isNSFW = media.isNSFW;
 
         UserModel? currentUser = HomePropertiesProvider.of(context)?.currentUser;
+        final flutterView = PlatformDispatcher.instance.views.first;
+        double deviceHeight = flutterView.physicalSize.height;
 
         return LayoutBuilder(builder: (context, constraints) {
           double maxWidth = constraints.maxWidth * 0.9;
@@ -33,7 +35,7 @@ class PostDetailAsset extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 18),
             constraints: media.width / media.height > 1
                 ? BoxConstraints(maxWidth: maxWidth)
-                : null,
+                : BoxConstraints(maxHeight: deviceHeight*0.3),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: (media.type == 'video')
@@ -50,6 +52,7 @@ class PostDetailAsset extends StatelessWidget {
                         ),
                       )
                     : ImageDisplayerWidget(
+                        videoUrl: null,
                         width: media.width,
                         height: media.height,
                         imageUrl: media.imageUrl,
@@ -95,6 +98,7 @@ class PostDetailAsset extends StatelessWidget {
                           dominantColor: dominantColor,
                         )
                       : ImageDisplayerWidget(
+                    videoUrl: null,
                           width: media.width,
                           height: media.height,
                           imageUrl: media.imageUrl,

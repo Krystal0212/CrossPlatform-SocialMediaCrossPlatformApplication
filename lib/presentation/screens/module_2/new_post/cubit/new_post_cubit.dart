@@ -55,7 +55,7 @@ class NewPostCubit extends Cubit<NewPostState>
         if ((files.length > 8 && uploadedFiles.isEmpty) ||
             (uploadedFiles.length + files.length > 8 &&
                 uploadedFiles.isNotEmpty)) {
-          showUploadLimitExceededMassage(context: context);
+          showUploadLimitExceededMessage(context: context);
           return;
         }
 
@@ -233,7 +233,7 @@ class NewPostCubit extends Cubit<NewPostState>
 
       if (uploadedFiles.length + images.length > 8 &&
           uploadedFiles.isNotEmpty) {
-        showUploadLimitExceededMassage(context: context);
+        showUploadLimitExceededMessage(context: context);
         return;
       }
 
@@ -325,7 +325,7 @@ class NewPostCubit extends Cubit<NewPostState>
     // Prevent the clip go over length of 8
     if (assetPathNotifier.value.length + 1 > 8) {
       if (!context.mounted) return;
-      showUploadLimitExceededMassage(context: context);
+      showUploadLimitExceededMessage(context: context);
       return;
     }
 

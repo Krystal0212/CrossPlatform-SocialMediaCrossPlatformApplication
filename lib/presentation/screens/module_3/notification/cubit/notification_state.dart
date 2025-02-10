@@ -13,6 +13,10 @@ class NotificationLoaded extends NotificationState {
   NotificationLoaded(this.user, this.notificationListStream);
 }
 
+class NotificationDeleteSuccess extends NotificationState {}
+
+class NotificationDeleting extends NotificationState {}
+
 class NotificationLoggedOut extends NotificationState{}
 
 class NotificationError extends NotificationState {

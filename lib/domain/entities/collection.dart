@@ -75,8 +75,9 @@ class PreviewAssetPostModel {
   final bool isVideo;
   final bool isNSFW;
   final String dominantColor;
+  final String? videoUrl;
 
-  PreviewAssetPostModel({
+  PreviewAssetPostModel( {
     required this.postId,
     required this.mediasOrThumbnailUrl,
     required this.mediaOrder,
@@ -85,18 +86,22 @@ class PreviewAssetPostModel {
     required this.isVideo,
     required this.isNSFW,
     required this.dominantColor,
+    required this.videoUrl,
   });
 
   factory PreviewAssetPostModel.fromMap(Map<String, dynamic> map) {
     return PreviewAssetPostModel(
       postId: map['postId'] as String,
       mediasOrThumbnailUrl: map['mediasOrThumbnailUrl'],
-      mediaOrder: map['mediaOrder'],
-      height: map['height'],
-      width: map['width'],
+      mediaOrder: (map['mediaOrder'] is int)
+          ? map['mediaOrder'] as int
+          : (map['mediaOrder'] as double).toInt(),
+      height: (map['height'] as num).toDouble(),
+      width: (map['width'] as num).toDouble(),
       isVideo: map['isVideo'],
       isNSFW: map['isNSFW'],
       dominantColor: map['dominantColor'],
+      videoUrl: map['videoUrl'],
     );
   }
 
@@ -110,6 +115,7 @@ class PreviewAssetPostModel {
       'isVideo': isVideo,
       'isNSFW': isNSFW,
       'dominantColor': dominantColor,
+      'videoUrl': videoUrl,
     };
   }
 
@@ -124,10 +130,11 @@ class PreviewAssetPostModel {
         other.height == height &&
         other.isVideo == isVideo &&
         other.isNSFW == isNSFW &&
-        other.dominantColor == dominantColor;
+        other.dominantColor == dominantColor &&
+    other.videoUrl == videoUrl;
   }
 
   @override
   int get hashCode => Object.hash(postId, mediasOrThumbnailUrl, mediaOrder,
-      width, height, isVideo, isNSFW, dominantColor);
+      width, height, isVideo, isNSFW, dominantColor, dominantColor);
 }

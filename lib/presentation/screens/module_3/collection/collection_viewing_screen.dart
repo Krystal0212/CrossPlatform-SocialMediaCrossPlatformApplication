@@ -132,11 +132,10 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
     return showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-
         return AlertDialog(
           backgroundColor: AppColors.white,
-          title: const Text("Are you sure that you want to remove this collection?"),
-
+          title: const Text(
+              "Are you sure that you want to remove this collection?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -144,11 +143,13 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
             ),
             ElevatedButton(
               onPressed: () {
-                context.read<CollectionViewingCubit>().removeCurrentUserCollectionFromCurrentUser();
+                context
+                    .read<CollectionViewingCubit>()
+                    .removeCurrentUserCollectionFromCurrentUser();
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text("Yes",
-                  style: TextStyle(color: AppColors.white)),
+              child:
+                  const Text("Yes", style: TextStyle(color: AppColors.white)),
             ),
           ],
         );
@@ -160,11 +161,10 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
     return showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-
         return AlertDialog(
           backgroundColor: AppColors.white,
-          title: const Text("Are you sure that you want to remove this collection?"),
-
+          title: const Text(
+              "Are you sure that you want to remove this collection?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -172,11 +172,13 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
             ),
             ElevatedButton(
               onPressed: () {
-                context.read<CollectionViewingCubit>().removeOtherUserCollectionFormCurrentUser();
+                context
+                    .read<CollectionViewingCubit>()
+                    .removeOtherUserCollectionFormCurrentUser();
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text("Yes",
-                  style: TextStyle(color: AppColors.white)),
+              child:
+                  const Text("Yes", style: TextStyle(color: AppColors.white)),
             ),
           ],
         );
@@ -249,23 +251,24 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                         title: 'Added to your collections storage');
                     Navigator.of(dialogContext).pop(true);
                   },
-                ) else
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_outline_rounded,
+                )
+              else
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                  ),
+                  title: const Text("Remove from collections storage"),
+                  onTap: () async {
+                    bool? result = await showRemoveOtherUserCollectionDialog();
+                    if (result == true) {
+                      if (!context.mounted) return;
+                      Navigator.of(dialogContext).pop(true);
+                    } else {
+                      if (!context.mounted) return;
+                      Navigator.of(dialogContext).pop(false);
+                    }
+                  },
                 ),
-                title: const Text("Remove from collections storage"),
-                onTap: () async {
-                  bool? result = await showRemoveOtherUserCollectionDialog();
-                  if (result == true) {
-                    if(!context.mounted) return;
-                    Navigator.of(dialogContext).pop(true);
-                  }else{
-                    if(!context.mounted) return;
-                    Navigator.of(dialogContext).pop(false);
-                  }
-                },
-              ),
               ListTile(
                 leading: const Icon(Icons.cancel_outlined),
                 title: const Text("Cancel"),
@@ -274,6 +277,78 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                 },
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showImageDialog(
+    BuildContext context,
+    String imageUrl,
+    Color dominantColor,
+    String? videoUrl,
+    bool isVideo,
+    double height,
+    double width,
+    bool isNSFWAllowed,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        final flutterView = PlatformDispatcher.instance.views.first;
+        final deviceWidth =
+            flutterView.physicalSize.width / flutterView.devicePixelRatio;
+        final deviceHeight =
+            flutterView.physicalSize.height / flutterView.devicePixelRatio;
+
+        double scaleRatio = 0.75;
+
+        // Calculate the aspect ratio (width/height)
+        double imageAspectRatio =
+            width / height; // Replace with actual image's width/height
+
+        // Padding based on aspect ratio, ensuring the image fits the dialog
+        double horizontalPadding = (deviceWidth * scaleRatio) * 0.1;
+        double verticalPadding = horizontalPadding;
+
+        // If image is landscape (aspect ratio > 1), adjust the padding so it doesn't overflow
+        if (imageAspectRatio > 1) {
+          verticalPadding = deviceHeight * scaleRatio * 0.1;
+        } else {
+          horizontalPadding = deviceWidth * scaleRatio * 0.1;
+        }
+
+        return Center(
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
+              ),
+              child: (isVideo)
+                  ? VideoPlayerWidget(
+                      videoUrl: videoUrl,
+                      height: height,
+                      width: width,
+                      dominantColor: dominantColor,
+                      isNSFWAllowed: isNSFWAllowed,
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => Container(
+                          color: dominantColor,
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
+                    ),
+            ),
           ),
         );
       },
@@ -333,9 +408,10 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                         children: [
                                           IconButton(
                                             onPressed: () async {
-                                              bool? result = await showRemoveCurrentUserCollectionDialog();
+                                              bool? result =
+                                                  await showRemoveCurrentUserCollectionDialog();
                                               if (result == true) {
-                                                if(!context.mounted) return;
+                                                if (!context.mounted) return;
                                                 Navigator.of(context).pop();
                                               }
                                             },
@@ -343,7 +419,6 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                                 Icons.delete_outline_rounded,
                                                 size: 35,
                                                 color: AppColors.blackOak),
-
                                           ),
                                           IconButton(
                                             icon: const Icon(
@@ -390,11 +465,11 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                 icon: const Icon(Icons.settings_outlined,
                                     size: 35, color: AppColors.blackOak),
                                 onPressed: () async {
-                                  bool? isTrue = await
-                                  showCollectionOptionsDialogForNotOwner();
+                                  bool? isTrue =
+                                      await showCollectionOptionsDialogForNotOwner();
 
-                                  if(isTrue == true){
-                                    if(!context.mounted) return;
+                                  if (isTrue == true) {
+                                    if (!context.mounted) return;
                                     Navigator.of(context).pop();
                                   }
                                 },
@@ -447,6 +522,10 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                         imageDataPreviews[index].isNSFW;
                                     Color dominantColor = Color(int.parse(
                                         '0x${imageDataPreviews[index].dominantColor}'));
+                                    String imageUrl = imageDataPreviews[index]
+                                        .mediasOrThumbnailUrl;
+                                    bool isNSFWAllowed =
+                                        isNSFW && state.isNSFWTurnOn;
 
                                     double imageWidth = imageDataPreviews[index]
                                         .width
@@ -462,148 +541,167 @@ class _CollectionBaseState extends State<CollectionBase> with FlashMessage {
                                         isBlurredNotifier =
                                         ValueNotifier<bool>(true);
 
-                                    return AspectRatio(
-                                      aspectRatio: aspectRatio,
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            child: CachedNetworkImage(
-                                              imageUrl: imageDataPreviews[index]
-                                                  .mediasOrThumbnailUrl,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Container(
-                                                color: AppColors.blackOak,
-                                                child: const Center(
-                                                    child:
-                                                        CircularProgressIndicator()),
+                                    return InkWell(
+                                      onTap: () {
+                                        showImageDialog(
+                                          context,
+                                          imageUrl,
+                                          dominantColor,
+                                          imageDataPreviews[index].videoUrl,
+                                          isVideo,
+                                          imageHeight,
+                                          imageWidth,
+                                          isNSFWAllowed,
+                                        );
+                                      },
+                                      child: AspectRatio(
+                                        aspectRatio: aspectRatio,
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    imageDataPreviews[index]
+                                                        .mediasOrThumbnailUrl,
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) =>
+                                                    Container(
+                                                  color: AppColors.blackOak,
+                                                  child: const Center(
+                                                      child:
+                                                          CircularProgressIndicator()),
+                                                ),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        const Icon(Icons.error),
                                               ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      const Icon(Icons.error),
-                                            ),
-                                          ),
-
-                                          // Show Play Icon if it's a video
-                                          if (isVideo)
-                                            const Icon(
-                                              Icons.play_circle_fill,
-                                              size: 50,
-                                              color: Colors.white,
                                             ),
 
-                                          // Apply NSFW Blur Overlay with Gesture Detection
-                                          if (isNSFW)
-                                            ValueListenableBuilder<bool>(
-                                              valueListenable:
-                                                  isBlurredNotifier,
-                                              builder:
-                                                  (context, isBlurred, child) {
-                                                return GestureDetector(
-                                                  onTap: () => isBlurredNotifier
-                                                      .value = false,
-                                                  // Toggle blur
-                                                  child: Stack(
-                                                    children: [
-                                                      TweenAnimationBuilder<
-                                                          double>(
-                                                        duration:
-                                                            const Duration(
-                                                                milliseconds:
-                                                                    500),
-                                                        // Smooth transition
-                                                        tween: Tween<double>(
-                                                            begin: isBlurred
-                                                                ? 10.0
-                                                                : 10.0,
-                                                            end: isBlurred
-                                                                ? 10.0
-                                                                : 0.0),
-                                                        builder: (context,
-                                                            blurValue, child) {
-                                                          return AnimatedOpacity(
-                                                            duration:
-                                                                const Duration(
-                                                                    milliseconds:
-                                                                        4300),
-                                                            opacity: isBlurred
-                                                                ? 1.0
-                                                                : 0.0,
-                                                            child: ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10),
-                                                              child:
-                                                                  BackdropFilter(
-                                                                filter:
-                                                                    ImageFilter
-                                                                        .blur(
-                                                                  sigmaX:
-                                                                      blurValue,
-                                                                  sigmaY:
-                                                                      blurValue,
-                                                                ),
+                                            // Show Play Icon if it's a video
+                                            if (isVideo)
+                                              const Icon(
+                                                Icons.play_circle_fill,
+                                                size: 50,
+                                                color: Colors.white,
+                                              ),
+
+                                            // Apply NSFW Blur Overlay with Gesture Detection
+                                            if (isNSFW)
+                                              ValueListenableBuilder<bool>(
+                                                valueListenable:
+                                                    isBlurredNotifier,
+                                                builder: (context, isBlurred,
+                                                    child) {
+                                                  return GestureDetector(
+                                                    onTap: () =>
+                                                        isBlurredNotifier
+                                                            .value = false,
+                                                    // Toggle blur
+                                                    child: Stack(
+                                                      children: [
+                                                        TweenAnimationBuilder<
+                                                            double>(
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      500),
+                                                          // Smooth transition
+                                                          tween: Tween<double>(
+                                                              begin: isBlurred
+                                                                  ? 10.0
+                                                                  : 10.0,
+                                                              end: isBlurred
+                                                                  ? 10.0
+                                                                  : 0.0),
+                                                          builder: (context,
+                                                              blurValue,
+                                                              child) {
+                                                            return AnimatedOpacity(
+                                                              duration:
+                                                                  const Duration(
+                                                                      milliseconds:
+                                                                          4300),
+                                                              opacity: isBlurred
+                                                                  ? 1.0
+                                                                  : 0.0,
+                                                              child: ClipRRect(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
                                                                 child:
-                                                                    Container(
-                                                                  color: dominantColor
-                                                                      .withOpacity(isBlurred
-                                                                          ? 0.7
-                                                                          : 0.0),
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .center,
+                                                                    BackdropFilter(
+                                                                  filter:
+                                                                      ImageFilter
+                                                                          .blur(
+                                                                    sigmaX:
+                                                                        blurValue,
+                                                                    sigmaY:
+                                                                        blurValue,
+                                                                  ),
                                                                   child:
-                                                                      isBlurred
-                                                                          ? Text(
-                                                                              'NSFW Content',
-                                                                              style: AppTheme.nsfwWhiteText,
-                                                                              textAlign: TextAlign.center,
-                                                                            )
-                                                                          : null,
+                                                                      Container(
+                                                                    color: dominantColor.withOpacity(
+                                                                        isBlurred
+                                                                            ? 0.7
+                                                                            : 0.0),
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    child: isBlurred
+                                                                        ? Text(
+                                                                            'NSFW Content',
+                                                                            style:
+                                                                                AppTheme.nsfwWhiteText,
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                          )
+                                                                        : null,
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
+                                                            );
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+
+                                            ValueListenableBuilder<EditingMode>(
+                                              valueListenable:
+                                                  editingModeNotifier,
+                                              builder:
+                                                  (context, isEditing, child) {
+                                                return (isEditing ==
+                                                        EditingMode.editing)
+                                                    ? Positioned(
+                                                        top: 10,
+                                                        right: 10,
+                                                        child: CloseIconButton(
+                                                          onTap: () {
+                                                            imageDataPreviewsNotifier
+                                                                .value
+                                                                .removeAt(
+                                                                    index);
+
+                                                            imageDataPreviewsNotifier
+                                                                    .value =
+                                                                List.from(
+                                                                    imageDataPreviewsNotifier
+                                                                        .value);
+                                                          },
+                                                        ),
+                                                      )
+                                                    : const SizedBox.shrink();
                                               },
                                             ),
-
-                                          ValueListenableBuilder<EditingMode>(
-                                            valueListenable:
-                                                editingModeNotifier,
-                                            builder:
-                                                (context, isEditing, child) {
-                                              return (isEditing ==
-                                                      EditingMode.editing)
-                                                  ? Positioned(
-                                                      top: 10,
-                                                      right: 10,
-                                                      child: CloseIconButton(
-                                                        onTap: () {
-                                                          imageDataPreviewsNotifier
-                                                              .value
-                                                              .removeAt(index);
-
-                                                          imageDataPreviewsNotifier
-                                                                  .value =
-                                                              List.from(
-                                                                  imageDataPreviewsNotifier
-                                                                      .value);
-                                                        },
-                                                      ),
-                                                    )
-                                                  : const SizedBox.shrink();
-                                            },
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     );
                                   } else {

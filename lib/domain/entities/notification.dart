@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:socialapp/utils/import.dart';
 
 enum NotificationType {
   like, // roi
@@ -50,20 +51,28 @@ class NotificationModel {
       "postId": postId,
       "chatRoomId": chatRoomId,
       "timestamp": timestamp,
+      "titleLowercase": type.toLowerCase(),
     };
   }
 
   // Create NotificationModel from Firestore Document
   factory NotificationModel.fromMap(Map<String, dynamic> map, String documentId) {
-    return NotificationModel(
-      isRead: map["isRead"],
-      id: documentId,
-      type: map["type"],
-      fromUserRef: map["fromUserRef"],
-      toUserId: map["toUserId"],
-      postId: map["postId"],
-      chatRoomId: map["chatRoomId"],
-      timestamp: map["timestamp"] ?? Timestamp.now(),
-    );
+    try {
+      return NotificationModel(
+        isRead: map["isRead"],
+        id: documentId,
+        type: map["type"],
+        fromUserRef: map["fromUserRef"],
+        toUserId: map["toUserId"],
+        postId: map["postId"],
+        chatRoomId: map["chatRoomId"],
+        timestamp: map["timestamp"] ?? Timestamp.now(),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating NotificationModel from Map: $e');
+      }
+      rethrow;
+    }
   }
 }

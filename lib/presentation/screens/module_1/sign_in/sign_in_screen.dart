@@ -44,7 +44,7 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
     if (widget.isNotSignedIn ?? false) {
       // Defer the call to after the current frame
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        showNotSignedInMassage(
+        showNotSignedInMessage(
           context: context,
           description: AppStrings.notSignedInTitle,
         );

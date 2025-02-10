@@ -2,11 +2,14 @@ import 'package:socialapp/utils/import.dart';
 
 import 'cubit/home_cubit.dart';
 import 'cubit/home_state.dart';
+import 'cubit/search_cubit.dart';
+import 'cubit/search_state.dart';
 import 'cubit/tab_cubit.dart';
 import 'cubit/tab_state.dart';
 import 'providers/home_properties_provider.dart';
 import 'widgets/home_appbar.dart';
 import 'widgets/post_list_view.dart';
+import 'widgets/search_post_list_view.dart';
 
 class WebsiteHomeScreen extends StatelessWidget {
   const WebsiteHomeScreen({super.key});
@@ -36,6 +39,7 @@ class WebsiteHomeScreen extends StatelessWidget {
                       serviceLocator<PostRepository>(),
                       context.read<HomeCubit>(),
                       ViewMode.following)),
+          BlocProvider(create: (context) => SearchCubit()),
         ],
         child: const WebsiteHomeBase(),
       ),
@@ -55,16 +59,24 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
   late double deviceWidth, deviceHeight, listBodyWidth;
   late bool isCompactView;
   late TabController tabController;
+  late int previousIndex = 0;
 
   final ValueNotifier<bool> isLoading = ValueNotifier(true);
   final ValueNotifier<UserModel?> currentUserNotifier = ValueNotifier(null);
+  final ValueNotifier<bool> isSearchHiddenNotifier = ValueNotifier(true);
   final TextEditingController searchController = TextEditingController();
+
 
 
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
+    tabController.addListener(() {
+      if(isSearchHiddenNotifier.value && !tabController.indexIsChanging) {
+        previousIndex = tabController.index;
+      }
+    });
 
     FlutterNativeSplash.remove();
   }
@@ -116,6 +128,21 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
     super.dispose();
   }
 
+  Future<void> refreshExplore() async {
+    context.read<HomeCubit>().triggerSync();
+    await context.read<ExploreCubit>().refresh();
+  }
+
+  Future<void> refreshTrending() async {
+    context.read<HomeCubit>().triggerSync();
+    await context.read<TrendingCubit>().refresh();
+  }
+
+  Future<void> refreshFollowing() async {
+    context.read<HomeCubit>().triggerSync();
+    await context.read<FollowingCubit>().refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -136,7 +163,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
               searchController: searchController,
                 currentUserNotifier: currentUserNotifier,
                 currentUser: currentUserNotifier.value,
-                listBodyWidth: listBodyWidth),
+                listBodyWidth: listBodyWidth, isSearchHiddenNotifier: isSearchHiddenNotifier),
             child: Scaffold(
               appBar: HomeScreenAppBar(
                 deviceWidth: deviceWidth,
@@ -158,15 +185,16 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                             if (state is TabLoading) {
                               return const Center(
                                   child: CircularProgressIndicator());
-                            } else if (state is TabLoaded) {
-                              return PostListView(
-                                posts: state.posts,
-                                tabCubit:
-                                BlocProvider.of<ExploreCubit>(context),
-                              );
                             } else {
-                              return NoMorePostsPlaceholder(
-                                width: listBodyWidth,);
+                              return RefreshIndicator(
+                                onRefresh: () => refreshExplore(),
+                                child: PostListView(
+                                  posts:
+                                  (state is TabLoaded) ? state.posts : [],
+                                  tabCubit:
+                                  BlocProvider.of<ExploreCubit>(context),
+                                ),
+                              );
                             }
                           },
                         ),
@@ -176,42 +204,64 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                             if (state is TabLoading) {
                               return const Center(
                                   child: CircularProgressIndicator());
-                            } else if (state is TabLoaded) {
-                              return PostListView(
-                                posts: state.posts,
-                                tabCubit:
-                                BlocProvider.of<TrendingCubit>(context),
-                              );
                             } else {
-                              return NoMorePostsPlaceholder(
-                                width: listBodyWidth,
+                              return RefreshIndicator(
+                                onRefresh: () => refreshTrending(),
+                                child: PostListView(
+                                  posts:
+                                  (state is TabLoaded) ? state.posts : [],
+                                  tabCubit:
+                                  BlocProvider.of<TrendingCubit>(context),
+                                ),
                               );
                             }
                           },
                         ),
                         // Following Tab
-                        BlocBuilder<FollowingCubit, TabState>(
-                          builder: (context, state) {
-                            if (state is TabLoading) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (state is TabNotSignIn) {
-                              return SignInPagePlaceholder(
-                                width: listBodyWidth,
-                              );
-                            } else if (state is TabLoaded) {
-                              return PostListView(
-                                posts: state.posts,
-                                tabCubit:
-                                BlocProvider.of<FollowingCubit>(context),
-                              );
-                            } else {
-                              return NoMorePostsPlaceholder(
-                                width: listBodyWidth,
-                              );
-                            }
-                          },
-                        ),
+                        ValueListenableBuilder(
+                            valueListenable: isSearchHiddenNotifier,
+                            builder: (context, isHidden, _) {
+                              if (isHidden) {
+                                return BlocBuilder<FollowingCubit, TabState>(
+                                  builder: (context, state) {
+                                    if (state is TabLoading) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    } else if (state is TabNotSignIn) {
+                                      return SignInPagePlaceholder(
+                                        width: listBodyWidth,
+                                      );
+                                    } else {
+                                      return RefreshIndicator(
+                                        onRefresh: () => refreshFollowing(),
+                                        child: PostListView(
+                                          posts: (state is TabLoaded)
+                                              ? state.posts
+                                              : [],
+                                          tabCubit:
+                                          BlocProvider.of<FollowingCubit>(
+                                              context),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              }
+                              return BlocBuilder<SearchCubit, SearchState>(
+                                  builder: (context, state) {
+                                    if (state is SearchFinding) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    }
+                                    return SearchPostListView(
+                                      posts: (state is SearchLoaded)
+                                          ? state.posts
+                                          : [],
+                                      searchCubit:
+                                      BlocProvider.of<SearchCubit>(context),
+                                    );
+                                  });
+                            }),
                       ],
                     ),
                   ),

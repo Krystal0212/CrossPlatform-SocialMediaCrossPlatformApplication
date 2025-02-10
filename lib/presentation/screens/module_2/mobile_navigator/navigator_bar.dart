@@ -28,6 +28,11 @@ class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
               _screenIndex = 3;
             });
           },
+          navigateToHome: () {
+            setState(() {
+              _screenIndex = 0;
+            });
+          },
           navigateToOtherUserProfile: (String userId) {
              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                return UserViewingProfileScreen(userId: userId,);

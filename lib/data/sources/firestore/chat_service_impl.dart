@@ -11,8 +11,8 @@ abstract class ChatService {
 
   Stream<QuerySnapshot> getMessages(String receiverId);
 
-  Map<String, dynamic> getMessageLayoutData(Map<String, dynamic> data,
-      Map<String, dynamic>? nextData, bool isUser1);
+  Map<String, dynamic> getMessageLayoutData(
+      Map<String, dynamic> data, Map<String, dynamic>? nextData, bool isUser1);
 
   Stream<DocumentSnapshot<Map<String, dynamic>>>? getCurrentUserSnapshot();
 
@@ -27,6 +27,9 @@ abstract class ChatService {
   DocumentReference<Object?> getUserRef(String userId);
 
   Future<List<UserModel>> findingUserList(String userTagNameToFind);
+
+  Future<bool> checkIsUser1(String otherUserId);
+
 }
 
 class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
@@ -48,21 +51,22 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   CollectionReference get _notificationRef =>
       _firestoreDB.collection('Notification');
 
-
   CollectionReference _usersFollowingsRef(String uid) {
     return _usersRef.doc(uid).collection('followings');
   }
 
+
   // ToDo: Service Functions
   String _getChatRoomId(String userId, String otherUserId) {
     List<String> ids = [userId, otherUserId];
-    ids
-        .sort(); // Sort ids to ensure chatRoomId is the same for every pair of chatter
+    ids.sort(); // Sort ids to ensure chatRoomId is the same for every pair of chatter
     return ids.join("_");
   }
 
-  Future<void> _checkAndCreateChatRoom(String chatRoomId,
-      String receiverId,) async {
+  Future<void> _checkAndCreateChatRoom(
+    String chatRoomId,
+    String receiverId,
+  ) async {
     try {
       DocumentReference user1Ref = _usersRef.doc(currentUserId);
       DocumentReference user2Ref = _usersRef.doc(receiverId);
@@ -94,7 +98,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
       String chatRoomId, String receiverId, NotificationType type) async {
     try {
       CollectionReference notificationsRef =
-      _notificationRef.doc(receiverId).collection('notifications');
+          _notificationRef.doc(receiverId).collection('notifications');
 
       // Check if the document exists
       DocumentReference userNotificationsRef = _notificationRef.doc(receiverId);
@@ -102,9 +106,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
       // If document doesn't exist, create it
       if (!userDocSnapshot.exists) {
-        await userNotificationsRef.set({
-          'list': []
-        });
+        await userNotificationsRef.set({'list': []});
       }
 
       Timestamp fifteenMinutesAgo = Timestamp.fromMillisecondsSinceEpoch(
@@ -112,7 +114,8 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
       QuerySnapshot querySnapshot = await notificationsRef
           .where('chatRoomId', isEqualTo: chatRoomId)
-          .where('timestamp', isGreaterThan: fifteenMinutesAgo) // Check last 15 min
+          .where('timestamp',
+              isGreaterThan: fifteenMinutesAgo) // Check last 15 min
           .orderBy('timestamp', descending: true)
           .limit(1)
           .get();
@@ -139,10 +142,9 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
     }
   }
 
-
   @override
-  Future<void> sendMessage(bool isUser1, String receiverId,
-      String message) async {
+  Future<void> sendMessage(
+      bool isUser1, String receiverId, String message) async {
     final Timestamp timestamp = Timestamp.now();
 
     try {
@@ -164,7 +166,8 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
             .add(newMessage.toMap());
 
         // Send notification to receiver
-        await _sendMessageNotification(chatRoomId,receiverId, NotificationType.textMessage);
+        await _sendMessageNotification(
+            chatRoomId, receiverId, NotificationType.textMessage);
       } else {
         throw CustomFirestoreException(
             code: "no-user-data", message: 'The current user is not found');
@@ -227,15 +230,15 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   //   return {imageUrl: mediaKey};
   // }
 
-  Future<String> _uploadImageAndGetUrl(Uint8List compressedImage,
-      String mediaKey) async {
+  Future<String> _uploadImageAndGetUrl(
+      Uint8List compressedImage, String mediaKey) async {
     File tempFile =
-    File('${(await getTemporaryDirectory()).path}/$mediaKey.webp');
+        File('${(await getTemporaryDirectory()).path}/$mediaKey.webp');
     tempFile.writeAsBytesSync(compressedImage);
 
     // Upload image to Firebase Storage
     Reference storageRef =
-    _storage.ref().child('chat_images/$currentUserId/$mediaKey.webp');
+        _storage.ref().child('chat_images/$currentUserId/$mediaKey.webp');
     await storageRef.putFile(tempFile);
 
     // Get the URL after the upload completes
@@ -282,7 +285,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
         final Uint8List? compressedImage = await _compressImage(imagePath);
         img.Image? imageElement = img.decodeImage(compressedImage!);
         final String dominantColor =
-        await getDominantColorFromImage(compressedImage);
+            await getDominantColorFromImage(compressedImage);
         final double ratio = calculateAspectRatio(imageElement);
         final List<int> widthAndHeight = calculateWidthAndHeight(imageElement);
 
@@ -304,7 +307,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
         // Now upload the image to Firebase Storage and update the URL in Firestore
         final String imageUrl =
-        await _uploadImageAndGetUrl(compressedImage, mediaKey);
+            await _uploadImageAndGetUrl(compressedImage, mediaKey);
 
         // After upload is complete, update Firestore with the image URL
         await docRef.update({
@@ -312,7 +315,9 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
         });
       }
 
-      NotificationType notificationType = (imageDatas.length == 1) ? NotificationType.singleImageMessage : NotificationType.multipleImageMessage;
+      NotificationType notificationType = (imageDatas.length == 1)
+          ? NotificationType.singleImageMessage
+          : NotificationType.multipleImageMessage;
       await _sendMessageNotification(chatRoomId, receiverId, notificationType);
     } catch (error) {
       if (kDebugMode) {
@@ -414,8 +419,8 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   // }
 
   @override
-  Map<String, dynamic> getMessageLayoutData(Map<String, dynamic> data,
-      Map<String, dynamic>? nextData, bool isUser1) {
+  Map<String, dynamic> getMessageLayoutData(
+      Map<String, dynamic> data, Map<String, dynamic>? nextData, bool isUser1) {
     // Align sender message to the right, receiver message to the left
     bool isSender = data['isFromUser1'] == isUser1;
     // Determine whether to show avatar
@@ -428,9 +433,9 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
     // Spacing based on whether next message is from the same sender
     double spacing =
-    (nextData == null || nextData['isFromUser1'] != data['isFromUser1'])
-        ? 16.0 // Larger spacing for different senders
-        : 4.0; // Smaller spacing for the same sender
+        (nextData == null || nextData['isFromUser1'] != data['isFromUser1'])
+            ? 16.0 // Larger spacing for different senders
+            : 4.0; // Smaller spacing for the same sender
 
     return {
       'isSender': isSender,
@@ -460,6 +465,24 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
         .snapshots();
   }
 
+  Future<bool> checkIsUser1(String otherUserId) async {
+    try {
+      String chatRoomId = _getChatRoomId(currentUserId, otherUserId);
+
+      DocumentSnapshot snapshot = await _chatRoomRef.doc(chatRoomId).get();
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+      DocumentReference user1Ref = data['user1Ref'];
+
+      return user1Ref.id == currentUserId;
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error during checkIsUser1 : $error');
+      }
+      return false;
+    }
+  }
+
   @override
   DocumentReference<Object?> getUserRef(String userId) {
     return _usersRef.doc(userId);
@@ -469,7 +492,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   Future<List<UserModel>> getUserFollowingsList() async {
     try {
       QuerySnapshot followingsRef =
-      await _usersFollowingsRef(currentUserId).get();
+          await _usersFollowingsRef(currentUserId).get();
 
       List<String> followingIds = [];
       if (followingsRef.docs.isNotEmpty) {

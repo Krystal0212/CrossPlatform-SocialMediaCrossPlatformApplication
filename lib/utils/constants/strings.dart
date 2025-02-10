@@ -104,6 +104,7 @@ class AppStrings {
   static const String uploading = 'Uploading...';
   static const String videoNotSupported = 'Your file type are not supported by using web application';
   static const String enterText = "Enter your text here";
+  static const String removePost = 'Are you sure that you want to remove this post?';
 
   // For collection section
   static const String createCollection = "Create collection";

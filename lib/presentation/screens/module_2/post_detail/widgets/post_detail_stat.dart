@@ -146,7 +146,7 @@ class _PostStatsBarState extends State<PostStatsBar> with FlashMessage {
                                 if (currentUser.id?.isNotEmpty ?? false) {
                                   toggleLike();
                                 } else {
-                                  showNotSignedInMassage(
+                                  showNotSignedInMessage(
                                       context: context,
                                       description: AppStrings
                                           .notSignedInCollectionDescription);

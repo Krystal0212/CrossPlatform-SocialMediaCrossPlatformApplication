@@ -65,7 +65,7 @@ class OnlinePostModel {
   final String userId;
   final String username;
   final String userAvatarUrl;
-  final String content;
+   String content;
   final Map<String, OnlineMediaItem>? media;
   final String? record;
   final Timestamp timestamp;

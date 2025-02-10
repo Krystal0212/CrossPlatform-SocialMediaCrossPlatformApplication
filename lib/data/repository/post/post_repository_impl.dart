@@ -121,4 +121,14 @@ class PostRepositoryImpl extends PostRepository {
   Future<void> reduceTopicRanksOfPostForCurrentUser(String postId) {
     return serviceLocator.get<PostService>().reduceTopicRanksOfPostForCurrentUser(postId);
   }
+
+  @override
+  Future<void> updatePostContent(String newContent, String postId) {
+    return serviceLocator.get<PostService>().updatePostContent(newContent, postId);
+  }
+
+  @override
+  Future<void> deletePost(String postId) {
+    return serviceLocator.get<PostService>().deletePost(postId);
+  }
 }

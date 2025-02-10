@@ -195,6 +195,8 @@ class HomeAppBarSegmentedTabControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ValueNotifier<bool> isSearchHiddenNotifier = HomePropertiesProvider.of(context)!.isSearchHiddenNotifier;
+
     return Padding(
       padding:
           (isCompactView) ? const EdgeInsets.all(8) : const EdgeInsets.all(0),
@@ -204,38 +206,48 @@ class HomeAppBarSegmentedTabControl extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
         ),
-        child: SegmentedTabControl(
-          controller: tabController,
-          splashColor: Colors.transparent,
-          tabTextColor: AppColors.iris,
-          selectedTabTextColor: AppColors.white,
-          squeezeIntensity: 2.0,
-          textStyle: AppTheme.boldTextStyle,
-          selectedTextStyle: AppTheme.boldTextStyle,
-          indicatorPadding: isCompactView
-              ? EdgeInsets.zero
-              : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-          barDecoration: const BoxDecoration(
-            color: AppColors.tropicalBreeze,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          tabs: [
-            SegmentTab(
-              label: 'Explore',
-              color: AppColors.bneiBrakBay,
-              backgroundColor: AppColors.bneiBrakBay.withOpacity(0.1),
-            ),
-            SegmentTab(
-              label: 'Trending',
-              color: AppColors.officeNeonLight,
-              backgroundColor: AppColors.officeNeonLight.withOpacity(0.1),
-            ),
-            SegmentTab(
-              label: 'Following',
-              color: AppColors.limeShot,
-              backgroundColor: AppColors.limeShot.withOpacity(0.1),
-            ),
-          ],
+        child: ValueListenableBuilder(
+            valueListenable: isSearchHiddenNotifier,
+            builder: (context, isHidden, _) {
+            return SegmentedTabControl(
+              controller: tabController,
+              splashColor: Colors.transparent,
+              tabTextColor: AppColors.iris,
+              selectedTabTextColor: AppColors.white,
+              squeezeIntensity: 2.0,
+              textStyle: AppTheme.boldTextStyle,
+              selectedTextStyle: AppTheme.boldTextStyle,
+              indicatorPadding: isCompactView
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+              barDecoration: const BoxDecoration(
+                color: AppColors.tropicalBreeze,
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              tabs: [
+                SegmentTab(
+                  label: 'Explore',
+                  color: AppColors.bneiBrakBay,
+                  backgroundColor: AppColors.bneiBrakBay.withOpacity(0.1),
+                ),
+                isHidden
+                    ? SegmentTab(
+                  label: 'Following',
+                  color: AppColors.bneiBrakBay,
+                  backgroundColor: AppColors
+                      .bneiBrakBay
+                      .withOpacity(0.1),
+                )
+                    : SegmentTab(
+                  label: 'Result',
+                  color: AppColors.lightIris,
+                  backgroundColor: AppColors
+                      .lightIris
+                      .withOpacity(0.1),
+                ),
+              ],
+            );
+          }
         ),
       ),
     );

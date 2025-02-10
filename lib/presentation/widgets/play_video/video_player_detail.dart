@@ -10,7 +10,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final Color dominantColor;
   final double height, width;
 
-  VideoPlayerWidget({
+  const VideoPlayerWidget({
     super.key,
     this.videoUrl,
     required this.height,

@@ -5,10 +5,6 @@ import 'package:socialapp/domain/repository/collection/collection_repository.dar
 import 'package:socialapp/service_locator.dart';
 
 class CollectionRepositoryImpl extends CollectionRepository {
-  @override
-  Future<List<CollectionModel>?>? getCollections() {
-    return serviceLocator.get<CollectionService>().getCollections();
-  }
 
   @override
   Future<List<CollectionModel>> getCollectionsFromOtherUser(String uid) {
@@ -58,5 +54,15 @@ class CollectionRepositoryImpl extends CollectionRepository {
   Stream<List<CollectionModel>> getCollectionsFromUserRealtime(String uid) {
     return serviceLocator<CollectionService>()
         .getCollectionsFromUserRealtime(uid);
+  }
+
+  @override
+  Future<List<CollectionModel>> getCollectionsFromQuery(String query) {
+    return serviceLocator<CollectionService>().getCollectionsFromQuery(query);
+  }
+
+  @override
+  Future<List<CollectionModel>> getCollectionsOrderByAssets() {
+    return serviceLocator<CollectionService>().getCollectionsOrderByAssets();
   }
 }

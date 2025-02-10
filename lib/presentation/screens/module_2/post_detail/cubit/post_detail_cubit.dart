@@ -70,11 +70,12 @@ class PostDetailCubit extends Cubit<PostDetailState> {
     }
   }
 
-  Future<int> sendReplyComment(String postOwnerId, String comment, String repliedToCommentId) async {
+  Future<int> sendReplyComment(String postOwnerId, String comment,
+      String repliedToCommentId) async {
     try {
-     int replyOrder = await serviceLocator<CommentRepository>()
+      int replyOrder = await serviceLocator<CommentRepository>()
           .sendReplyComment(postId, postOwnerId, comment, repliedToCommentId);
-     return replyOrder;
+      return replyOrder;
     } catch (error) {
       if (kDebugMode) {
         print('Error sending comment for posts: $error');
@@ -93,4 +94,21 @@ class PostDetailCubit extends Cubit<PostDetailState> {
     likedCommentsCache[commentId] = false;
   }
 
-}
+  Future<void> updatePostContent(String newContent, String postId) async {
+    try {
+      await serviceLocator<PostRepository>().updatePostContent(
+           newContent, postId);
+      emit(PostDetailChangeContentSuccess());
+    } catch (error) {
+      emit(PostDetailError(error.toString()));
+    }
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await serviceLocator<PostRepository>().deletePost(postId);
+      emit(PostDetailDeleteSuccess());
+    } catch (error) {
+      emit(PostDetailError(error.toString()));
+  }
+}}

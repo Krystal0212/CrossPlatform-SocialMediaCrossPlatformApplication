@@ -68,6 +68,7 @@ class _SearchPostHeaderState extends State<SearchPostHeader> with Methods, Flash
     String userOwnerId = widget.post.userId;
     bool isSignedIn = serviceLocator<AuthRepository>().isSignedIn();
     UserModel? currentUser = HomePropertiesProvider.of(context)?.currentUser;
+    TextEditingController searchController = HomePropertiesProvider.of(context)!.searchController;
 
     return Padding(
       padding: AppTheme.postHorizontalPaddingEdgeInsets,
@@ -123,11 +124,12 @@ class _SearchPostHeaderState extends State<SearchPostHeader> with Methods, Flash
                       if (currentUser != null) {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => PostDetailScreen(
+                              searchController: searchController,
                               post: widget.post,
                               currentUser: currentUser,
                             )));
                       } else {
-                        showNotSignedInMassage(
+                        showNotSignedInMessage(
                             context: context,
                             description:
                             AppStrings.notSignedInCollectionDescription);
@@ -196,6 +198,7 @@ class _SearchPostHeaderState extends State<SearchPostHeader> with Methods, Flash
     final List<TextSpan> spans = [];
     content = content.replaceAll('\\n', '\n');
     final lines = content.split('\n');
+    final TextEditingController searchController = HomePropertiesProvider.of(context)!.searchController;
 
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
@@ -214,6 +217,7 @@ class _SearchPostHeaderState extends State<SearchPostHeader> with Methods, Flash
           style: AppTheme.highlightedHashtagStyle,
           recognizer: TapGestureRecognizer()
             ..onTap = () {
+              searchController.text = match.group(0)!;
               if (kDebugMode) {
                 print('Clicked hashtag: ${match.group(0)}');
               }

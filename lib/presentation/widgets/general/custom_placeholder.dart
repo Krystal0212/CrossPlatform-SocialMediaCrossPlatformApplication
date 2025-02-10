@@ -137,12 +137,25 @@ class NoMorePostsPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final flutterView = PlatformDispatcher.instance.views.first;
+    double deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    double deviceHeight = flutterView.physicalSize.height / flutterView.devicePixelRatio;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.blackOak.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      padding: EdgeInsets.only(top: 5, left:width*0.1 , right: width*0.1),
+      margin: EdgeInsets.symmetric(horizontal: deviceWidth * 0.02, vertical: deviceHeight * 0.01),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
       width: width,
       child: Center(
         child: Column(
@@ -370,6 +383,56 @@ class NoUserDataAvailablePlaceholder extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class GettingDataPlaceholder extends StatelessWidget {
+  const GettingDataPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final flutterView = PlatformDispatcher.instance.views.first;
+    double deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    double deviceHeight = flutterView.physicalSize.height / flutterView.devicePixelRatio;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      margin: EdgeInsets.symmetric(horizontal: deviceWidth * 0.05, vertical: deviceHeight * 0.02),
+      padding: EdgeInsets.symmetric(horizontal: deviceWidth * 0.1, vertical: 20),
+      width: deviceWidth,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(AppImages.waiting, height: deviceWidth * 0.4),
+          const SizedBox(height: 16), // Space between image and text
+          Text(
+            'Wait a little, we are getting data',
+            style: AppTheme.gradientShowMoreContentTextStyle.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16), // Space between text and loading indicator
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.iris),
+            strokeWidth: 3,
+          ),
+        ],
       ),
     );
   }

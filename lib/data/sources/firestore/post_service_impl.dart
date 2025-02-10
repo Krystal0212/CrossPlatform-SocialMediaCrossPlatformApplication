@@ -49,6 +49,8 @@ abstract class PostService {
 
   Future<void> createSoundPost(String content, String filePath);
 
+  Future<OnlinePostModel> getPostDataFromPostId(String postId);
+
   Future<void> createAssetPost(String content,
       List<Map<String, dynamic>> imagesAndVideos, List<TopicModel> topics);
 
@@ -59,6 +61,10 @@ abstract class PostService {
   Future<List<OnlinePostModel>> searchPost(String query);
 
   Future<void> reduceTopicRanksOfPostForCurrentUser(String postId);
+
+  Future<void> updatePostContent(String newContent, String postId);
+
+  Future<void> deletePost(String postId);
 }
 
 class PostServiceImpl extends PostService
@@ -129,6 +135,8 @@ class PostServiceImpl extends PostService
 
     return posts;
   }
+
+
 
   // ToDo: Service Functions
 
@@ -1067,7 +1075,7 @@ class PostServiceImpl extends PostService
       return post;
     } catch (e) {
       if (kDebugMode) {
-        print('Error fetching post for user by user id: $e');
+        print('Error fetching post for user by post id: $e');
       }
       rethrow;
     }
@@ -1172,6 +1180,7 @@ class PostServiceImpl extends PostService
                 isVideo: false,
                 isNSFW: media.value['isNSFW'],
                 dominantColor: media.value['dominantColor'],
+                videoUrl: null,
               ));
             } catch (error) {
               if (kDebugMode) {
@@ -1190,6 +1199,7 @@ class PostServiceImpl extends PostService
                 isVideo: true,
                 isNSFW: media.value['isNSFW'],
                 dominantColor: media.value['dominantColor'],
+                videoUrl: media.value['imageUrl'],
               ));
             } catch (error) {
               if (kDebugMode) {
@@ -1751,6 +1761,43 @@ class PostServiceImpl extends PostService
   }
 
   @override
+  Future<OnlinePostModel> getPostDataFromPostId(String postId) async {
+    try {
+      DocumentSnapshot postSnapshot = await _postRef.doc(postId).get();
+
+      if (!postSnapshot.exists) {
+        throw CustomFirestoreException(
+            code: 'no-post', message: 'Post does not exist.');
+      }
+
+      Map<String, dynamic> documentMap =
+      postSnapshot.data() as Map<String, dynamic>;
+
+      List<String> comments = await _fetchSubCollection(postSnapshot, 'comments');
+      List<String> likes = await _fetchSubCollection(postSnapshot, 'likes');
+
+      DocumentReference userRef = documentMap['userRef'];
+      DocumentSnapshot userData = await userRef.get();
+
+      documentMap['postId'] = postSnapshot.id;
+      documentMap['userId'] = userRef.id;
+      documentMap['username'] = userData['name'];
+      documentMap['userAvatar'] = userData['avatar'];
+      documentMap['comments'] = comments.toSet();
+      documentMap['likes'] = likes.toSet();
+
+      OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
+
+      return post;
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error getting data from postId: $error');
+      }
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> reduceTopicRanksOfPostForCurrentUser(String postId) async {
     try {
       if (currentUserId.isEmpty) return;
@@ -1790,6 +1837,39 @@ class PostServiceImpl extends PostService
         print('Error update topic rank for user: $e');
       }
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> updatePostContent(String newContent, String postId) async {
+    try {
+      DocumentReference postRef = _postRef.doc(postId);
+
+      await postRef.update({
+        'content': newContent,
+        'contentLowercase': newContent.toLowerCase(),
+      });
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error updating post content: $error');
+      }
+    }
+  }
+
+  @override
+  Future<void> deletePost(String postId) async {
+    try {
+      if(currentUserId.isEmpty) return;
+
+      await _usersRef.doc(currentUserId).collection('posts').doc(postId).delete();
+
+      DocumentReference postRef = _postRef.doc(postId);
+
+      await postRef.delete();
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error deleting post: $error');
+      }
     }
   }
 }

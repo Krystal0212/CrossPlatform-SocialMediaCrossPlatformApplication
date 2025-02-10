@@ -41,7 +41,7 @@ class AuthElevatedButton extends StatelessWidget {
               )
             : Text(
                 inputText,
-                style: AppTheme.authWhiteText,
+                style: AppTheme.authWhiteText.copyWith(fontSize: 18),
               ),
       ),
     );

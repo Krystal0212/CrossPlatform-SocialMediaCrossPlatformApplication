@@ -87,7 +87,7 @@ class AppRoutes with FlashMessage {
             return _buildPageRoute((isWeb)
                 ? const WebsiteHomeScreen()
                 : const CustomNavigatorBar());
-          })
+          }),
     ],
     errorBuilder: (context, state) => const ErrorPagePlaceholder(),
   );

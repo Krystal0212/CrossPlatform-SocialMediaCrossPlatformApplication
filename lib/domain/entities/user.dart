@@ -70,7 +70,7 @@ class UserModel {
       lastName: map['lastname'] ?? '',
       location: map['location'] ?? '',
       preferredTopics: Map<String, String>.from(
-        map['preferred-topics'],
+        map['preferred-topics'] ?? {},
       ),
       avatar: map['avatar'] ?? '',
       tagName: map['tag-name'] ?? '',

@@ -46,7 +46,9 @@ class ShotPostCubit extends Cubit<ShotPostState> {
       Stream<List<PreviewAssetPostModel>?> postStreams = serviceLocator<PostRepository>()
           .getAssetPostsByUserIdRealTime(userId);
 
-      emit(ShotPostLoaded(postStreams));
+      UserModel? currentUser = await serviceLocator<UserRepository>().getCurrentUserData();
+
+      emit(ShotPostLoaded(postStreams, currentUser));
     } catch (error) {
       debugPrint("Error fetching image URLs: $error");
       emit(ShotPostError());

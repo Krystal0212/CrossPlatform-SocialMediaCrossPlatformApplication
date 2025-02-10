@@ -5,9 +5,14 @@ class HomeProperties {
   final ValueNotifier<UserModel?> currentUserNotifier;
   final double listBodyWidth;
   final TextEditingController searchController;
+  final ValueNotifier<bool> isSearchHiddenNotifier;
 
-  HomeProperties(  {required this.listBodyWidth,
-    required this.currentUserNotifier, required this.currentUser, required this.searchController,
+  HomeProperties({
+    required this.isSearchHiddenNotifier,
+    required this.listBodyWidth,
+    required this.currentUserNotifier,
+    required this.currentUser,
+    required this.searchController,
   });
 }
 
@@ -21,7 +26,8 @@ class HomePropertiesProvider extends InheritedWidget {
   });
 
   static HomeProperties? of(BuildContext context) {
-    final provider = context.dependOnInheritedWidgetOfExactType<HomePropertiesProvider>();
+    final provider =
+        context.dependOnInheritedWidgetOfExactType<HomePropertiesProvider>();
     return provider?.homeProperties;
   }
 

@@ -37,25 +37,27 @@ class _ShotViewingTabState extends State<ShotViewingTab>
       create: (context) => ShotViewingPostCubit(userId: widget.userId),
       child: Padding(
         padding: EdgeInsets.only(
-            top: 30, left: deviceWidth * 0.07, right: deviceWidth * 0.07,
-
+          top: 30,
+          left: deviceWidth * 0.07,
+          right: deviceWidth * 0.07,
         ),
         child: SingleChildScrollView(
           child: BlocBuilder<ShotViewingPostCubit, ShotViewingPostState>(
             builder: (context, state) {
-              if(state is ShotViewingPostLoading || state is ShotViewingPostInitial){
-                return  SizedBox(
-                  height: deviceHeight*0.3,
-                  child: const Center(child: CircularProgressIndicator(
+              if (state is ShotViewingPostLoading ||
+                  state is ShotViewingPostInitial) {
+                return SizedBox(
+                  height: deviceHeight * 0.3,
+                  child: const Center(
+                      child: CircularProgressIndicator(
                     color: AppColors.iris,
                   )),
                 );
-              } else
-              if (state is ShotViewingPostLoaded) {
+              } else if (state is ShotViewingPostLoaded) {
                 List<PreviewAssetPostModel> imagePreviews = state.posts;
 
-                UserModel? currentUser = HomePropertiesProvider.of(context)?.currentUser;
-
+                UserModel? currentUser =
+                    HomePropertiesProvider.of(context)?.currentUser;
 
                 return Column(
                   children: [
@@ -69,12 +71,10 @@ class _ShotViewingTabState extends State<ShotViewingTab>
                       itemBuilder: (context, index) {
                         if (index < imagePreviews.length) {
                           double imageWidth =
-                          imagePreviews[index].width.toDouble();
-                          double imageHeight = imagePreviews[index]
-                              .height
-                              .toDouble();
-                          bool isVideo =
-                              imagePreviews[index].isVideo;
+                              imagePreviews[index].width.toDouble();
+                          double imageHeight =
+                              imagePreviews[index].height.toDouble();
+                          bool isVideo = imagePreviews[index].isVideo;
                           bool isNSFW = imagePreviews[index].isNSFW;
                           Color dominantColor = Color(int.parse(
                               '0x${imagePreviews[index].dominantColor}'));
@@ -82,24 +82,28 @@ class _ShotViewingTabState extends State<ShotViewingTab>
                           return ImageDisplayerWidget(
                             width: imageWidth,
                             height: imageHeight,
-                            imageUrl: imagePreviews[index]
-                                .mediasOrThumbnailUrl,
+                            imageUrl: imagePreviews[index].mediasOrThumbnailUrl,
                             isVideo: isVideo,
                             isNSFWAllowed: (isNSFW &&
-                                (currentUser?.isNSFWFilterTurnOn ??
-                                    true)),
+                                (currentUser?.isNSFWFilterTurnOn ?? true)),
                             dominantColor: dominantColor,
+                            videoUrl:
+                                isVideo ? imagePreviews[index].videoUrl : null,
                           );
                         } else {
                           return const SizedBox.shrink();
                         }
                       },
                     ),
-                    SizedBox(height: deviceHeight*0.02,)
+                    SizedBox(
+                      height: deviceHeight * 0.02,
+                    )
                   ],
                 );
               }
-              return NoPublicDataAvailablePlaceholder(width: deviceWidth*0.9,);
+              return NoPublicDataAvailablePlaceholder(
+                width: deviceWidth * 0.9,
+              );
             },
           ),
         ),

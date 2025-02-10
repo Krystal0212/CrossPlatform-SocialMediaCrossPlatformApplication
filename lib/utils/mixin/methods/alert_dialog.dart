@@ -116,7 +116,7 @@ mixin AppDialogs {
                         fit: BoxFit.contain,
                         placeholder: (context, url) =>
                             const CircularProgressIndicator(
-                          color: Colors.blue,
+                          color: AppColors.iris,
                         ),
                         errorWidget: (context, url, error) =>
                             const Icon(Icons.error),

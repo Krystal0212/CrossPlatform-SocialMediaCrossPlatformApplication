@@ -380,8 +380,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<String> verifyResetPasswordRequestByOTPLink(
-      String encryptedLink) async {
+  Future<String> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
     final url = Uri.parse(
         'https://api-m2ogw2ba2a-uc.a.run.app/verifyResetPasswordLink');
     try {

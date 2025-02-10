@@ -3,7 +3,7 @@ import 'package:socialapp/utils/import.dart';
 
 
 mixin FlashMessage {
-  void showNotSignedInMassage(
+  void showNotSignedInMessage(
       {required BuildContext context, required String description}) {
     PulpFlash.of(context).showMessage(
       context,
@@ -16,7 +16,7 @@ mixin FlashMessage {
     );
   }
 
-  void showNotOnlineMassage(
+  void showNotOnlineMessage(
       {required BuildContext context, required String description}) {
     PulpFlash.of(context).showMessage(
       context,
@@ -29,7 +29,7 @@ mixin FlashMessage {
     );
   }
 
-  void showUploadLimitExceededMassage(
+  void showUploadLimitExceededMessage(
       {required BuildContext context}) {
     PulpFlash.of(context).showMessage(
       context,

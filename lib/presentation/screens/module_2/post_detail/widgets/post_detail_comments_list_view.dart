@@ -538,7 +538,7 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
                                                                             comment.commentId!);
                                                                   }
                                                                 } else {
-                                                                  showNotSignedInMassage(
+                                                                  showNotSignedInMessage(
                                                                     context:
                                                                         context,
                                                                     description:

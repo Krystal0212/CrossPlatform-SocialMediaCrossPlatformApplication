@@ -1,7 +1,6 @@
 import 'package:socialapp/domain/entities/collection.dart';
 
 abstract class CollectionRepository {
-  Future<List<CollectionModel>?>? getCollections();
 
   Future<List<CollectionModel>> getCollectionsFromOtherUser(String uid);
 
@@ -19,4 +18,8 @@ abstract class CollectionRepository {
   Future<List<CollectionModel>> getCollectionsFromCurrentUser(String uid);
 
   Stream<List<CollectionModel>> getCollectionsFromUserRealtime(String uid);
+
+  Future<List<CollectionModel>> getCollectionsFromQuery(String query);
+
+  Future<List<CollectionModel>> getCollectionsOrderByAssets();
 }

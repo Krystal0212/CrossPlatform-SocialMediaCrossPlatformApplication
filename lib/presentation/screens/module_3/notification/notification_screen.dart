@@ -35,6 +35,61 @@ class _NotificationBaseState extends State<NotificationBase> with Methods {
   }
 
   @override
+  void dispose() {
+    context.read<NotificationCubit>().close();
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  void showNotificationDialog(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return BlocProvider(
+          create: (context) => NotificationCubit(),
+          child: AlertDialog(
+            backgroundColor: AppColors.white,
+            title: const Text('Remove Notification'),
+            content: const Text('Do you want to remove all read notifications?'),
+            actions: <Widget>[
+              BlocConsumer<NotificationCubit, NotificationState>(
+                listener: (context, state) {
+                  if (state is NotificationDeleteSuccess) {
+                    Navigator.pop(context);
+                  }
+                },
+                builder: (context, state) => AuthElevatedButton(
+                  width: double.infinity,
+                  height: 45,
+                  inputText: 'Remove',
+                  onPressed: () {
+                    context.read<NotificationCubit>().removeReadNotification();
+                  },
+                  isLoading: state is NotificationDeleting,
+                ),
+              ),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: AppTheme.authSignUpStyle.copyWith(fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
@@ -51,7 +106,11 @@ class _NotificationBaseState extends State<NotificationBase> with Methods {
             ),
             actions: [
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  showNotificationDialog(
+                    context,
+                  );
+                },
                 icon: SvgPicture.asset(
                   AppIcons.setting,
                   width: 40,
@@ -90,6 +149,7 @@ class _NotificationBaseState extends State<NotificationBase> with Methods {
                   }
 
                   List<NotificationModel> notifications = snapshot.data!;
+                  Map<String, bool> isReadMap = {};
 
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -147,8 +207,9 @@ class NotificationTile extends StatelessWidget with Methods {
   final String avatarUrl;
   final String username;
   final NotificationModel notification;
+  late bool _isProcessing = false;
 
-  const NotificationTile({
+  NotificationTile({
     super.key,
     required this.avatarUrl,
     required this.username,
@@ -194,19 +255,59 @@ class NotificationTile extends StatelessWidget with Methods {
   }
 
   void handleTap(BuildContext context) async {
+    if (_isProcessing) return; // Prevent multiple taps
+    _isProcessing = true;
+    UserModel currentUser =
+        (await serviceLocator.get<UserRepository>().getCurrentUserData())!;
+
+    context
+        .read<NotificationCubit>()
+        .addNotificationReadStatus(notification.id);
+
     if (notification.type == "like" ||
         notification.type == "commentReply" ||
         notification.type == "comment" ||
         notification.type == "commentLike") {
-      OnlinePostModel post = await serviceLocator.get<PostRepository>().getDataFromPostId(notification.postId!);
-      UserModel currentUser = (await serviceLocator.get<UserRepository>().getCurrentUserData())!;
+      OnlinePostModel post = await serviceLocator
+          .get<PostRepository>()
+          .getDataFromPostId(notification.postId!);
 
       Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) =>  PostDetailScreen(
+          builder: (context) => PostDetailScreen(
                 post: post,
                 currentUser: currentUser,
+                searchController: TextEditingController(),
               )));
     }
+
+    if (notification.type == "textMessage" ||
+        notification.type == "singleImageMessage" ||
+        notification.type == "multipleImageMessage") {
+      ChatService chatService = ChatServiceImpl();
+      DocumentReference otherUserRef = notification.fromUserRef;
+      UserModel otherUser = await context
+          .read<NotificationCubit>()
+          .getUserDataFromUserRef(otherUserRef);
+      String otherUserAvatar = otherUser.avatar;
+      String otherUserName = otherUser.name;
+      bool isUser1 = await chatService.checkIsUser1(otherUserRef.id);
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ChatPage(
+            isUser1: isUser1,
+            receiverUserEmail: otherUserName,
+            receiverUserID: otherUserRef.id,
+            receiverAvatar: otherUserAvatar,
+            currentUser: currentUser,
+          ),
+        ),
+      );
+    }
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _isProcessing = false;
+    });
   }
 
   @override
@@ -221,7 +322,9 @@ class NotificationTile extends StatelessWidget with Methods {
         child: InkWell(
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
-          onTap: () { handleTap(context);},
+          onTap: () {
+            handleTap(context);
+          },
           borderRadius: BorderRadius.circular(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

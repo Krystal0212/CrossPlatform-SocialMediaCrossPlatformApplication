@@ -78,6 +78,8 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController searchController = HomePropertiesProvider.of(context)!.searchController;
+
     return Padding(
       padding: AppTheme.postHorizontalPaddingEdgeInsets,
       child: Row(
@@ -90,7 +92,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
               if (currentUser?.id?.isNotEmpty ?? false) {
                 showCollectionPicker(context, currentUser!.id!);
               } else {
-                showNotSignedInMassage(
+                showNotSignedInMessage(
                     context: context,
                     description: AppStrings.notSignedInCollectionDescription);
               }
@@ -105,9 +107,13 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
                 icon: SvgPicture.asset(AppIcons.chat, width: customIconSize, height: customIconSize),
                 onPressed: () {
                   if (currentUser?.id?.isNotEmpty ?? false) {
-
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(
+                          post: widget.post,
+                          currentUser: currentUser!, searchController: searchController,
+                        )));
                   } else {
-                    showNotSignedInMassage(
+                    showNotSignedInMessage(
                         context: context,
                         description: AppStrings.notSignedInMessageDescription);
                   }
@@ -138,7 +144,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
                         if (currentUser?.id?.isNotEmpty ?? false) {
                           toggleLike();
                         } else {
-                          showNotSignedInMassage(
+                          showNotSignedInMessage(
                               context: context,
                               description:
                                   AppStrings.notSignedInLikedDescription);

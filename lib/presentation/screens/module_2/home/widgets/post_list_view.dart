@@ -202,7 +202,7 @@ class _PostListViewState extends State<PostListView>
                           _stopViewTimer( postDetail.postId);
                         }
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                           child: Container(
                             padding: AppTheme.homeListPostPaddingEdgeInsets(
                               isCompactView ? smallHorizontalPadding : horizontalPadding,
@@ -211,6 +211,12 @@ class _PostListViewState extends State<PostListView>
                               decoration: BoxDecoration(
                                 color: AppColors.white,
                                 borderRadius: BorderRadius.circular(16),
+                                boxShadow: [BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                )]
                               ),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,

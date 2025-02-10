@@ -60,6 +60,7 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
   @override
   Widget build(BuildContext context) {
     UserModel? currentUser = HomePropertiesProvider.of(context)?.currentUser;
+    TextEditingController searchController = HomePropertiesProvider.of(context)!.searchController;
     if (currentUser != null) {
       isNSFWFilterTurnOn = currentUser.isNSFWFilterTurnOn;
     }
@@ -76,10 +77,10 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => PostDetailScreen(
                       post: widget.post,
-                      currentUser: user,
+                      currentUser: user, searchController: searchController,
                     )));
               } else {
-                showNotSignedInMassage(
+                showNotSignedInMessage(
                     context: context,
                     description:
                     AppStrings.notSignedInCollectionDescription);
@@ -107,11 +108,12 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
             if (user != null) {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => PostDetailScreen(
+                    searchController: searchController,
                     post: widget.post,
                     currentUser: user,
                   )));
             } else {
-              showNotSignedInMassage(
+              showNotSignedInMessage(
                   context: context,
                   description:
                   AppStrings.notSignedInCollectionDescription);
@@ -120,7 +122,7 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
           child: Container(
             constraints: theAsset.width / theAsset.height > 1
                 ? BoxConstraints(maxWidth: deviceWidth)
-                : null,
+                : BoxConstraints(maxHeight: deviceHeight*0.3),
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: (theAsset.type == 'video')
@@ -136,12 +138,13 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
                         ),
                       )
                     : ImageDisplayerWidget(
+
                         width: theAsset.width,
                         height: theAsset.height,
                         imageUrl: theAsset.imageUrl,
                         isVideo: false,
                         isNSFWAllowed: isNSFWAllowed,
-                        dominantColor: dominantColor,
+                        dominantColor: dominantColor, videoUrl: null,
                       )),
           ),
         );
@@ -170,10 +173,10 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => PostDetailScreen(
                           post: widget.post,
-                          currentUser: user,
+                          currentUser: user, searchController: searchController,
                         )));
                   } else {
-                    showNotSignedInMassage(
+                    showNotSignedInMessage(
                         context: context,
                         description:
                         AppStrings.notSignedInCollectionDescription);
@@ -195,6 +198,7 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
                                   Color(int.parse('0x${media.dominantColor}')),
                             )
                           : ImageDisplayerWidget(
+                        videoUrl: null,
                               width: media.width,
                               height: media.height,
                               imageUrl: media.imageUrl,

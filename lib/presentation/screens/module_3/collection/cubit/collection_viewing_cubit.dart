@@ -18,9 +18,11 @@ class CollectionViewingCubit extends Cubit<CollectionViewingState> {
       isCurrentUser = true;
     }
 
+    bool isNSFWTurnOn = currentUser?.isNSFWFilterTurnOn ?? false;
+
     List<PreviewAssetPostModel> imagePreviews = collection.assets;
 
-    emit(CollectionViewingLoaded(imagePreviews, isCurrentUser));
+    emit(CollectionViewingLoaded(imagePreviews, isCurrentUser, isNSFWTurnOn));
   }
 
   void updateCollectionName(String title) async {

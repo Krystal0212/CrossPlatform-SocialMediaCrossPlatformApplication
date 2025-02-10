@@ -65,6 +65,11 @@ class _HomeScreenState extends State<MobileHomeBase>
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this);
+    tabController.addListener(() {
+      if(isSearchHiddenNotifier.value && !tabController.indexIsChanging) {
+        previousIndex = tabController.index;
+      }
+    });
     FlutterNativeSplash.remove();
   }
 
@@ -139,6 +144,7 @@ class _HomeScreenState extends State<MobileHomeBase>
           builder: (context, value, _) {
             return HomePropertiesProvider(
               homeProperties: HomeProperties(
+                isSearchHiddenNotifier: isSearchHiddenNotifier,
                   currentUserNotifier: currentUserNotifier,
                   currentUser: currentUserNotifier.value,
                   listBodyWidth: listBodyWidth,
@@ -166,7 +172,6 @@ class _HomeScreenState extends State<MobileHomeBase>
                               if (text.isNotEmpty) {
                                 isSearchHiddenNotifier.value = false;
                                 context.read<SearchCubit>().searchPosts(text);
-                                previousIndex = tabController.index;
                                 tabController
                                     .animateTo(2); // Switch to Search Tab
                               } else {

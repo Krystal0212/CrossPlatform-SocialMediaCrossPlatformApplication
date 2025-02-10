@@ -70,7 +70,6 @@ dependencies:
   universal_html: ^2.2.4
   flutter_sound: ^9.17.8
   video_player: ^2.9.2
-  pytorch_lite: ^4.3.1+1
   url_strategy: ^0.3.0
   image_size_getter: ^2.3.0+1
   shimmer: ^3.0.0
@@ -86,6 +85,7 @@ dependencies:
   rxdart: ^0.28.0
   dropdown_button2: ^2.3.9
   inview_notifier_list: ^3.0.0
+  camera_web: ^0.3.4+1
 
 
 dependency_overrides:
@@ -118,7 +118,6 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/images/logos/
-    - assets/models/nsfw-model.pt
     - assets/labels/labels_nsfw.txt
 
   # An image asset can refer to one or more resolution-specific "variants", see

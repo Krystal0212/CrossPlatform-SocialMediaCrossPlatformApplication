@@ -30,10 +30,8 @@ class AppImages {
   static const String pleaseSignIn = '${imagePath}please-sign-in$jpgFormat';
 
   static const String logo = '${imageLogoPath}default_logo_title_less$imageFormat';
-
   static const String empty = '${svgPath}empty$svgFormat';
-
   static const String noMorePosts = '${imagePath}no-more-posts$svgFormat';
 
-
+  static const String waiting = '${imagePath}waiting$jpgFormat';
 }
