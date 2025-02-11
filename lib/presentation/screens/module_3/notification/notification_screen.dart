@@ -3,10 +3,15 @@ import 'package:socialapp/utils/import.dart';
 import 'cubit/notification_cubit.dart';
 
 class NotificationScreen extends StatelessWidget {
-  const NotificationScreen({super.key});
+  final bool isSignedIn;
+
+  const NotificationScreen({super.key, required this.isSignedIn});
 
   @override
   Widget build(BuildContext context) {
+    if (!isSignedIn) {
+      return const NoUserIsSignedInPlaceholder();
+    }
     return BlocProvider(
       create: (context) => NotificationCubit(),
       child: const NotificationBase(),
@@ -55,7 +60,8 @@ class _NotificationBaseState extends State<NotificationBase> with Methods {
           child: AlertDialog(
             backgroundColor: AppColors.white,
             title: const Text('Remove Notification'),
-            content: const Text('Do you want to remove all read notifications?'),
+            content:
+                const Text('Do you want to remove all read notifications?'),
             actions: <Widget>[
               BlocConsumer<NotificationCubit, NotificationState>(
                 listener: (context, state) {

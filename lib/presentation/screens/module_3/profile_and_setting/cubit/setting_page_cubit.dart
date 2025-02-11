@@ -10,13 +10,14 @@ class SettingPartCubit extends Cubit<SettingPartState> {
   }
 
   void loadData() async {
-    currentUser =
-    await serviceLocator.get<UserService>().getCurrentUserData();
+    User? currentUser = await serviceLocator.get<AuthRepository>().getCurrentUser();
     bool isRawGoogleUser = _checkGoogleUserWithoutPassword();
 
     if(currentUser != null) {
+      UserModel? user =
+      await serviceLocator.get<UserService>().getCurrentUserData();
       emit(SettingPartLoaded(
-        isGoogleUserWithoutPassword: isRawGoogleUser, user: currentUser!));
+        isGoogleUserWithoutPassword: isRawGoogleUser, user: user!));
     }
     else {
       emit(SettingPartNotSignedIn());

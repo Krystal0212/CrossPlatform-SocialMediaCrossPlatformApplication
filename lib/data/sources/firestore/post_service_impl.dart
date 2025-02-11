@@ -119,9 +119,9 @@ class PostServiceImpl extends PostService
 
   // ToDo: Offline Service Functions
 
-  Future<List<OnlinePostModel>> _getLocalPostsData() async {
+  Future<List<OnlinePostModel>> _getLocalPostsData(String tabName) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? postStrings = prefs.getStringList('offline_posts');
+    List<String>? postStrings = prefs.getStringList('offline_${tabName}_posts');
 
     if (postStrings == null) {
       return [];
@@ -135,6 +135,16 @@ class PostServiceImpl extends PostService
 
     return posts;
   }
+
+  Future<void> _savePostsLocally(List<OnlinePostModel> posts, String tabName) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Convert list of posts to JSON string list
+    List<String> postStrings = posts.map((post) => jsonEncode(post.toMap())).toList();
+
+    await prefs.setStringList('offline_${tabName}_posts', postStrings);
+  }
+
 
 
 
@@ -154,91 +164,6 @@ class PostServiceImpl extends PostService
     }
   }
 
-  Future<List<OnlinePostModel>> _fetchPostWithSubCollections(
-      Set<int> randomIndexes) async {
-    List<OnlinePostModel> posts = [];
-
-    try {
-      DocumentReference userRef;
-      Future<DocumentSnapshot<Object?>> userData;
-      String username = '', userAvatar = '';
-      List<String> comments, likes;
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      for (int randomIndex in randomIndexes) {
-        // QuerySnapshot postsSnapshot = await _postRef
-        //     .startAtDocument(await _getDocumentAtIndex(randomIndex))
-        //     .limit(1)
-        //     .get();
-        // if (postsSnapshot.docs.isEmpty) {
-        //   throw CustomFirestoreException(
-        //       code: 'no-post-found', message: 'No post found');
-        // }
-
-        // for (QueryDocumentSnapshot document in postsSnapshot.docs) {
-        //   comments = await _fetchSubCollection(document, 'comments');
-        //   likes = await _fetchSubCollection(document, 'likes');
-        //
-        //   userRef = document['userRef'];
-        //   userData = userRef.get();
-        //
-        //   await userData.then((value) {
-        //     username = value['name'];
-        //     userAvatar = value['avatar'];
-        //   });
-        //
-        //   List<Map<String, String>> mediaOffline = [];
-
-        if (!kIsWeb) {
-          // for (var item in document['media']) {
-          //   String mediaUrl = item['url'];
-          //
-          //   String? cachedFilePath = prefs.getString(mediaUrl);
-          //
-          //   if (cachedFilePath == null ||
-          //       !File(cachedFilePath).existsSync()) {
-          //     File cachedFile = await _downloadAndSaveLocalImage(mediaUrl);
-          //     await prefs.setString(mediaUrl, cachedFile.path);
-          //     cachedFilePath = cachedFile.path;
-          //   }
-          //
-          //   mediaOffline.add({
-          //     'uri': cachedFilePath,
-          //     'dominantColor': item['dominantColor'],
-          //     'type': item['type'],
-          //   });
-          // }
-        }
-
-        // Map<String, dynamic> documentMap =
-        //     document.data() as Map<String, dynamic>;
-        //
-        // documentMap['postId'] = document.id;
-        // documentMap['username'] = username;
-        // documentMap['userAvatar'] = userAvatar;
-        // documentMap['comments'] = comments.toSet();
-        // documentMap['likes'] = likes.toSet();
-        //
-        // OnlinePostModel post = OnlinePostModel.fromMap(documentMap);
-        //
-        // posts.add(post);
-        // }
-      }
-
-      // List<String> postStrings =
-      //     posts.map((post) => jsonEncode(post.toMap())).toList();
-      // await prefs.setStringList('offline_posts', postStrings);
-
-      return posts;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching post with sub collections: $e');
-      }
-      return [];
-    }
-  }
-
   @override
   Future<List<OnlinePostModel>> getPostsData(
       {required bool isOffline, bool skipLocalFetch = false}) async {
@@ -247,7 +172,7 @@ class PostServiceImpl extends PostService
     try {
       if (isOffline && !skipLocalFetch) {
         // Fetch from local storage when offline
-        posts = await _getLocalPostsData();
+        // posts = await _getLocalPostsData();
       } else {
         // Fetch from Firestore when online
         Query<Object?> postsQuery =
@@ -268,7 +193,6 @@ class PostServiceImpl extends PostService
           randomIndexes.add(random.nextInt(count));
         }
 
-        posts = await _fetchPostWithSubCollections(randomIndexes);
       }
       return posts;
     } catch (e) {
@@ -722,6 +646,10 @@ class PostServiceImpl extends PostService
       bool skipLocalFetch = false,
       OnlinePostModel? lastFetchedPost}) async {
     try {
+      if (isOffline) {
+        return await _getLocalPostsData('following');
+      }
+
       List<QueryDocumentSnapshot<Object?>> topicPosts = [];
       List<QueryDocumentSnapshot<Object?>> followingPosts = [];
       bool isNSFWTurnOn = true;
@@ -810,6 +738,8 @@ class PostServiceImpl extends PostService
 
         posts.add(post);
       }
+
+      await _savePostsLocally(posts, 'following');
 
       return posts;
     } catch (e) {

@@ -123,7 +123,7 @@ class UserServiceImpl extends UserService {
       return UserModel.fromMap(documentMap);
     } catch (e) {
       if (kDebugMode) {
-        print('Error during fetching user data: $e');
+        print('Error during fetching user service data: $e');
       }
       return null;
     }

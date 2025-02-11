@@ -13,10 +13,12 @@ class ProfileBoxCubit extends Cubit<ProfileBoxState>
   Future<void> loadCurrentUserData() async {
     emit(ProfileBoxLoading());
     try {
-      final UserModel? userModel =
-          await serviceLocator<UserRepository>().getCurrentUserData();
-      if (userModel != null) {
-        emit(ProfileBoxLoaded(userModel));
+      final User? currentUser = await serviceLocator<AuthRepository>().getCurrentUser();
+
+      if (currentUser != null) {
+        final UserModel? userModel =
+        await serviceLocator<UserRepository>().getCurrentUserData();
+        emit(ProfileBoxLoaded(userModel!));
       } else {
         emit(ProfileBoxError("User data not found"));
       }

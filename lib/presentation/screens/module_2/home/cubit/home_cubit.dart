@@ -1,15 +1,7 @@
 import 'package:socialapp/utils/import.dart';
 import 'home_state.dart';
 
-//
-// class HomeCubit extends Cubit<HomeState> {
-//   final Connectivity connectivity = Connectivity();
-//   final Map<String, Map<String, bool>> likedPostsCache = {};
-//   Timer? _syncTimer;
-//
-//   List<PostModel> explorePosts = [];
-//   List<PostModel> trendingPosts = [];
-//   List<PostModel> followingPosts = [];
+
 //   bool isExploreFetched = false, isTrendingFetched = false, isFollowingFetched = false;
 //   UserModel? currentUser;
 //

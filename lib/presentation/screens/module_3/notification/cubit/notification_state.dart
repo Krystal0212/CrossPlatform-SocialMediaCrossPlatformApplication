@@ -6,6 +6,8 @@ class NotificationInitial extends NotificationState {}
 
 class NotificationLoading extends NotificationState {}
 
+class NotificationNotSignedIn extends NotificationState {}
+
 class NotificationLoaded extends NotificationState {
   final UserModel user;
   final Stream<List<NotificationModel>> notificationListStream;

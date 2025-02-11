@@ -50,8 +50,10 @@ class _SearchPostListViewState extends State<SearchPostListView>
 
   @override
   void didChangeDependencies() async {
-    deviceWidth = MediaQuery.of(context).size.width;
-    deviceHeight = MediaQuery.of(context).size.height;
+    final flutterView = PlatformDispatcher.instance.views.first;
+    deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    deviceHeight = flutterView.physicalSize.height;
+
     isSignedIn = HomePropertiesProvider.of(context)?.currentUser != null;
     listBodyWidth =
         HomePropertiesProvider.of(context)?.listBodyWidth ?? deviceWidth;

@@ -9,46 +9,59 @@ class CustomNavigatorBar extends StatefulWidget {
   State<CustomNavigatorBar> createState() => _CustomNavigatorBarState();
 }
 
-class _CustomNavigatorBarState extends State<CustomNavigatorBar> {
+class _CustomNavigatorBarState extends State<CustomNavigatorBar> with FlashMessage {
   int _screenIndex = 0;
+   User? user;
 
-  final List<Widget> _screens = [
-    const MobileHomeScreen(),
-    const DiscoverScreen(),
-    const NotificationScreen(),
-    const ProfileScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _initCheckSignedIn();
+  }
+
+  void _initCheckSignedIn() async {
+    user = await serviceLocator.get<AuthRepository>().getCurrentUser();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MobileNavigatorPropertiesProvider(
-      mobileNavigatorProperties: MobileNavigatorProperties(
-          navigateToCurrentUserProfile: () {
-            setState(() {
-              _screenIndex = 3;
-            });
-          },
-          navigateToHome: () {
-            setState(() {
-              _screenIndex = 0;
-            });
-          },
-          navigateToOtherUserProfile: (String userId) {
-             Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-               return UserViewingProfileScreen(userId: userId,);
-             }));
-          }),
+      mobileNavigatorProperties:
+          MobileNavigatorProperties(navigateToCurrentUserProfile: () {
+        setState(() {
+          _screenIndex = 3;
+        });
+      }, navigateToHome: () {
+        setState(() {
+          _screenIndex = 0;
+        });
+      }, navigateToOtherUserProfile: (String userId) {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return UserViewingProfileScreen(
+            userId: userId,
+          );
+        }));
+      }),
       child: Scaffold(
           backgroundColor: Colors.transparent,
           extendBody: true,
           resizeToAvoidBottomInset: false,
           body: IndexedStack(
             index: _screenIndex,
-            children: _screens,
+            children: [
+              const MobileHomeScreen(),
+              const DiscoverScreen(),
+              NotificationScreen(isSignedIn: user != null),
+              ProfileScreen(isSignedIn:user != null),
+            ],
           ),
           floatingActionButton: FloatingActionButton(
             backgroundColor: AppColors.lavenderBlueShadow,
             onPressed: () {
+              if (user == null) {
+                showNotSignedInMessage(context: context, description: '');
+                return;
+              }
               Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                 return NewPostScreen(
                   parentContext: context,

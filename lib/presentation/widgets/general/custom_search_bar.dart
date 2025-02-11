@@ -23,50 +23,46 @@ class CustomSearchBar extends StatefulWidget {
 
 class _CustomSearchBarState extends State<CustomSearchBar> {
   late TextEditingController searchController;
-  late double deviceWidth, searchBarWidth;
-
-  Timer? _debounceTimer; // Timer for debounce
+  late double searchBarWidth;
+  Timer? _debounceTimer;
+  String? _previousQuery; // Track the last searched text
 
   @override
   void initState() {
     super.initState();
     searchController = widget.controller ?? TextEditingController();
     searchController.addListener(_onSearchTextChanged);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    deviceWidth = MediaQuery.of(context).size.width;
     searchBarWidth = widget.searchBarWidth;
   }
 
   @override
   void dispose() {
     searchController.removeListener(_onSearchTextChanged);
-    if(widget.controller == null) {
+    if (widget.controller == null) {
       searchController.dispose();
     }
-    _debounceTimer?.cancel(); // Cancel any active debounce timer
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
-  // Debounce logic for search text changes
   void _onSearchTextChanged() {
-    final query = searchController.text;
+    final query = searchController.text.trim();
 
-    // Cancel any existing debounce timer
+    // Check if the query is the same as before
+    if (_previousQuery == query) {
+      return; // Do nothing if the text hasn't changed
+    }
+
+    _previousQuery = query; // Update previous query
+
     if (_debounceTimer?.isActive ?? false) {
       _debounceTimer?.cancel();
     }
 
-    // Start a new debounce timer
     _debounceTimer = Timer(widget.debounceDuration, () {
-      widget.onSearchDebounce(query); // Trigger the search callback
+      widget.onSearchDebounce(query);
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,10 +75,12 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           controller: searchController,
           decoration: InputDecoration(
             labelText: widget.label ?? 'Search',
-              labelStyle: AppTheme.blackUsernameMobileStyle.copyWith(color: AppColors.trolleyGrey),
-              contentPadding: EdgeInsets.only(
-                bottom: widget.searchBarHeight / 2,  // HERE THE IMPORTANT PART
-              ),
+            labelStyle: AppTheme.blackUsernameMobileStyle.copyWith(
+              color: AppColors.trolleyGrey,
+            ),
+            contentPadding: EdgeInsets.only(
+              bottom: widget.searchBarHeight / 2,
+            ),
             prefixIcon: Padding(
               padding: const EdgeInsets.all(8.0),
               child: SvgPicture.asset(

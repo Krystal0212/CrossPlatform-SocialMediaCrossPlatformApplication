@@ -39,7 +39,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Error fetching profile: $e");
+        print("Error fetching profile for profile page: $e");
       }
     }
   }

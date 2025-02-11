@@ -16,7 +16,6 @@ Future<void> initializeDependencies() async {
   serviceLocator.registerSingleton<TopicRepository>(TopicRepositoryImpl());
 
   serviceLocator.registerSingleton<DeepLinkService>(DeepLinkServiceImpl());
-  serviceLocator.registerSingleton<DeepLinkRepository>(DeepLinkRepositoryImpl());
 
   serviceLocator.registerSingleton<CollectionService>(CollectionServiceImpl());
   serviceLocator.registerSingleton<CollectionRepository>(CollectionRepositoryImpl());

@@ -37,23 +37,20 @@ mixin Validator {
   }
 
   String? validatePassword(String value) {
-    final hasUppercase = RegExp(r'[A-Z]').hasMatch(value);
-    final hasDigits = RegExp(r'[0-9]').hasMatch(value);
-    final hasSpecialCharacters =
-        RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value);
-
-    if (validateEmpty(value)) {
-      return "Please enter a your password";
-    } else if (value.length < 6) {
-      return "Password must have more than 6 symbols";
-    } else if (!hasUppercase) {
-      return "Password has at least one capital letter";
-    } else if (!hasDigits) {
-      return "Password has at least one digit";
-    } else if (!hasSpecialCharacters) {
-      return "Password must have at least one special character";
+    if (value.isEmpty) {
+      return 'Password cannot be empty';
+    } else if (value.length < 8) {
+      return 'Password must be at least 8 characters long';
+    } else if (!RegExp(r'[A-Z]').hasMatch(value)) {
+      return 'Password must contain at least one uppercase letter (A-Z)';
+    } else if (!RegExp(r'[a-z]').hasMatch(value)) {
+      return 'Password must contain at least one lowercase letter (a-z)';
+    } else if (!RegExp(r'[0-9]').hasMatch(value)) {
+      return 'Password must contain at least one digit (0-9)';
+    } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+      return 'Password must contain at least one special character (!@#\$%^&*)';
     }
-    return null;
+    return null; // Password is valid
   }
 
   String? validateConfirmPassword(String password, String confirmPassword) {

@@ -51,6 +51,7 @@ abstract class TabCubit extends Cubit<TabState> {
 class ExploreCubit extends TabCubit {
   bool noMorePosts = false;
   List<OnlinePostModel>? lastFetchedModels;
+  bool isExploreOfflineFetched = false;
 
   ExploreCubit(super.postRepository, super.homeCubit, super.viewMode);
 
@@ -100,8 +101,9 @@ class ExploreCubit extends TabCubit {
 class TrendingCubit extends TabCubit {
   List<OnlinePostModel>? lastFetchedModels;
   bool noMorePosts = false;
+  bool isTrendingOfflineFetched = false;
 
-  TrendingCubit(super.postRepository, super.homeCubit, super.viewMode);
+  TrendingCubit(super.postRepository, super.homeCubit, super.viewMode, );
 
   @override
   Future<void> initialLoadPosts({required bool isOffline}) async {
@@ -147,6 +149,7 @@ class TrendingCubit extends TabCubit {
 class FollowingCubit extends TabCubit {
   OnlinePostModel? lastFetchedPost;
   bool noMorePosts = false;
+  bool isFollowingOfflineFetched = false;
 
   FollowingCubit(super.postRepository, super.homeCubit, super.viewMode);
 
@@ -155,7 +158,7 @@ class FollowingCubit extends TabCubit {
     emit(TabLoading());
     try {
       final List<OnlinePostModel> posts =
-          await postRepository.getFollowingPostsData();
+          await postRepository.getFollowingPostsData(isOffline: isOffline);
       lastFetchedPost = posts.last;
       if (isClosed) return;
       emit(TabLoaded(posts));

@@ -76,7 +76,6 @@ export 'package:socialapp/data/repository/post/post_repository_impl.dart';
 export 'package:socialapp/data/repository/topic/topic_repository_impl.dart';
 export 'package:socialapp/data/repository/auth/auth_repository_impl.dart';
 export 'package:socialapp/data/repository/user/user_repository_impl.dart';
-export 'package:socialapp/data/repository/deep_link/deep_link_repository_impl.dart';
 export 'package:socialapp/data/repository/post/comment_repository_impl.dart';
 
 export 'package:socialapp/data/sources/auth/auth_firebase_service.dart';

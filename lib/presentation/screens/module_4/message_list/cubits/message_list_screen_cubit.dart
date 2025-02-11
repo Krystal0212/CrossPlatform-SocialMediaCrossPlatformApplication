@@ -15,17 +15,20 @@ class MessageListScreenCubit extends Cubit<MessageListScreenState> {
 
   Future<void> fetchUserData() async {
     try {
-      final UserModel? userModel =
-      await serviceLocator<UserRepository>().getCurrentUserData();
+      User? currentUser = await serviceLocator<AuthRepository>().getCurrentUser();
 
-      if (userModel != null) {
-        emit(MessageListScreenLoaded(userModel));
+      if (currentUser != null) {
+        final UserModel? userModel =
+        await serviceLocator<UserRepository>().getCurrentUserData();
+        emit(MessageListScreenLoaded(userModel!));
       } else {
         throw "User data not found";
       }
     } catch (e) {
+
+
       if (kDebugMode) {
-        print("Error fetching profile: $e");
+        print("Error fetching profile for message list page: $e");
       }
       emit(MessageListScreenError());
     }

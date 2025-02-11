@@ -64,8 +64,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }
 
       bool isGoogleUser = user.providerData.any(
-              (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID);
-
+          (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID);
 
       if (!user.emailVerified && !isGoogleUser) {
         throw FirebaseAuthException(
@@ -202,7 +201,8 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     }
   }
 
-  Future<void> sendVerificationEmail(String recipientEmail, String accessToken) async {
+  Future<void> sendVerificationEmail(
+      String recipientEmail, String accessToken) async {
     final Uri url =
         Uri.parse('https://api-m2ogw2ba2a-uc.a.run.app/sendEmailWithOTP');
     final String otpCode = generateOtp();
@@ -379,11 +379,12 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   }
 
   @override
-  Future<String> verifyResetPasswordRequestByOTPLink(String encryptedLink) async {
+  Future<String> verifyResetPasswordRequestByOTPLink(
+      String encryptedLink) async {
     final url = Uri.parse(
         'https://api-m2ogw2ba2a-uc.a.run.app/verifyResetPasswordLink');
     try {
-      final response = await get(url.replace(queryParameters: {
+      final response = await post(url.replace(queryParameters: {
         'encryptedLink': encryptedLink.trim(),
       }));
 
@@ -412,7 +413,14 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
 
   @override
   User? getCurrentUser() {
-    return _auth.currentUser;
+    try {
+      return _auth.currentUser;
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error getting current user auth: $error');
+      }
+      throw 'user-data-not-found';
+    }
   }
 
   @override
@@ -497,11 +505,11 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     if (user == null) return false; // No user is signed in
 
     bool signedInWithGoogle = user.providerData.any(
-          (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID,
+      (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID,
     );
 
     bool hasPassword = user.providerData.any(
-          (provider) => provider.providerId == EmailAuthProvider.PROVIDER_ID,
+      (provider) => provider.providerId == EmailAuthProvider.PROVIDER_ID,
     );
 
     return signedInWithGoogle && !hasPassword;
@@ -520,7 +528,7 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }
 
       return isGoogleUserWithoutPassword(user);
-    } catch (error){
+    } catch (error) {
       if (kDebugMode) {
         print('Error during checking google user without password: $error');
       }
@@ -564,9 +572,9 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
     }
   }
 
-
   @override
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(
+      String currentPassword, String newPassword) async {
     try {
       User? user = _auth.currentUser;
       if (user == null) {
@@ -594,5 +602,4 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       throw Exception('Failed to change password: ${e.message}');
     }
   }
-
 }

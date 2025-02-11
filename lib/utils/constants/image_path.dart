@@ -34,4 +34,5 @@ class AppImages {
   static const String noMorePosts = '${imagePath}no-more-posts$svgFormat';
 
   static const String waiting = '${imagePath}waiting$jpgFormat';
+  static const String notSignInNotAllow = '${imagePath}not-sign-in-not-allow$jpgFormat';
 }

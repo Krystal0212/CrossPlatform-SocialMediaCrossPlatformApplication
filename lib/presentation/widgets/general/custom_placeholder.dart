@@ -437,3 +437,47 @@ class GettingDataPlaceholder extends StatelessWidget {
     );
   }
 }
+
+class NoUserIsSignedInPlaceholder extends StatelessWidget {
+
+  const NoUserIsSignedInPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final flutterView = PlatformDispatcher.instance.views.first;
+    double deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    double deviceHeight = flutterView.physicalSize.height / flutterView.devicePixelRatio;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:deviceWidth*0.1 , right: deviceWidth*0.1),
+      width: deviceWidth,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(AppImages.notSignInNotAllow, height: deviceWidth*0.5,),
+            SizedBox(height: deviceHeight*0.05,),
+            Text(
+              'Oh no!!!\nYou are only allowed to see this page when you are signed in',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: deviceHeight*0.05,),
+            AuthElevatedButton(
+              width: deviceWidth,
+              height: 45,
+              inputText: "GO TO SIGN IN",
+              onPressed: () {
+                context.go('/sign-in');
+              }, isLoading: false,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

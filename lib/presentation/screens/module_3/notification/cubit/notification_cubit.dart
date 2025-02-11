@@ -22,23 +22,31 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   Future<void> fetchUserData() async {
     try {
-      final UserModel? userModel =
-          await serviceLocator<UserRepository>().getCurrentUserData();
+      final User? currentUser = await serviceLocator<AuthRepository>().getCurrentUser();
 
-      Stream<List<NotificationModel>> notificationSnapshot =
-          _notificationService.getNotificationStreamOfCurrentUser();
 
-      if (userModel != null) {
+      if (currentUser != null) {
+        final UserModel? userModel =
+        await serviceLocator<UserRepository>().getCurrentUserData();
+
+        Stream<List<NotificationModel>> notificationSnapshot =
+        _notificationService.getNotificationStreamOfCurrentUser();
+
         _startPeriodicSync();
         _listenToConnectivity();
 
-        emit(NotificationLoaded(userModel, notificationSnapshot));
+        emit(NotificationLoaded(userModel!, notificationSnapshot));
       } else {
-        throw "User data not found";
+        throw "user-data-not-found";
       }
-    } catch (e) {
+    } catch (error) {
+      if(error == "user-data-not-found"){
+        emit(NotificationNotSignedIn());
+        return;
+      }
+
       if (kDebugMode) {
-        print("Error fetching profile: $e");
+        print("Error fetching profile: $error");
       }
       emit(NotificationError());
     }
