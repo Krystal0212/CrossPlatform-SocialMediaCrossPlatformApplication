@@ -5,10 +5,15 @@ import '../../mobile_navigator/providers/mobile_navigator_provider.dart';
 import '../cubit/home_cubit.dart';
 
 class PostHeader extends StatefulWidget {
-  const PostHeader({super.key, required this.post, required this.onDeletePost});
+  const PostHeader(
+      {super.key,
+      required this.post,
+      required this.onDeletePost,
+      required this.postWidth});
 
   final OnlinePostModel post;
   final Function(String) onDeletePost;
+  final double postWidth;
 
   @override
   State<PostHeader> createState() => _PostHeaderState();
@@ -118,6 +123,28 @@ class _PostHeaderState extends State<PostHeader> with Methods, FlashMessage {
                 title: const Text("Go to the post detail"),
                 onTap: () {
                   Navigator.of(dialogContext).pop();
+                  if (kIsWeb) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        insetPadding: const EdgeInsets.all(16),
+                        // Add padding around dialog
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width *
+                              0.3, // Adjust dialog width
+                          height: MediaQuery.of(context).size.height *
+                              0.9, // Adjust dialog height
+                          child: PostDetailScreen(
+                            post: widget.post,
+                            currentUser: currentUser,
+                            searchController: searchController,
+                          ),
+                        ),
+                      ),
+                    );
+
+                    return;
+                  }
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => PostDetailScreen(
                             post: widget.post,
