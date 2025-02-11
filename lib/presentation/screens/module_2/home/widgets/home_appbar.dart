@@ -230,6 +230,13 @@ class HomeAppBarSegmentedTabControl extends StatelessWidget {
                   color: AppColors.bneiBrakBay,
                   backgroundColor: AppColors.bneiBrakBay.withOpacity(0.1),
                 ),
+                SegmentTab(
+                  label: 'Trending',
+                  color: AppColors.officeNeonLight,
+                  backgroundColor: AppColors
+                      .officeNeonLight
+                      .withOpacity(0.1),
+                ),
                 isHidden
                     ? SegmentTab(
                   label: 'Following',
