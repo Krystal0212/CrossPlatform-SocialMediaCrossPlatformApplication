@@ -87,6 +87,12 @@ dependencies:
   inview_notifier_list: ^3.0.0
   camera_web: ^0.3.4+1
 
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/images/logos/default_logo_title_less.png"
+  adaptive_icon_foreground: "assets/images/logos/default_logo_title_less.png"  # Optional for Android Adaptive Icons
+  adaptive_icon_background: "#ffffff"  # Set background color for Android Adaptive Icons
+
 
 dependency_overrides:
   http: ^0.13.1
@@ -101,6 +107,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  flutter_launcher_icons:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

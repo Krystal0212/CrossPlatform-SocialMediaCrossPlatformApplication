@@ -221,7 +221,7 @@ class _PostListViewState extends State<PostListView>
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  PostHeader(post: postDetail, onDeletePost: removePostFromList,),
+                                  PostHeader(post: postDetail, postWidth:  postWidth, onDeletePost: removePostFromList,),
                                   PostAsset(
                                     post: postDetail,
                                     postWidth: postWidth,

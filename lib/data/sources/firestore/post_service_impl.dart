@@ -739,7 +739,7 @@ class PostServiceImpl extends PostService
         posts.add(post);
       }
 
-      await _savePostsLocally(posts, 'following');
+      // await _savePostsLocally(posts, 'following');
 
       return posts;
     } catch (e) {
