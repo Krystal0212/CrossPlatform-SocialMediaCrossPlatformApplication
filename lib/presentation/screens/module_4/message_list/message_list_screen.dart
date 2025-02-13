@@ -1,10 +1,10 @@
 import 'package:socialapp/utils/import.dart';
-import 'package:intl/intl.dart';
 
 import '../add_contact/add_contact_screen.dart';
 import 'cubits/message_list_screen_cubit.dart';
 import 'cubits/message_list_screen_state.dart';
 import 'providers/user_data_properties.dart';
+import 'widgets/chat_room_title.dart';
 import 'widgets/waiting_messages_screen.dart';
 
 class MessageListScreen extends StatelessWidget {
@@ -37,9 +37,31 @@ class _MessageListBaseState extends State<MessageListBase> {
     deviceHeight = flutterView.physicalSize.height;
   }
 
-  @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
+  Future<bool> _showDeleteDialog() async {
+    bool shouldDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete this chat room?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Return false on cancel
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Return true on delete
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldDelete; // Default to false if the dialog is closed unexpectedly
   }
 
   @override
@@ -100,9 +122,7 @@ class _MessageListBaseState extends State<MessageListBase> {
               padding: const EdgeInsets.only(
                   left: 30, right: 30, top: 35, bottom: 10),
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: context
-                    .read<MessageListScreenCubit>()
-                    .getContactList(),
+                stream: context.read<MessageListScreenCubit>().getContactList(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting ||
                       (snapshot.hasData && currentUser.id == null)) {
@@ -111,7 +131,8 @@ class _MessageListBaseState extends State<MessageListBase> {
                       color: AppColors.iris,
                     ));
                   } else if (snapshot.hasData && snapshot.data != null) {
-                    final List<Map<String, dynamic>> chatRoomList = snapshot.data!;
+                    final List<Map<String, dynamic>> chatRoomList =
+                        snapshot.data!;
                     if (chatRoomList.isNotEmpty) {
                       final List<Map<String, dynamic>> strangers = chatRoomList
                           .where((chatRoom) => chatRoom['isStranger'] == true)
@@ -120,7 +141,6 @@ class _MessageListBaseState extends State<MessageListBase> {
                       final List<Map<String, dynamic>> contacts = chatRoomList
                           .where((chatRoom) => chatRoom['isStranger'] == false)
                           .toList();
-
 
                       return SingleChildScrollView(
                         child: Column(
@@ -134,18 +154,44 @@ class _MessageListBaseState extends State<MessageListBase> {
                             ...contacts.map((contact) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 15),
-                                child: ChatRoomTile(
-                                  currentUser: currentUser,
-                                  chatRoomData: contact['chatRoomData'],
-                                  currentUserId: currentUser.id!,
-                                  index: contacts.indexOf(contact),
+                                child: Dismissible(
+                                  key: Key(contact['chatRoomData']['id']),
+                                  // Ensure each item is unique
+                                  direction: DismissDirection.endToStart,
+                                    confirmDismiss: (direction) async {
+                                      bool shouldDelete = await _showDeleteDialog();
+                                      return shouldDelete;
+                                    },
+                                  background: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: AppColors.sangoRed,
+                                    ),
+                                    child: const Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Icon(
+                                          Icons.delete,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  child: ChatRoomTile(
+                                    currentUser: currentUser,
+                                    isWaiting: false,
+                                    chatRoomData: contact['chatRoomData'],
+                                    currentUserId: currentUser.id!,
+                                    index: contacts.indexOf(contact),
+                                  ),
                                 ),
                               );
+                              ;
                             }),
                           ],
                         ),
                       );
-
                     } else {
                       return NoContactsAvailablePlaceholder(
                         width: deviceWidth,
@@ -163,203 +209,5 @@ class _MessageListBaseState extends State<MessageListBase> {
       }
       return const SizedBox.shrink();
     });
-  }
-}
-
-class ChatRoomTile extends StatelessWidget {
-  final Map<String, dynamic> chatRoomData;
-  final String currentUserId;
-  final UserModel currentUser;
-  final int index;
-  final ChatService _chatService = ChatServiceImpl();
-
-  ChatRoomTile({
-    super.key,
-    required this.chatRoomData,
-    required this.currentUserId,
-    required this.currentUser,
-    required this.index,
-  });
-
-  String formatTime(Timestamp timestamp) {
-    DateTime dateTime = timestamp.toDate();
-    DateTime now = DateTime.now();
-
-    if (DateFormat('yyyyMMdd').format(dateTime) ==
-        DateFormat('yyyyMMdd').format(now)) {
-      return "Today at ${DateFormat('HH:mm').format(dateTime)}";
-    } else if (DateFormat('yyyyMMdd').format(dateTime) ==
-        DateFormat('yyyyMMdd').format(now.subtract(const Duration(days: 1)))) {
-      return "Yesterday at ${DateFormat('HH:mm').format(dateTime)}";
-    } else {
-      return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Create a reference to the current user
-    final currentUserRef =
-        FirebaseFirestore.instance.doc('/User/$currentUserId');
-    String chatRoomId = chatRoomData['id'];
-    bool isUser1 = chatRoomData['user1Ref'] == currentUserRef;
-    // Determine the other user based on stored references
-    DocumentReference otherUserRef =
-        isUser1 ? chatRoomData['user2Ref'] : chatRoomData['user1Ref'];
-
-    // First, fetch the other user’s details
-    return FutureBuilder<DocumentSnapshot>(
-      future: otherUserRef.get(),
-      builder: (context, userSnapshot) {
-        if (userSnapshot.connectionState == ConnectionState.waiting) {
-          return const ListTile(
-            leading: CircularProgressIndicator(color: AppColors.iris),
-            title: Text("Loading..."),
-          );
-        }
-        if (userSnapshot.hasError || !userSnapshot.hasData) {
-          return const ListTile(
-            title: Text("Error loading user info"),
-          );
-        }
-        final otherUserSnapshot = userSnapshot.data!;
-        String otherUserName = otherUserSnapshot['name'];
-        String otherUserAvatar = otherUserSnapshot['avatar'];
-
-        // Now that we have user info, listen to the most recent message
-        return StreamBuilder<QuerySnapshot>(
-          stream: _chatService.getMessagesStream(chatRoomId),
-          builder: (context, messageSnapshot) {
-            if (messageSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                  child: CircularProgressIndicator(color: AppColors.iris));
-            }
-            if (messageSnapshot.hasError) {
-              return const ListTile(
-                title: Text("Error loading messages"),
-              );
-            }
-            final docs = messageSnapshot.data?.docs;
-            final message =
-                (docs != null && docs.isNotEmpty) ? docs.first : null;
-            String recentMessage = message?['message'] ?? "No messages yet";
-            String recentTime =
-                message != null ? formatTime(message['timestamp']) : "";
-            bool isImageMessage = message?['media'] != null;
-            bool isFromUser1 = message?['isFromUser1'] ?? false;
-
-            // Build the final chat room list tile with all gathered data
-            return ChatRoomListTile(
-              otherUserName: otherUserName,
-              otherUserAvatar: otherUserAvatar,
-              recentMessage: recentMessage,
-              recentTime: recentTime,
-              isImageMessage: isImageMessage,
-              isFromUser1: isFromUser1,
-              currentUserId: currentUserId,
-              chatRoomId: chatRoomId,
-              otherUserRef: otherUserRef,
-              isUser1: isUser1,
-              index: index,
-              currentUser: currentUser,
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class ChatRoomListTile extends StatelessWidget {
-  final String otherUserName;
-  final String otherUserAvatar;
-  final String recentMessage;
-  final String recentTime;
-  final bool isImageMessage;
-  final bool isFromUser1;
-  final String currentUserId;
-  final String chatRoomId;
-  final DocumentReference otherUserRef;
-  final bool isUser1;
-  final int index;
-  final UserModel currentUser;
-
-  const ChatRoomListTile({
-    super.key,
-    required this.otherUserName,
-    required this.otherUserAvatar,
-    required this.recentMessage,
-    required this.recentTime,
-    required this.isImageMessage,
-    required this.isFromUser1,
-    required this.currentUserId,
-    required this.chatRoomId,
-    required this.otherUserRef,
-    required this.isUser1,
-    required this.index,
-    required this.currentUser,
-  });
-
-  @override
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: index.isOdd
-            ? AppColors.iris.withOpacity(0.1)
-            : AppColors.trolleyGrey.withOpacity(0.1), // Check index
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 40, // Set the radius for a circular avatar
-          backgroundColor: AppColors.iris,
-          backgroundImage: CachedNetworkImageProvider(
-              otherUserAvatar), // Use CachedNetworkImageProvider directly
-        ),
-        title: Text(otherUserName,
-            style: AppTheme.blackUsernameMobileStyle
-                .copyWith(fontWeight: FontWeight.w700)),
-        subtitle: Row(
-          children: [
-            Expanded(
-              child: Text(
-                isImageMessage
-                    ? (isFromUser1 == isUser1
-                        ? "You: Sent a picture"
-                        : "Sent you a picture")
-                    : (isFromUser1 == isUser1
-                        ? "You: $recentMessage"
-                        : recentMessage),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTheme.blackUsernameMobileStyle.copyWith(
-                  fontSize: 16,
-                  color: AppColors.trolleyGrey,
-                ),
-              ),
-            ),
-            if (recentTime.isNotEmpty)
-              Text(
-                " · $recentTime",
-                style: const TextStyle(fontSize: 14),
-              ),
-          ],
-        ),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatPage(
-              isUser1: isUser1,
-              receiverUserEmail: otherUserName,
-              receiverUserID: otherUserRef.id,
-              receiverAvatar: otherUserAvatar,
-              currentUser: currentUser,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

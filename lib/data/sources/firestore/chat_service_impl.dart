@@ -29,7 +29,6 @@ abstract class ChatService {
   Future<List<UserModel>> findingUserList(String userTagNameToFind);
 
   Future<bool> checkIsUser1(String otherUserId);
-
 }
 
 class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
@@ -54,7 +53,6 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   CollectionReference _usersFollowingsRef(String uid) {
     return _usersRef.doc(uid).collection('followings');
   }
-
 
   // ToDo: Service Functions
   String _getChatRoomId(String userId, String otherUserId) {
@@ -87,16 +85,26 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
           'interacts': FieldValue.arrayUnion([user1Ref]),
         });
 
-        DocumentSnapshot  followingRef = await _usersFollowingsRef(currentUserId).doc(receiverId).get();
+        DocumentSnapshot followingRef =
+            await _usersFollowingsRef(currentUserId).doc(receiverId).get();
 
         bool isFollowing = followingRef.exists;
 
-        if(!isFollowing) {
+        if (!isFollowing) {
           await _chatRoomRef.doc(chatRoomId).set({
-          'user1Ref': user1Ref,
-          'user2Ref': user2Ref,
-          'strangers': [user1Ref],
-        });
+            'user1Ref': user1Ref,
+            'user2Ref': user2Ref,
+            'strangers': [user1Ref],
+            'isUser1Deleted': false,
+            'isUser2Deleted': false,
+          });
+        } else {
+          await _chatRoomRef.doc(chatRoomId).set({
+            'user1Ref': user1Ref,
+            'user2Ref': user2Ref,
+            'isUser1Deleted': false,
+            'isUser2Deleted': false,
+          });
         }
       }
     } catch (error) {
@@ -141,10 +149,8 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
       );
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Overwrite the latest notification within 15 min
         await querySnapshot.docs.first.reference.set(newNotification.toMap());
       } else {
-        // Add new notification if no recent one exists
         await notificationsRef.add(newNotification.toMap());
       }
     } catch (error) {
@@ -179,7 +185,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
         // Check if receiver is a stranger
         DocumentSnapshot chatRoomSnapshot =
-        await _chatRoomRef.doc(chatRoomId).get();
+            await _chatRoomRef.doc(chatRoomId).get();
         List<dynamic> strangers = chatRoomSnapshot.get('strangers') ?? [];
 
         if (strangers.contains(_usersRef.doc(receiverId))) {
@@ -349,7 +355,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
       // Check if receiver is a stranger
       DocumentSnapshot chatRoomSnapshot =
-      await _chatRoomRef.doc(chatRoomId).get();
+          await _chatRoomRef.doc(chatRoomId).get();
       List<dynamic> strangers = chatRoomSnapshot.get('strangers') ?? [];
 
       if (strangers.contains(_usersRef.doc(receiverId))) {
@@ -470,6 +476,10 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   //   stopwatch.stop();
   // }
 
+  Future<void> putRemoveMaskForChatRoom(String chatRoomId) async {
+    _chatRoomRef.doc(chatRoomId).update({});
+  }
+
   @override
   Map<String, dynamic> getMessageLayoutData(
       Map<String, dynamic> data, Map<String, dynamic>? nextData, bool isUser1) {
@@ -499,10 +509,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
   @override
   Stream<List<Map<String, dynamic>>>? getCurrentUserContactListSnapshot() {
-    return _usersRef
-        .doc(currentUserId)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    return _usersRef.doc(currentUserId).snapshots().asyncMap((snapshot) async {
       List<Map<String, dynamic>> contactList = []; // Initialize an empty list
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
@@ -510,17 +517,21 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
           final List interacts = data['interacts'];
           for (final userRef in interacts) {
             String chatRoomId = _getChatRoomId(userRef.id, currentUserId);
-            DocumentSnapshot chatRoomSnapshot = await _chatRoomRef.doc(chatRoomId).get();
+            DocumentSnapshot chatRoomSnapshot =
+                await _chatRoomRef.doc(chatRoomId).get();
 
-            Map<String, dynamic> chatRoomData = chatRoomSnapshot.data() as Map<String, dynamic>;
+            Map<String, dynamic> chatRoomData =
+                chatRoomSnapshot.data() as Map<String, dynamic>;
             final List strangers = chatRoomData['strangers'] ?? [];
 
             if (!strangers.contains(_usersRef.doc(userRef.id))) {
               chatRoomData['id'] = chatRoomId;
-              contactList.add({'chatRoomData': chatRoomData, 'isStranger': false});
+              contactList
+                  .add({'chatRoomData': chatRoomData, 'isStranger': false});
             } else {
               chatRoomData['id'] = chatRoomId;
-              contactList.add({'chatRoomData': chatRoomData, 'isStranger': true});
+              contactList
+                  .add({'chatRoomData': chatRoomData, 'isStranger': true});
             }
           }
         }
@@ -528,7 +539,6 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
       return contactList; // Return the list of maps
     });
   }
-
 
   @override
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessagesStream(

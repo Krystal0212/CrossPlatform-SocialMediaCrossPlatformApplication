@@ -1,6 +1,6 @@
+import 'package:socialapp/presentation/screens/module_4/message_list/widgets/chat_room_title.dart';
 import 'package:socialapp/utils/import.dart';
 
-import '../message_list_screen.dart';
 import '../providers/user_data_properties.dart';
 
 class WaitingMessagesHeader extends StatelessWidget {
@@ -133,6 +133,7 @@ class _WaitingMessagesListState extends State<WaitingMessagesList> {
                   currentUser: widget.currentUser,
                   chatRoomData: contacts[index]['chatRoomData'],
                   currentUserId: widget.currentUser.id!,
+                  isWaiting: true,
                   index: index,
                 ),
               );

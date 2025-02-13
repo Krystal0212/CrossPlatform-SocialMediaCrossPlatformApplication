@@ -93,7 +93,6 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/images/logos/default_logo_title_less.png"  # Optional for Android Adaptive Icons
   adaptive_icon_background: "#ffffff"  # Set background color for Android Adaptive Icons
 
-
 dependency_overrides:
   http: ^0.13.1
 
