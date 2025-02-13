@@ -34,7 +34,7 @@ class MessageListScreenCubit extends Cubit<MessageListScreenState> {
     }
   }
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>>? getChatListSnapshot(){
-   return _chatService.getCurrentUserSnapshot();
+  Stream<List<Map<String, dynamic>>>? getContactList(){
+   return _chatService.getCurrentUserContactListSnapshot();
   }
 }

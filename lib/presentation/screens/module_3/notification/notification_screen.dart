@@ -41,8 +41,6 @@ class _NotificationBaseState extends State<NotificationBase> with Methods {
 
   @override
   void dispose() {
-    context.read<NotificationCubit>().close();
-
     super.dispose();
   }
 

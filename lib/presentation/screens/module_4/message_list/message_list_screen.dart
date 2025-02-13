@@ -5,6 +5,7 @@ import '../add_contact/add_contact_screen.dart';
 import 'cubits/message_list_screen_cubit.dart';
 import 'cubits/message_list_screen_state.dart';
 import 'providers/user_data_properties.dart';
+import 'widgets/waiting_messages_screen.dart';
 
 class MessageListScreen extends StatelessWidget {
   const MessageListScreen({super.key});
@@ -63,7 +64,10 @@ class _MessageListBaseState extends State<MessageListBase> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: const Icon(Icons.arrow_left, size: 40,),
+                icon: const Icon(
+                  Icons.arrow_left,
+                  size: 40,
+                ),
               ),
               actions: [
                 Padding(
@@ -72,7 +76,8 @@ class _MessageListBaseState extends State<MessageListBase> {
                   child: IconButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const AddContactScreen()));
+                          builder: (context) =>
+                              AddContactScreen(currentUser: currentUser)));
                     },
                     icon: const Icon(
                       Icons.add_circle_outline_outlined,
@@ -94,8 +99,10 @@ class _MessageListBaseState extends State<MessageListBase> {
             body: Padding(
               padding: const EdgeInsets.only(
                   left: 30, right: 30, top: 35, bottom: 10),
-              child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: context.read<MessageListScreenCubit>().getChatListSnapshot(),
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: context
+                    .read<MessageListScreenCubit>()
+                    .getContactList(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting ||
                       (snapshot.hasData && currentUser.id == null)) {
@@ -104,55 +111,41 @@ class _MessageListBaseState extends State<MessageListBase> {
                       color: AppColors.iris,
                     ));
                   } else if (snapshot.hasData && snapshot.data != null) {
-                    // Safely extract 'interacts' from the document
-                    final data = snapshot.data!.data();
-                    if (data != null && data['interacts'] is List) {
-                      final List interacts = data['interacts'];
+                    final List<Map<String, dynamic>> chatRoomList = snapshot.data!;
+                    if (chatRoomList.isNotEmpty) {
+                      final List<Map<String, dynamic>> strangers = chatRoomList
+                          .where((chatRoom) => chatRoom['isStranger'] == true)
+                          .toList();
 
-                      return ListView.builder(
-                        itemCount: interacts.length,
-                        itemBuilder: (context, index) {
-                          final userRef = interacts[index];
-                          String chatRoomId =
-                              _getChatRoomId(userRef.id, currentUser.id!);
+                      final List<Map<String, dynamic>> contacts = chatRoomList
+                          .where((chatRoom) => chatRoom['isStranger'] == false)
+                          .toList();
 
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 15),
-                            child: FutureBuilder<
-                                DocumentSnapshot<Map<String, dynamic>>>(
-                              future: FirebaseFirestore.instance
-                                  .collection('ChatRoom')
-                                  .doc(chatRoomId)
-                                  .get(),
-                              builder: (context, chatRoomSnapshot) {
-                                if (chatRoomSnapshot.hasError) {
-                                  return const Text("Error fetching chat room");
-                                }
-                                if (chatRoomSnapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return SizedBox(
-                                    height: deviceHeight * 0.3,
-                                    child: const Center(
-                                        child: CircularProgressIndicator(
-                                      color: AppColors.iris,
-                                    )),
-                                  );
-                                }
-                                if (chatRoomSnapshot.hasData &&
-                                    chatRoomSnapshot.data!.exists) {
-                                  return ChatRoomTile(
-                                    chatRoom: chatRoomSnapshot.data!,
-                                    currentUserId: currentUser.id!,
-                                    index: index,
-                                  );
-                                } else {
-                                  return const Text("No chat room available");
-                                }
-                              },
-                            ),
-                          );
-                        },
+
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            if (strangers.isNotEmpty)
+                              WaitingMessagesHeader(
+                                totalItems: strangers.length,
+                                currentUser: currentUser,
+                                chatRoomList: chatRoomList,
+                              ),
+                            ...contacts.map((contact) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 15),
+                                child: ChatRoomTile(
+                                  currentUser: currentUser,
+                                  chatRoomData: contact['chatRoomData'],
+                                  currentUserId: currentUser.id!,
+                                  index: contacts.indexOf(contact),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
                       );
+
                     } else {
                       return NoContactsAvailablePlaceholder(
                         width: deviceWidth,
@@ -171,24 +164,20 @@ class _MessageListBaseState extends State<MessageListBase> {
       return const SizedBox.shrink();
     });
   }
-
-  String _getChatRoomId(String userId, String otherUserId) {
-    List<String> ids = [userId, otherUserId];
-    ids.sort(); // sort to ensure a consistent chatRoomId between users
-    return ids.join("_");
-  }
 }
 
 class ChatRoomTile extends StatelessWidget {
-  final DocumentSnapshot<Map<String, dynamic>> chatRoom;
+  final Map<String, dynamic> chatRoomData;
   final String currentUserId;
+  final UserModel currentUser;
   final int index;
   final ChatService _chatService = ChatServiceImpl();
 
   ChatRoomTile({
     super.key,
-    required this.chatRoom,
+    required this.chatRoomData,
     required this.currentUserId,
+    required this.currentUser,
     required this.index,
   });
 
@@ -212,11 +201,11 @@ class ChatRoomTile extends StatelessWidget {
     // Create a reference to the current user
     final currentUserRef =
         FirebaseFirestore.instance.doc('/User/$currentUserId');
-    String chatRoomId = chatRoom.id;
-    bool isUser1 = chatRoom['user1Ref'] == currentUserRef;
+    String chatRoomId = chatRoomData['id'];
+    bool isUser1 = chatRoomData['user1Ref'] == currentUserRef;
     // Determine the other user based on stored references
     DocumentReference otherUserRef =
-        isUser1 ? chatRoom['user2Ref'] : chatRoom['user1Ref'];
+        isUser1 ? chatRoomData['user2Ref'] : chatRoomData['user1Ref'];
 
     // First, fetch the other user’s details
     return FutureBuilder<DocumentSnapshot>(
@@ -272,7 +261,7 @@ class ChatRoomTile extends StatelessWidget {
               otherUserRef: otherUserRef,
               isUser1: isUser1,
               index: index,
-              currentUser: UserDataInheritedWidget.of(context)!.currentUser,
+              currentUser: currentUser,
             );
           },
         );

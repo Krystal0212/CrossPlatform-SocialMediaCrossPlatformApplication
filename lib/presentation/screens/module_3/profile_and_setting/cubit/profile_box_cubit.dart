@@ -30,9 +30,4 @@ class ProfileBoxCubit extends Cubit<ProfileBoxState>
     }
   }
 
-  @override
-  Future<void> close() async {
-    super.close();
-    emit(ProfileBoxInitial());
-  }
 }

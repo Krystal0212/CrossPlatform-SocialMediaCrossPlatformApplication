@@ -122,6 +122,7 @@ class MessageItem extends StatelessWidget {
       nextData,
       isUser1,
     );
+
     bool isSender = layoutData['isSender'];
     bool showAvatar = layoutData['showAvatar'];
     bool showTimestamp = layoutData['showTimestamp'];

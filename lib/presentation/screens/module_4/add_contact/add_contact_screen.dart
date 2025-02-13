@@ -3,7 +3,9 @@ import 'package:socialapp/utils/import.dart';
 import '../message_list/providers/user_data_properties.dart';
 
 class AddContactScreen extends StatefulWidget {
-  const AddContactScreen({super.key});
+  final UserModel currentUser;
+
+  const AddContactScreen({super.key, required this.currentUser});
 
   @override
   State<AddContactScreen> createState() => _AddContactScreenState();
@@ -63,7 +65,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
       ),
       body: Padding(
         padding:
-        const EdgeInsets.only(left: 30, right: 30, top: 25, bottom: 10),
+            const EdgeInsets.only(left: 30, right: 30, top: 25, bottom: 10),
         child: Column(
           children: [
             // Search field to enter the tag name to search
@@ -74,8 +76,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                  const BorderSide(color: AppColors.trolleyGrey),
+                  borderSide: const BorderSide(color: AppColors.trolleyGrey),
                 ),
               ),
               onChanged: (value) {
@@ -99,8 +100,8 @@ class _AddContactScreenState extends State<AddContactScreen> {
                       height: deviceHeight * 0.3,
                       child: const Center(
                           child: CircularProgressIndicator(
-                            color: AppColors.iris,
-                          )),
+                        color: AppColors.iris,
+                      )),
                     );
                   }
 
@@ -108,32 +109,34 @@ class _AddContactScreenState extends State<AddContactScreen> {
 
                   if (users.isEmpty) {
                     if (searchQuery.isNotEmpty) {
-                      return NoUserResultPlaceholder(
-                          width: deviceWidth * 0.9);
+                      return NoUserResultPlaceholder(width: deviceWidth * 0.9);
                     }
-                    return NoFollowingsPlaceholder(
-                        width: deviceWidth * 0.9);
+                    return NoFollowingsPlaceholder(width: deviceWidth * 0.9);
                   }
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                       Padding(
-                        padding:const EdgeInsets.only(left: 18.0, bottom: 30),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 18.0, bottom: 30),
                         child: Text(
-                          searchQuery.isEmpty ? 'Users that you are following' : 'Search result',
+                          searchQuery.isEmpty
+                              ? 'Users that you are following'
+                              : 'Search result',
                           style: AppTheme.messageStyle.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 25,
-                          ),),
+                          ),
+                        ),
                       ),
                       Expanded(
                         child: ListView.builder(
                           itemCount: users.length,
                           itemBuilder: (context, index) {
                             DocumentReference otherUserRef =
-                            _chatService.getUserRef(users[index].id!);
+                                _chatService.getUserRef(users[index].id!);
                             return UserListTile(
+                             currentUser:  widget.currentUser,
                               userName: users[index].name,
                               userAvatar: users[index].avatar,
                               currentUserId: users[index].id!,
@@ -160,6 +163,7 @@ class UserListTile extends StatelessWidget {
   final String userTagName;
   final String userAvatar;
   final String currentUserId;
+  final UserModel currentUser;
   final DocumentReference otherUserRef;
 
   const UserListTile({
@@ -167,42 +171,49 @@ class UserListTile extends StatelessWidget {
     required this.userName,
     required this.userAvatar,
     required this.currentUserId,
-    required this.otherUserRef, required this.userTagName,
+    required this.otherUserRef,
+    required this.userTagName,
+    required this.currentUser,
   });
 
   @override
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.iris.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 40,
-          backgroundImage: CachedNetworkImageProvider(userAvatar),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.iris.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
         ),
-        title: Text(userName,
-            style: AppTheme.blackUsernameMobileStyle
-                .copyWith(fontWeight: FontWeight.w700)),
-        subtitle: Text('Tag name : $userTagName',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTheme.blackUsernameMobileStyle.copyWith(
-            fontSize: 16,
-            color: AppColors.trolleyGrey,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: CircleAvatar(
+            radius: 40,
+            backgroundImage: CachedNetworkImageProvider(userAvatar),
           ),
-        ),
-        onTap: () => Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatPage(
-              isUser1: true,
-              receiverUserEmail: userName,
-              receiverUserID: otherUserRef.id,
-              receiverAvatar: userAvatar, currentUser: UserDataInheritedWidget.of(context)!.currentUser,
+          title: Text(userName,
+              style: AppTheme.blackUsernameMobileStyle
+                  .copyWith(fontWeight: FontWeight.w700)),
+          subtitle: Text(
+            'Tag name : $userTagName',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTheme.blackUsernameMobileStyle.copyWith(
+              fontSize: 16,
+              color: AppColors.trolleyGrey,
+            ),
+          ),
+          onTap: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                isUser1: true,
+                receiverUserEmail: userName,
+                receiverUserID: otherUserRef.id,
+                receiverAvatar: userAvatar,
+                currentUser: currentUser,
+              ),
             ),
           ),
         ),

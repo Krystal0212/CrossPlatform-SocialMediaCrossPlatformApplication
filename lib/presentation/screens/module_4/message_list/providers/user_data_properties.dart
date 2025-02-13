@@ -19,3 +19,23 @@ class UserDataInheritedWidget extends InheritedWidget {
     return true; // Return true if the data needs to be updated
   }
 }
+
+class UserWaitingDataInheritedWidget extends InheritedWidget {
+  final UserModel currentUser;
+
+  const UserWaitingDataInheritedWidget({
+    super.key,
+    required this.currentUser,
+    required super.child,
+  });
+
+  // A static method to easily access the inherited data
+  static UserDataInheritedWidget? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<UserDataInheritedWidget>();
+  }
+
+  @override
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    return true; // Return true if the data needs to be updated
+  }
+}

@@ -14,7 +14,7 @@ abstract class ChatService {
   Map<String, dynamic> getMessageLayoutData(
       Map<String, dynamic> data, Map<String, dynamic>? nextData, bool isUser1);
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>>? getCurrentUserSnapshot();
+  Stream<List<Map<String, dynamic>>>? getCurrentUserContactListSnapshot();
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessagesStream(
       String chatRoomId);
@@ -86,6 +86,18 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
         await user2Ref.update({
           'interacts': FieldValue.arrayUnion([user1Ref]),
         });
+
+        DocumentSnapshot  followingRef = await _usersFollowingsRef(currentUserId).doc(receiverId).get();
+
+        bool isFollowing = followingRef.exists;
+
+        if(!isFollowing) {
+          await _chatRoomRef.doc(chatRoomId).set({
+          'user1Ref': user1Ref,
+          'user2Ref': user2Ref,
+          'strangers': [user1Ref],
+        });
+        }
       }
     } catch (error) {
       if (kDebugMode) {
@@ -164,6 +176,26 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
             .doc(chatRoomId)
             .collection("messages")
             .add(newMessage.toMap());
+
+        // Check if receiver is a stranger
+        DocumentSnapshot chatRoomSnapshot =
+        await _chatRoomRef.doc(chatRoomId).get();
+        List<dynamic> strangers = chatRoomSnapshot.get('strangers') ?? [];
+
+        if (strangers.contains(_usersRef.doc(receiverId))) {
+          await _chatRoomRef.doc(chatRoomId).update({
+            'strangers': FieldValue.arrayRemove([_usersRef.doc(receiverId)])
+          });
+
+          await _usersRef.doc(currentUserId).update({
+            'interacts': FieldValue.arrayUnion(['']),
+          });
+
+          // Remove the empty string from the 'interacts' field to revert the change
+          await _usersRef.doc(currentUserId).update({
+            'interacts': FieldValue.arrayRemove(['']),
+          });
+        }
 
         // Send notification to receiver
         await _sendMessageNotification(
@@ -315,6 +347,26 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
         });
       }
 
+      // Check if receiver is a stranger
+      DocumentSnapshot chatRoomSnapshot =
+      await _chatRoomRef.doc(chatRoomId).get();
+      List<dynamic> strangers = chatRoomSnapshot.get('strangers') ?? [];
+
+      if (strangers.contains(_usersRef.doc(receiverId))) {
+        await _chatRoomRef.doc(chatRoomId).update({
+          'strangers': FieldValue.arrayRemove([_usersRef.doc(receiverId)])
+        });
+
+        await _usersRef.doc(currentUserId).update({
+          'interacts': FieldValue.arrayUnion(['']),
+        });
+
+        // Remove the empty string from the 'interacts' field to revert the change
+        await _usersRef.doc(currentUserId).update({
+          'interacts': FieldValue.arrayRemove(['']),
+        });
+      }
+
       NotificationType notificationType = (imageDatas.length == 1)
           ? NotificationType.singleImageMessage
           : NotificationType.multipleImageMessage;
@@ -446,12 +498,37 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   }
 
   @override
-  Stream<DocumentSnapshot<Map<String, dynamic>>>? getCurrentUserSnapshot() {
+  Stream<List<Map<String, dynamic>>>? getCurrentUserContactListSnapshot() {
     return _usersRef
         .doc(currentUserId)
         .snapshots()
-        .map((snapshot) => snapshot as DocumentSnapshot<Map<String, dynamic>>);
+        .asyncMap((snapshot) async {
+      List<Map<String, dynamic>> contactList = []; // Initialize an empty list
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        if (data.isNotEmpty && data['interacts'] is List) {
+          final List interacts = data['interacts'];
+          for (final userRef in interacts) {
+            String chatRoomId = _getChatRoomId(userRef.id, currentUserId);
+            DocumentSnapshot chatRoomSnapshot = await _chatRoomRef.doc(chatRoomId).get();
+
+            Map<String, dynamic> chatRoomData = chatRoomSnapshot.data() as Map<String, dynamic>;
+            final List strangers = chatRoomData['strangers'] ?? [];
+
+            if (!strangers.contains(_usersRef.doc(userRef.id))) {
+              chatRoomData['id'] = chatRoomId;
+              contactList.add({'chatRoomData': chatRoomData, 'isStranger': false});
+            } else {
+              chatRoomData['id'] = chatRoomId;
+              contactList.add({'chatRoomData': chatRoomData, 'isStranger': true});
+            }
+          }
+        }
+      }
+      return contactList; // Return the list of maps
+    });
   }
+
 
   @override
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessagesStream(
@@ -465,6 +542,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
         .snapshots();
   }
 
+  @override
   Future<bool> checkIsUser1(String otherUserId) async {
     try {
       String chatRoomId = _getChatRoomId(currentUserId, otherUserId);
