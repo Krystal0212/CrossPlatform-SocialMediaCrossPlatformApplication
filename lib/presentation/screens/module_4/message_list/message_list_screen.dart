@@ -27,6 +27,7 @@ class MessageListBase extends StatefulWidget {
 
 class _MessageListBaseState extends State<MessageListBase> {
   late double deviceWidth = 0, deviceHeight = 0;
+  final ChatService _chatService = ChatServiceImpl();
 
   @override
   void initState() {
@@ -43,7 +44,8 @@ class _MessageListBaseState extends State<MessageListBase> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this chat room?'),
+          content:
+              const Text('Are you sure you want to delete this chat room?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -92,6 +94,21 @@ class _MessageListBaseState extends State<MessageListBase> {
                 ),
               ),
               actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  // Add right padding
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.restart_alt,
+                      size: 40,
+                    ),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(right: 16),
                   // Add right padding
@@ -158,10 +175,17 @@ class _MessageListBaseState extends State<MessageListBase> {
                                   key: Key(contact['chatRoomData']['id']),
                                   // Ensure each item is unique
                                   direction: DismissDirection.endToStart,
-                                    confirmDismiss: (direction) async {
-                                      bool shouldDelete = await _showDeleteDialog();
-                                      return shouldDelete;
-                                    },
+                                  confirmDismiss: (direction) async {
+                                    bool shouldDelete =
+                                        await _showDeleteDialog();
+                                    return shouldDelete;
+                                  },
+                                  onDismissed: (_) async {
+                                    await _chatService.deleteTempChatForUser(
+                                        contact['chatRoomData']['id'],
+                                        currentUser.id!);
+                                    setState(() {});
+                                  },
                                   background: Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),

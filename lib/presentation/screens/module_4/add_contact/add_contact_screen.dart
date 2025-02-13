@@ -136,7 +136,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
                             DocumentReference otherUserRef =
                                 _chatService.getUserRef(users[index].id!);
                             return UserListTile(
-                             currentUser:  widget.currentUser,
+                              currentUser: widget.currentUser,
                               userName: users[index].name,
                               userAvatar: users[index].avatar,
                               currentUserId: users[index].id!,
@@ -179,6 +179,7 @@ class UserListTile extends StatelessWidget {
   @override
   @override
   Widget build(BuildContext context) {
+    ChatService _chatService = ChatServiceImpl();
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: Container(
@@ -187,36 +188,40 @@ class UserListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: CircleAvatar(
-            radius: 40,
-            backgroundImage: CachedNetworkImageProvider(userAvatar),
-          ),
-          title: Text(userName,
-              style: AppTheme.blackUsernameMobileStyle
-                  .copyWith(fontWeight: FontWeight.w700)),
-          subtitle: Text(
-            'Tag name : $userTagName',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTheme.blackUsernameMobileStyle.copyWith(
-              fontSize: 16,
-              color: AppColors.trolleyGrey,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: CircleAvatar(
+              radius: 40,
+              backgroundImage: CachedNetworkImageProvider(userAvatar),
             ),
-          ),
-          onTap: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatPage(
-                isUser1: true,
-                receiverUserEmail: userName,
-                receiverUserID: otherUserRef.id,
-                receiverAvatar: userAvatar,
-                currentUser: currentUser,
+            title: Text(userName,
+                style: AppTheme.blackUsernameMobileStyle
+                    .copyWith(fontWeight: FontWeight.w700)),
+            subtitle: Text(
+              'Tag name : $userTagName',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTheme.blackUsernameMobileStyle.copyWith(
+                fontSize: 16,
+                color: AppColors.trolleyGrey,
               ),
             ),
-          ),
-        ),
+            onTap: () async {
+             bool isUser1 = await _chatService.checkIsUser1(otherUserRef.id);
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatPage(
+                    isUser1: isUser1,
+                    receiverUserEmail: userName,
+                    receiverUserID: otherUserRef.id,
+                    receiverAvatar: userAvatar,
+                    currentUser: currentUser,
+                  ),
+                ),
+              );
+            }),
       ),
     );
   }

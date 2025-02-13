@@ -3,8 +3,7 @@ import 'dart:ui';
 import 'package:socialapp/domain/entities/notification.dart';
 import 'package:socialapp/utils/import.dart';
 import 'package:image/image.dart' as img;
-
-import 'notification_service_impl.dart';
+import 'package:rxdart/rxdart.dart';
 
 abstract class ChatService {
   Future<void> sendMessage(bool isUser1, String receiverId, String message);
@@ -15,6 +14,8 @@ abstract class ChatService {
       Map<String, dynamic> data, Map<String, dynamic>? nextData, bool isUser1);
 
   Stream<List<Map<String, dynamic>>>? getCurrentUserContactListSnapshot();
+
+  Future<void> deleteTempChatForUser(String chatRoomId, String userId);
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessagesStream(
       String chatRoomId);
@@ -97,13 +98,18 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
             'strangers': [user1Ref],
             'isUser1Deleted': false,
             'isUser2Deleted': false,
+            'deletedAtUser1': null,
+            'deletedAtUser2': null,
           });
         } else {
           await _chatRoomRef.doc(chatRoomId).set({
             'user1Ref': user1Ref,
             'user2Ref': user2Ref,
+            'strangers': [],
             'isUser1Deleted': false,
             'isUser2Deleted': false,
+            'deletedAtUser1': null,
+            'deletedAtUser2': null,
           });
         }
       }
@@ -113,6 +119,110 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
       }
     }
   }
+
+  @override
+  Future<void> deleteTempChatForUser(String chatRoomId, String userId) async {
+    try {
+      final timestamp = DateTime.now();
+
+      // Get the current chat room document
+      DocumentSnapshot chatRoomSnapshot = await _chatRoomRef.doc(chatRoomId).get();
+      if (!chatRoomSnapshot.exists) return;
+
+      Map<String, dynamic> chatRoomData =
+      chatRoomSnapshot.data() as Map<String, dynamic>;
+
+      // Determine if the current user is user1
+      bool isUser1 = false;
+      if (chatRoomData.containsKey('user1Ref')) {
+        final DocumentReference user1Ref = chatRoomData['user1Ref'];
+        if (user1Ref.id == userId) {
+          isUser1 = true;
+        }
+      }
+
+      // Update the deletion timestamp for the current user
+      if (isUser1) {
+        await _chatRoomRef.doc(chatRoomId).update({
+          'deletedAtUser1': timestamp,
+          'isUser1Deleted': true,
+        });
+      } else {
+        await _chatRoomRef.doc(chatRoomId).update({
+          'deletedAtUser2': timestamp,
+          'isUser2Deleted': true,
+        });
+      }
+
+      // Retrieve the updated chat room data to check both deletion timestamps
+      DocumentSnapshot updatedSnapshot = await _chatRoomRef.doc(chatRoomId).get();
+      if (!updatedSnapshot.exists) return;
+
+      Map<String, dynamic> updatedData =
+      updatedSnapshot.data() as Map<String, dynamic>;
+
+      // Get deletion timestamps if they exist (they should be stored as Timestamps)
+      Timestamp? deletedAtUser1;
+      Timestamp? deletedAtUser2;
+
+      if (updatedData.containsKey('deletedAtUser1') &&
+          updatedData['deletedAtUser1'] != null) {
+        deletedAtUser1 = updatedData['deletedAtUser1'] is Timestamp
+            ? updatedData['deletedAtUser1']
+            : Timestamp.fromDate(updatedData['deletedAtUser1']);
+      }
+
+      if (updatedData.containsKey('deletedAtUser2') &&
+          updatedData['deletedAtUser2'] != null) {
+        deletedAtUser2 = updatedData['deletedAtUser2'] is Timestamp
+            ? updatedData['deletedAtUser2']
+            : Timestamp.fromDate(updatedData['deletedAtUser2']);
+      }
+
+      // If both users have deletion timestamps, delete all messages older than the oldest timestamp
+      if (deletedAtUser1 != null && deletedAtUser2 != null) {
+        // Determine the oldest deletion timestamp
+        final bool isUser1WillBeDelete = (deletedAtUser1.compareTo(deletedAtUser2) <= 0);
+        final Timestamp oldestTimestamp = isUser1WillBeDelete
+            ? deletedAtUser1
+            : deletedAtUser2;
+
+        // Query messages older than (or equal to) the oldest deletion timestamp
+        QuerySnapshot messagesSnapshot = await _chatRoomRef
+            .doc(chatRoomId)
+            .collection('messages')
+            .where('timestamp', isLessThanOrEqualTo: oldestTimestamp)
+            .get();
+
+        // Delete these messages using a batch write
+        WriteBatch batch = _firestoreDB.batch();
+
+        for (QueryDocumentSnapshot doc in messagesSnapshot.docs) {
+          batch.delete(doc.reference);
+        }
+
+        await batch.commit();
+
+        if (isUser1WillBeDelete) {
+          await _chatRoomRef.doc(chatRoomId).update({
+            'deletedAtUser1': null,
+            'isUser1Deleted': false,
+          });
+        }
+        else {
+          await _chatRoomRef.doc(chatRoomId).update({
+            'deletedAtUser2': null,
+            'isUser2Deleted': false,
+          });
+        }
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error during chat room temp delete deletion: $error');
+      }
+    }
+  }
+
 
   Future<void> _sendMessageNotification(
       String chatRoomId, String receiverId, NotificationType type) async {
@@ -203,6 +313,8 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
           });
         }
 
+
+
         // Send notification to receiver
         await _sendMessageNotification(
             chatRoomId, receiverId, NotificationType.textMessage);
@@ -217,25 +329,50 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
     }
   }
 
-  @override
   Stream<QuerySnapshot> getMessages(String receiverId) {
     final String currentUserId = currentUser?.uid ?? '';
-    try {
-      String chatRoomId = _getChatRoomId(currentUserId, receiverId);
+    final String chatRoomId = _getChatRoomId(currentUserId, receiverId);
 
-      return _firestoreDB
+    // Listen to the chat room document so that if the deletion timestamp changes,
+    // the messages stream is updated accordingly.
+    return _firestoreDB
+        .collection("ChatRoom")
+        .doc(chatRoomId)
+        .snapshots()
+        .switchMap((chatRoomSnapshot) {
+      DateTime? deletionTimestamp;
+      final data = chatRoomSnapshot.data();
+
+      if (data != null) {
+        final DocumentReference user1Ref = data['user1Ref'];
+        final DocumentReference user2Ref = data['user2Ref'];
+
+        // Check if the current user is user1 or user2 and grab the appropriate deletion timestamp.
+        if (user1Ref.id == currentUserId && data['deletedAtUser1'] != null) {
+          deletionTimestamp =
+              (data['deletedAtUser1'] as Timestamp).toDate();
+        } else if (user2Ref.id == currentUserId && data['deletedAtUser2'] != null) {
+          deletionTimestamp =
+              (data['deletedAtUser2'] as Timestamp).toDate();
+        }
+      }
+
+      // Build the messages query ordering by timestamp (newest first)
+      Query<Map<String, dynamic>> messagesQuery = _firestoreDB
           .collection("ChatRoom")
           .doc(chatRoomId)
           .collection("messages")
-          .orderBy("timestamp", descending: true)
-          .snapshots();
-    } catch (error) {
-      if (kDebugMode) {
-        print('Error while retrieving message : $error');
+          .orderBy("timestamp", descending: true);
+
+      // If a deletion timestamp exists, only show messages with a timestamp greater than that value.
+      if (deletionTimestamp != null) {
+        messagesQuery = messagesQuery.where("timestamp", isGreaterThan: deletionTimestamp);
       }
-      return const Stream.empty();
-    }
+
+      return messagesQuery.snapshots();
+    });
   }
+
 
   Future<Uint8List?> _compressImage(String imagePath) async {
     final Uint8List? result = await FlutterImageCompress.compressWithFile(
@@ -476,10 +613,6 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
   //   stopwatch.stop();
   // }
 
-  Future<void> putRemoveMaskForChatRoom(String chatRoomId) async {
-    _chatRoomRef.doc(chatRoomId).update({});
-  }
-
   @override
   Map<String, dynamic> getMessageLayoutData(
       Map<String, dynamic> data, Map<String, dynamic>? nextData, bool isUser1) {
@@ -522,16 +655,44 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
             Map<String, dynamic> chatRoomData =
                 chatRoomSnapshot.data() as Map<String, dynamic>;
+            DateTime? deletionTimestamp;
+            DocumentReference user1Ref = chatRoomData['user1Ref'];
+            DocumentReference user2Ref = chatRoomData['user2Ref'];
+
+            if (user1Ref.id == currentUserId) {
+              if (chatRoomData['deletedAtUser1'] != null) {
+                deletionTimestamp = (chatRoomData['deletedAtUser1'] as Timestamp).toDate();
+              }
+            } else if (user2Ref.id == currentUserId) {
+              if (chatRoomData['deletedAtUser2'] != null) {
+                deletionTimestamp = (chatRoomData['deletedAtUser2'] as Timestamp).toDate();
+              }
+            }
+
             final List strangers = chatRoomData['strangers'] ?? [];
 
-            if (!strangers.contains(_usersRef.doc(userRef.id))) {
-              chatRoomData['id'] = chatRoomId;
-              contactList
-                  .add({'chatRoomData': chatRoomData, 'isStranger': false});
-            } else {
-              chatRoomData['id'] = chatRoomId;
-              contactList
-                  .add({'chatRoomData': chatRoomData, 'isStranger': true});
+            Query<Map<String, dynamic>> messagesQuery = _chatRoomRef
+                .doc(chatRoomId)
+                .collection('messages')
+                .orderBy('timestamp', descending: true)
+                .limit(1);
+
+            if (deletionTimestamp != null) {
+              messagesQuery = messagesQuery.where('timestamp', isGreaterThan: deletionTimestamp);
+            }
+
+            QuerySnapshot<Map<String, dynamic>> messageSnapshot = await messagesQuery.get();
+
+            if (messageSnapshot.docs.isNotEmpty) {
+              if (!strangers.contains(_usersRef.doc(userRef.id))) {
+                chatRoomData['id'] = chatRoomId;
+                contactList
+                    .add({'chatRoomData': chatRoomData, 'isStranger': false});
+              } else {
+                chatRoomData['id'] = chatRoomId;
+                contactList
+                    .add({'chatRoomData': chatRoomData, 'isStranger': true});
+              }
             }
           }
         }
