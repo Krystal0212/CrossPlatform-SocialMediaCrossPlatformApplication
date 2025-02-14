@@ -18,10 +18,11 @@ class VideoPlayerPreviewWidget extends StatefulWidget {
     required this.height,
     required this.width,
   }) : assert(videoData != null || videoUrl != null,
-  'Either videoData or videoUrl must be provided.');
+            'Either videoData or videoUrl must be provided.');
 
   @override
-  State<VideoPlayerPreviewWidget> createState() => _VideoPlayerPreviewWidgetState();
+  State<VideoPlayerPreviewWidget> createState() =>
+      _VideoPlayerPreviewWidgetState();
 }
 
 class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
@@ -58,9 +59,13 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
     return VideoPlayerController.networkUrl(Uri.parse(url));
   }
 
-  Future<VideoPlayerController> createVideoPlayerControllerForMobile(Uint8List videoData) async {
+  Future<VideoPlayerController> createVideoPlayerControllerForMobile(
+      Uint8List videoData) async {
     final tempDir = await getTemporaryDirectory();
-    final tempFile = File('${tempDir.path}/video.mp4');
+
+    final uniqueFileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+    final tempFile = File('${tempDir.path}/$uniqueFileName');
     await tempFile.writeAsBytes(videoData);
     return VideoPlayerController.file(tempFile);
   }
@@ -70,10 +75,12 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
       if (kIsWeb) {
         _controller = createVideoPlayerControllerForWeb(widget.videoData!);
       } else {
-        _controller = await createVideoPlayerControllerForMobile(widget.videoData!);
+        _controller =
+            await createVideoPlayerControllerForMobile(widget.videoData!);
       }
     } else if (widget.videoUrl != null) {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+      _controller =
+          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
     } else {
       throw ArgumentError('Either videoData or videoUrl must be provided.');
     }
@@ -148,7 +155,10 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerPreviewWidget> {
           valueListenable: isInitialized,
           builder: (context, initialized, child) {
             if (!initialized) {
-              return const Center(child: CircularProgressIndicator());
+              return SizedBox(
+                  height: widget.height,
+                  width: widget.width,
+                  child: const Center(child: CircularProgressIndicator()));
             }
 
             return SizedBox(

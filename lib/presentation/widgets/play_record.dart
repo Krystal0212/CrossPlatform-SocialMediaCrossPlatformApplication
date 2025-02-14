@@ -53,21 +53,32 @@ class _PostSimpleRecordWebsiteState extends State<PostSimpleRecordWebsite> {
   }
 
   void initialize() async {
-    await player.setUrl(widget.recordUrl);
-    await Future.delayed(const Duration(milliseconds: 300));
 
-    durationStateNotifier.value =
-        Rx.combineLatest3<Duration, Duration, Duration?, DurationState>(
-          player.positionStream,
-          player.bufferedPositionStream,
-          player.durationStream,
-              (position, bufferedPosition, duration) =>
-              DurationState(
-                progress: position,
-                buffered: bufferedPosition,
-                total: duration ?? Duration.zero,
-              ),
-        );
+    if (widget.recordUrl.isEmpty || !Uri.parse(widget.recordUrl).isAbsolute) {
+      debugPrint("Invalid record URL: ${widget.recordUrl}");
+      return;
+    }
+
+    try {
+      await player.setUrl(widget.recordUrl);
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) return;
+      durationStateNotifier.value =
+          Rx.combineLatest3<Duration, Duration, Duration?, DurationState>(
+            player.positionStream,
+            player.bufferedPositionStream,
+            player.durationStream,
+                (position, bufferedPosition, duration) =>
+                DurationState(
+                  progress: position,
+                  buffered: bufferedPosition,
+                  total: duration ?? Duration.zero,
+                ),
+          );
+    } catch (error) {
+      debugPrint("Error initializing player: $error");
+    }
   }
 
 

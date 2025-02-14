@@ -145,6 +145,32 @@ class OnlinePostModel {
     }
   }
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OnlinePostModel) return false;
+
+    return postId == other.postId;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    postId,
+    userId,
+    username,
+    userAvatarUrl,
+    content,
+    timestamp,
+    likeAmount,
+    commentAmount,
+    viewAmount,
+    Object.hashAll(topicRefs),
+    Object.hashAll(comments),
+    Object.hashAll(likes),
+    media != null ? Object.hashAll(media!.values) : null,
+    record,
+    trendingScore,
+  );
 }
 
 class OfflinePostModel {
@@ -272,6 +298,31 @@ class OnlineMediaItem extends MediaItemBase {
       thumbnailUrl: map['thumbnailUrl'],
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OnlineMediaItem) return false;
+
+    return dominantColor == other.dominantColor &&
+        height == other.height &&
+        width == other.width &&
+        type == other.type &&
+        isNSFW == other.isNSFW &&
+        imageUrl == other.imageUrl &&
+        thumbnailUrl == other.thumbnailUrl;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    dominantColor,
+    height,
+    width,
+    type,
+    isNSFW,
+    imageUrl,
+    thumbnailUrl,
+  );
 }
 
 class OfflineMediaItem extends MediaItemBase {

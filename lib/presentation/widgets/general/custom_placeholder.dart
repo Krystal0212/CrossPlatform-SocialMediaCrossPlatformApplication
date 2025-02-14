@@ -236,6 +236,39 @@ class NoPublicDataAvailablePlaceholder extends StatelessWidget {
   }
 }
 
+class NoCommentDataAvailablePlaceholder extends StatelessWidget {
+
+  const NoCommentDataAvailablePlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final flutterView = PlatformDispatcher.instance.views.first;
+    double deviceWidth = flutterView.physicalSize.width / flutterView.devicePixelRatio;
+    double deviceHeight = flutterView.physicalSize.height;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.only(top: 5, left:deviceWidth*0.1 , right: deviceWidth*0.1),
+      width: deviceWidth,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SvgPicture.asset(AppImages.noMorePosts, height: deviceWidth*0.5,),
+            Text(
+              'No comments available on this post yet',
+              style: AppTheme.gradientShowMoreContentTextStyle.copyWith(fontSize: 20),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class NoContactsAvailablePlaceholder extends StatelessWidget {
   final double width;
 
@@ -417,7 +450,7 @@ class GettingDataPlaceholder extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SvgPicture.asset(AppImages.waiting, height: deviceWidth * 0.4),
+          SvgPicture.asset(AppImages.noMorePosts, height: deviceWidth * 0.4),
           const SizedBox(height: 16), // Space between image and text
           Text(
             'Wait a little, we are getting data',

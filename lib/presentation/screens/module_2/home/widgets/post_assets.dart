@@ -100,59 +100,62 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
         bool isNSFW = theAsset.isNSFW;
         bool isNSFWAllowed = isNSFW && isNSFWFilterTurnOn;
 
-        return GestureDetector(
-          onLongPress: (){
-            UserModel? user =
-                HomePropertiesProvider.of(context)?.currentUser;
+        return SizedBox(
+          height: 300,
+          child: GestureDetector(
+            onLongPress: (){
+              UserModel? user =
+                  HomePropertiesProvider.of(context)?.currentUser;
 
-            if (user != null) {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PostDetailScreen(
-                    searchController: searchController,
-                    post: widget.post,
-                    currentUser: user,
-                  )));
-            } else {
-              showNotSignedInMessage(
-                  context: context,
-                  description:
-                  AppStrings.notSignedInCollectionDescription);
-            }
-          },
-          child: Container(
-            constraints: theAsset.width / theAsset.height > 1
-                ? BoxConstraints(maxWidth: deviceWidth)
-                : BoxConstraints(maxHeight: deviceHeight*0.3),
-            child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: (theAsset.type == 'video')
-                    ? AspectRatio(
-                        aspectRatio: theAsset.width / theAsset.height,
-                        child: VideoPlayerWidget(
-                          isNSFWAllowed: isNSFWFilterTurnOn,
-                          thumbnailUrl: theAsset.thumbnailUrl,
-                          videoUrl: theAsset.imageUrl,
-                          height: theAsset.height,
+              if (user != null) {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => PostDetailScreen(
+                      searchController: searchController,
+                      post: widget.post,
+                      currentUser: user,
+                    )));
+              } else {
+                showNotSignedInMessage(
+                    context: context,
+                    description:
+                    AppStrings.notSignedInCollectionDescription);
+              }
+            },
+            child: Container(
+              constraints: theAsset.width / theAsset.height > 1
+                  ? BoxConstraints(maxWidth: deviceWidth)
+                  : BoxConstraints(maxHeight: deviceHeight*0.3),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: (theAsset.type == 'video')
+                      ? AspectRatio(
+                          aspectRatio: theAsset.width / theAsset.height,
+                          child: VideoPlayerWidget(
+                            isNSFWAllowed: isNSFWFilterTurnOn,
+                            thumbnailUrl: theAsset.thumbnailUrl,
+                            videoUrl: theAsset.imageUrl,
+                            height: theAsset.height,
+                            width: theAsset.width,
+                            dominantColor: dominantColor,
+                          ),
+                        )
+                      : ImageDisplayerWidget(
+
                           width: theAsset.width,
-                          dominantColor: dominantColor,
-                        ),
-                      )
-                    : ImageDisplayerWidget(
-
-                        width: theAsset.width,
-                        height: theAsset.height,
-                        imageUrl: theAsset.imageUrl,
-                        isVideo: false,
-                        isNSFWAllowed: isNSFWAllowed,
-                        dominantColor: dominantColor, videoUrl: null,
-                      )),
+                          height: theAsset.height,
+                          imageUrl: theAsset.imageUrl,
+                          isVideo: false,
+                          isNSFWAllowed: isNSFWAllowed,
+                          dominantColor: dominantColor, videoUrl: null,
+                        )),
+            ),
           ),
         );
       default:
         final mediaList = media.values.toList();
 
         return SizedBox(
-          height: 500,
+          height: 300,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: mediaList.length,

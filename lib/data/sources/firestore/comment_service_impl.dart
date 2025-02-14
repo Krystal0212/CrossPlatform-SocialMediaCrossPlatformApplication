@@ -448,7 +448,7 @@ class CommentServiceImpl extends CommentService {
           return CommentPostModel.fromMap(documentMap);
         }
         if (kDebugMode) {
-          print('Error fetching comments: No new comments found');
+          print('Error fetching comments for posts: No new comments found');
         }
         return null;
       });

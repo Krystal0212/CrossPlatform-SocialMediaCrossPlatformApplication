@@ -1,7 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 import 'home_state.dart';
 
-
 //   bool isExploreFetched = false, isTrendingFetched = false, isFollowingFetched = false;
 //   UserModel? currentUser;
 //
@@ -179,8 +178,9 @@ class HomeCubit extends Cubit<HomeState> {
   UserModel? currentUser;
 
   HomeCubit() : super(HomeViewModeInitial()) {
-    _startPeriodicSync();
     _listenToConnectivity();
+
+    _startPeriodicSync();
   }
 
   bool checkCurrentUserSignedIn() {
@@ -286,7 +286,8 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> showLessSimilarPosts(String postId) async {
     try {
-      await serviceLocator<PostRepository>().reduceTopicRanksOfPostForCurrentUser( postId);
+      await serviceLocator<PostRepository>()
+          .reduceTopicRanksOfPostForCurrentUser(postId);
     } catch (error) {
       if (kDebugMode) {
         print('Error update less similar posts for user: $error');

@@ -20,7 +20,7 @@ class SoundTab1 extends StatefulWidget {
 }
 
 class _SoundTab1State extends State<SoundTab1>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, FlashMessage {
   late double deviceHeight = 0, deviceWidth = 0;
 
   @override
@@ -70,22 +70,61 @@ class _SoundTab1State extends State<SoundTab1>
                       List<PreviewSoundPostModel> soundPreviews =
                           snapshot.data!;
 
-                      return Column(
-                        children: [
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: soundPreviews.length,
-                            itemBuilder: (context, index) {
-                              return PostSimpleRecordWebsite(
-                                recordUrl: soundPreviews[index].recordUrl,
-                              );
-                            },
-                          ),
-                          SizedBox(
-                            height: deviceHeight * 0.02,
-                          )
-                        ],
+
+                      return FutureBuilder<UserModel?>(
+                          future: serviceLocator<UserRepository>()
+                              .getCurrentUserData(),
+                          builder: (context, userSnapshot) {
+                            UserModel? currentUser = userSnapshot.data;
+
+                          return Column(
+                            children: [
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: soundPreviews.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: GestureDetector(
+                                      onLongPress: () {
+                                        if (currentUser != null) {
+                                          Navigator.of(context)
+                                              .push(PageRouteBuilder(
+                                            pageBuilder: (context, animation,
+                                                secondaryAnimation) =>
+                                                PostDetailScreen(
+                                                  postId:
+                                                  soundPreviews[index].postId,
+                                                  currentUser: currentUser,
+                                                  searchController:
+                                                  TextEditingController(),
+                                                ),
+                                            transitionDuration: Duration.zero,
+                                            // No animation on push
+                                            reverseTransitionDuration: Duration
+                                                .zero, // No animation on pop
+                                          ));
+                                        } else {
+                                          showNotSignedInMessage(
+                                              context: context,
+                                              description: AppStrings
+                                                  .notSignedInCollectionDescription);
+                                        }
+                                      },
+                                      child: PostSimpleRecordWebsite(
+                                        recordUrl: soundPreviews[index].recordUrl,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              SizedBox(
+                                height: deviceHeight * 0.02,
+                              )
+                            ],
+                          );
+                        }
                       );
                     });
               }

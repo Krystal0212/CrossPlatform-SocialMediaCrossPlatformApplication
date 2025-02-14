@@ -37,6 +37,7 @@ class _PostDetailEditTextFieldState extends State<PostDetailEditTextField> {
 
   void _sendComment() {
     if (_canSendNotifier.value) {
+      FocusScope.of(context).unfocus();
       context.read<PostDetailCubit>().sendComment(widget.post.userId, _commentTextFieldController.text.trim());
       widget.commentAmountNotifier.value =  widget.commentAmountNotifier.value + 1;
       _commentTextFieldController.clear();
@@ -60,6 +61,7 @@ class _PostDetailEditTextFieldState extends State<PostDetailEditTextField> {
                   child: TextField(
                     controller: _commentTextFieldController,
                     maxLines: null,
+
                     decoration: const InputDecoration(
                       hintText: "Write a comment...",
                       border: InputBorder.none,

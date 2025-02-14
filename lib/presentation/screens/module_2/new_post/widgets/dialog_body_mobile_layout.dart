@@ -24,7 +24,8 @@ class MobileDialogBody extends StatefulWidget {
     required this.styleableTextFieldController,
     required this.imagePathNotifier,
     required this.topicSelectedNotifier,
-    required this.isRecordingMode, required this.recordingPathNotifier,
+    required this.isRecordingMode,
+    required this.recordingPathNotifier,
   });
 
   @override
@@ -92,6 +93,7 @@ class _MobileDialogBodyState extends State<MobileDialogBody> with FlashMessage {
                               width: 490,
                               child: ListView.builder(
                                 shrinkWrap: true,
+                                // key: Key(imagePathList.length.toString()),
                                 scrollDirection: Axis.horizontal,
                                 itemCount: imagePathList.length,
                                 itemBuilder: (context, index) {
@@ -101,6 +103,7 @@ class _MobileDialogBodyState extends State<MobileDialogBody> with FlashMessage {
                                       imagePathList[index]['type'] == 'video';
 
                                   return Stack(
+                                      key: ValueKey(imagePathList[index]['name']),
                                     children: [
                                       Padding(
                                         padding:
@@ -149,8 +152,7 @@ class _MobileDialogBodyState extends State<MobileDialogBody> with FlashMessage {
                                         right: 30,
                                         child: CloseIconButton(
                                           onTap: () {
-                                            final List<Map<String, dynamic>>
-                                                updatedList =
+                                            final updatedList =
                                                 List<Map<String, dynamic>>.from(
                                                     imagePathList);
                                             updatedList.removeAt(index);
@@ -171,9 +173,10 @@ class _MobileDialogBodyState extends State<MobileDialogBody> with FlashMessage {
                     ],
                   );
                 } else {
-                  return  RecordBox(
+                  return RecordBox(
                     topicBoxWidth: 490,
-                    topicBoxHeight: 650, recordingPathNotifier: widget.recordingPathNotifier,
+                    topicBoxHeight: 650,
+                    recordingPathNotifier: widget.recordingPathNotifier,
                   );
                 }
               }),

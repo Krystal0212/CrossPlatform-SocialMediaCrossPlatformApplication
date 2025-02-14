@@ -10,6 +10,8 @@ class TabLoaded extends TabState {
   TabLoaded(this.posts);
 }
 
+class TabOffline extends TabState {}
+
 class TabError extends TabState {
   final String error;
 

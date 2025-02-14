@@ -12,6 +12,7 @@ abstract class TabCubit extends Cubit<TabState> {
 
   TabCubit(this.postRepository, this.homeCubit, this.viewMode)
       : super(TabLoading()) {
+
     if (!isSignedIn() && viewMode == ViewMode.following) {
       emit(TabNotSignIn());
       return;

@@ -18,7 +18,7 @@ class PostBottom extends StatefulWidget {
 class _PostBottomState extends State<PostBottom> with FlashMessage {
   late UserModel? currentUser = UserModel.empty();
   late ValueNotifier<bool> isUserLiked = ValueNotifier<bool>(false);
-  late final ValueNotifier<int> likeAmountNotifier;
+  late final ValueNotifier<int> likeAmountNotifier, viewAmountNotifier;
 
   late int commentAmount, likeAmount;
 
@@ -30,6 +30,7 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
     likeAmount = widget.post.likeAmount;
 
     likeAmountNotifier = ValueNotifier<int>(widget.post.likeAmount);
+    viewAmountNotifier = ValueNotifier<int>(widget.post.viewAmount);
   }
 
   @override
@@ -99,6 +100,22 @@ class _PostBottomState extends State<PostBottom> with FlashMessage {
             },
           ),
           const Spacer(),
+          Row(
+            children: [
+              Text(widget.post.viewAmount.toString(), style: const TextStyle(fontSize: 18)),
+              const SizedBox(width: 5),
+              IconButton(
+                icon: const Icon(
+                  Icons.remove_red_eye_outlined,
+                  color: AppColors.iris,
+                  size: customIconSize,
+                ),
+                onPressed: () {
+                },
+              ),
+            ],
+          ),
+          const SizedBox(width: 15),
           Row(
             children: [
               Text(widget.post.commentAmount.toString(), style: const TextStyle(fontSize: 18)),

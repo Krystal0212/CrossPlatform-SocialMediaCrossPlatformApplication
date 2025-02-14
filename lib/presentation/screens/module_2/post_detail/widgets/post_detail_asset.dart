@@ -69,13 +69,13 @@ class PostDetailAsset extends StatelessWidget {
 
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 15),
-        height: 500,
+        height: 300,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: mediaList.length + 2,
           itemBuilder: (context, index) {
             if (index == 0 || index == mediaList.length + 1) {
-              return const SizedBox(width: 130);
+              return const SizedBox(width: 25);
             }
             final media = mediaList[index - 1];
             Color dominantColor = Color(int.parse('0x${media.dominantColor}'));
@@ -111,7 +111,12 @@ class PostDetailAsset extends StatelessWidget {
         ),
       );
     } else {
-      return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: PostSimpleRecordWebsite(
+          recordUrl: post.record!,
+        ),
+      );
     }
   }
 }

@@ -12,8 +12,8 @@ class LogOutButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          serviceLocator<AuthRepository>().signOut();
+        onPressed: () async {
+          await serviceLocator<AuthRepository>().signOut();
           context.go('/sign-in');
         },
         style: ElevatedButton.styleFrom(

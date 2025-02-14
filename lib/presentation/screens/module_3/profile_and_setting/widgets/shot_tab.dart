@@ -14,7 +14,7 @@ class ShotTab1 extends StatefulWidget {
 }
 
 class _ShotTab1State extends State<ShotTab1>
-    with AutomaticKeepAliveClientMixin, FlashMessage, Methods  {
+    with AutomaticKeepAliveClientMixin, FlashMessage, Methods {
   late double deviceHeight = 0, deviceWidth = 0;
 
   @override
@@ -43,7 +43,7 @@ class _ShotTab1State extends State<ShotTab1>
                 return StreamBuilder<List<PreviewAssetPostModel>?>(
                     stream: state.postStreams,
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
+                      if (snapshot.connectionState == ConnectionState.waiting || snapshot.data == null) {
                         return SizedBox(
                           height: deviceHeight * 0.3,
                           child: const Center(
@@ -94,29 +94,41 @@ class _ShotTab1State extends State<ShotTab1>
                                       String? videoUrl =
                                           imagePreviews[index].videoUrl;
 
-                                      bool isNSFWAllowed = (isNSFW && (currentUser?.isNSFWFilterTurnOn ?? true));
+                                      bool isNSFWAllowed = (isNSFW &&
+                                          (currentUser?.isNSFWFilterTurnOn ??
+                                              true));
 
                                       return GestureDetector(
                                         onLongPress: () {
-                                          if (currentUser != null && !isNSFWAllowed) {
-                                            Navigator.of(context).push(PageRouteBuilder(
-                                              pageBuilder: (context, animation, secondaryAnimation) => PostDetailScreen(
-                                                postId: imagePreviews[index].postId,
+                                          if (currentUser != null &&
+                                              !isNSFWAllowed) {
+                                            Navigator.of(context)
+                                                .push(PageRouteBuilder(
+                                              pageBuilder: (context, animation,
+                                                      secondaryAnimation) =>
+                                                  PostDetailScreen(
+                                                postId:
+                                                    imagePreviews[index].postId,
                                                 currentUser: currentUser,
-                                                searchController: TextEditingController(),
+                                                searchController:
+                                                    TextEditingController(),
                                               ),
-                                              transitionDuration: Duration.zero, // No animation on push
-                                              reverseTransitionDuration: Duration.zero, // No animation on pop
+                                              transitionDuration: Duration.zero,
+                                              // No animation on push
+                                              reverseTransitionDuration: Duration
+                                                  .zero, // No animation on pop
                                             ));
-
+                                          } else if (isNSFWAllowed) {
+                                            showAttentionMessage(
+                                                context: context,
+                                                title: 'This is nsfw content');
                                           } else {
                                             showNotSignedInMessage(
                                                 context: context,
-                                                description:
-                                                AppStrings.notSignedInCollectionDescription);
+                                                description: AppStrings
+                                                    .notSignedInCollectionDescription);
                                           }
                                         },
-
                                         child: ImageDisplayerWidget(
                                           width: imageWidth,
                                           height: imageHeight,

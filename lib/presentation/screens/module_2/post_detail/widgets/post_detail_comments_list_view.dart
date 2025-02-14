@@ -323,11 +323,7 @@ class _PostDetailCommentsListViewState extends State<PostDetailCommentsListView>
                   }
                   final List<CommentPostModel> comments = snapshot.data!;
                   if (comments.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.iris,
-                      ),
-                    );
+                    return const NoCommentDataAvailablePlaceholder();
                   }
                   return NotificationListener<ScrollNotification>(
                     onNotification: (scrollInfo) {

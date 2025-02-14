@@ -114,39 +114,41 @@ class PostServiceImpl extends PostService
     return _usersRef.doc(uid).collection('collections');
   }
 
-  // ToDo: Global variables
-  Set<OnlinePostModel> processedPostModels = {};
-
   // ToDo: Offline Service Functions
 
-  Future<List<OnlinePostModel>> _getLocalPostsData(String tabName) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? postStrings = prefs.getStringList('offline_${tabName}_posts');
-
-    if (postStrings == null) {
-      return [];
-    }
-
-    List<OnlinePostModel> posts = postStrings.map((postString) {
-      // Deserialize the string back into a map
-      Map<String, dynamic> postMap = jsonDecode(postString);
-      return OnlinePostModel.fromMap(postMap);
-    }).toList();
-
-    return posts;
-  }
-
-  Future<void> _savePostsLocally(List<OnlinePostModel> posts, String tabName) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // Convert list of posts to JSON string list
-    List<String> postStrings = posts.map((post) => jsonEncode(post.toMap())).toList();
-
-    await prefs.setStringList('offline_${tabName}_posts', postStrings);
-  }
-
-
-
+  // Future<List<OnlinePostModel>> _getLocalPostsData(String tabName) async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   List<String>? postStrings = prefs.getStringList('offline_${tabName}_posts');
+  //
+  //   if (postStrings == null) {
+  //     return [];
+  //   }
+  //
+  //   List<OnlinePostModel> posts = postStrings.map((postString) {
+  //     // Deserialize the string back into a map
+  //     Map<String, dynamic> postMap = jsonDecode(postString);
+  //     return OnlinePostModel.fromMap(postMap);
+  //   }).toList();
+  //
+  //   return posts;
+  // }
+  //
+  // Future<void> _savePostsLocally(List<OnlinePostModel> posts,
+  //     String tabName) async {
+  //   try {
+  //     SharedPreferences prefs = await SharedPreferences.getInstance();
+  //
+  //     // Convert list of posts to JSON string list
+  //     List<String> postStrings =
+  //     posts.map((post) => jsonEncode(post.toMap())).toList();
+  //
+  //     await prefs.setStringList('offline_${tabName}_posts', postStrings);
+  //   } catch (error) {
+  //     if (kDebugMode) {
+  //       print('Error saving posts locally: $error');
+  //     }
+  //   }
+  // }
 
   // ToDo: Service Functions
 
@@ -192,7 +194,6 @@ class PostServiceImpl extends PostService
         while (randomIndexes.length < 2) {
           randomIndexes.add(random.nextInt(count));
         }
-
       }
       return posts;
     } catch (e) {
@@ -207,9 +208,9 @@ class PostServiceImpl extends PostService
     List<OnlinePostModel>? lastFetchedModels,
   }) async {
     try {
-      const int amountOfTopicPostInBatch = 9;
-      const int amountOfFollowingPostInBatch = 9;
-      int amountOfRandomPostInBatch = (currentUserId.isEmpty) ? 20 : 2;
+      const int amountOfTopicPostInBatch = 13;
+      const int amountOfFollowingPostInBatch = 13;
+      int amountOfRandomPostInBatch = (currentUserId.isEmpty) ? 30 : 4;
       bool isNSFWTurnOn = true;
 
       List<QueryDocumentSnapshot<Object?>> topicPosts = [];
@@ -401,10 +402,10 @@ class PostServiceImpl extends PostService
   }) async {
     try {
       const int postsPerFetch = 30;
-      const int amountOfBatch = 5;
+      const int amountOfBatch = 30;
 
       List<OnlinePostModel> posts = [];
-      int timeGap = 48, loopNumber = 1;
+      int timeGap = 24 * 7, loopNumber = 1;
       bool hasMorePosts = true;
       DocumentSnapshot? latestPostSnapshot;
       OnlinePostModel? lastFetchedPost;
@@ -425,8 +426,7 @@ class PostServiceImpl extends PostService
       Query query;
 
       if (lastFetchedModels != null) {
-        if (lastFetchedModels.any((post) => post.postId == oldestPostId) &&
-            processedPostModels.isEmpty) {
+        if (lastFetchedModels.any((post) => post.postId == oldestPostId)) {
           throw CustomFirestoreException(
               code: 'no-more', message: 'No more posts');
         } else {
@@ -449,70 +449,59 @@ class PostServiceImpl extends PostService
       }
       QuerySnapshot trendingPostsQuery = await query.get();
 
-      if (processedPostModels.isNotEmpty) {
-        bool remainingLessPosts =
-            (processedPostModels.length - amountOfBatch) < amountOfBatch;
-        List<OnlinePostModel> postsToAdd = (!remainingLessPosts)
-            ? processedPostModels.take(amountOfBatch).toList()
-            : processedPostModels.toList();
+      while (posts.length < amountOfBatch && hasMorePosts) {
+        try {
+          trendingPostsQuery = await query.get();
+          final List<QueryDocumentSnapshot> batchProcessingPosts =
+              trendingPostsQuery.docs;
 
-        posts.addAll(postsToAdd);
+          if (batchProcessingPosts.isNotEmpty) {
+            List<OnlinePostModel> newestPosts = (await _processTrendingPosts(
+              newFetchedPosts: batchProcessingPosts,
+              now: now,
+              amountOfBatch: amountOfBatch,
+              currentPosts: posts,
+            ))
+                .toList();
 
-        processedPostModels.removeAll(postsToAdd);
-      } else {
-        while (posts.length < amountOfBatch && hasMorePosts) {
-          try {
-            trendingPostsQuery = await query.get();
-            final List<QueryDocumentSnapshot> batchProcessingPosts =
-                trendingPostsQuery.docs;
-
-            if (batchProcessingPosts.isNotEmpty) {
-              List<OnlinePostModel> newestPosts = (await _processTrendingPosts(
-                posts: batchProcessingPosts,
-                now: now,
-                amountOfBatch: amountOfBatch,
-                currentPosts: posts,
-              ))
-                  .toList();
-
-              latestPostSnapshot = newestPosts.last.documentSnapshot;
-              if (latestPostSnapshot != null &&
-                  newestPosts.length < amountOfBatch) {
-                if (batchProcessingPosts.last.id == oldestPostId &&
-                    newestPosts.any((post) => post.postId == oldestPostId)) {
-                  hasMorePosts = false;
-                }
+            latestPostSnapshot = newestPosts.last.documentSnapshot;
+            if (latestPostSnapshot != null &&
+                newestPosts.length < amountOfBatch) {
+              if (batchProcessingPosts.last.id == oldestPostId &&
+                  newestPosts.any((post) => post.postId == oldestPostId)) {
+                hasMorePosts = false;
               }
             }
-
-            timeGap = (timeGap * loopNumber++).toInt();
-            pastTimeWindow = now.subtract(Duration(hours: timeGap));
-            timeAgo = Timestamp.fromDate(pastTimeWindow);
-
-            query = _postRef
-                .where('timestamp', isGreaterThanOrEqualTo: timeAgo)
-                .orderBy('timestamp', descending: true)
-                .limit(postsPerFetch);
-
-            // For empty batch
-            if (lastFetchedPost != null) {
-              query =
-                  query.startAfterDocument(lastFetchedPost.documentSnapshot!);
-            }
-
-            // For not empty batch
-            if (latestPostSnapshot != null) {
-              query = query.startAfterDocument(latestPostSnapshot);
-            }
-          } catch (e) {
-            if (kDebugMode) {
-              print("An error occurred: $e");
-            }
-            break;
           }
+
+          timeGap = (timeGap * loopNumber++).toInt();
+          pastTimeWindow = now.subtract(Duration(hours: timeGap));
+          timeAgo = Timestamp.fromDate(pastTimeWindow);
+
+          query = _postRef
+              .where('timestamp', isGreaterThanOrEqualTo: timeAgo)
+              .orderBy('timestamp', descending: true)
+              .limit(postsPerFetch);
+
+          // For empty batch
+          if (lastFetchedPost != null) {
+            query = query.startAfterDocument(lastFetchedPost.documentSnapshot!);
+          }
+
+          // For not empty batch
+          if (latestPostSnapshot != null) {
+            query = query.startAfterDocument(latestPostSnapshot);
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print("An error occurred: $e");
+          }
+          break;
         }
-        posts.sort((a, b) => b.trendingScore!.compareTo(a.trendingScore!));
       }
+      posts.sort((a, b) => b.trendingScore!.compareTo(a.trendingScore!));
+
+      posts = posts.toSet().toList();
 
       return posts;
     } catch (error) {
@@ -528,7 +517,7 @@ class PostServiceImpl extends PostService
   }
 
   Future<Set<OnlinePostModel>> _processTrendingPosts(
-      {required List<QueryDocumentSnapshot> posts,
+      {required List<QueryDocumentSnapshot> newFetchedPosts,
       required DateTime now,
       required int amountOfBatch,
       required List<OnlinePostModel> currentPosts}) async {
@@ -548,7 +537,7 @@ class PostServiceImpl extends PostService
 
       List<Map<String, dynamic>> postDataList = [];
 
-      for (QueryDocumentSnapshot postDoc in posts) {
+      for (QueryDocumentSnapshot postDoc in newFetchedPosts) {
         Map<String, dynamic> postData = postDoc.data() as Map<String, dynamic>;
         int likeAmount = 0;
         int viewAmount = 0;
@@ -613,9 +602,6 @@ class PostServiceImpl extends PostService
         }
       }
 
-      postDataList
-          .sort((a, b) => b['trendingScore']!.compareTo(a['trendingScore']!));
-
       int postsToTake = (postDataList.length < amountOfBatch)
           ? postDataList.length
           : amountOfBatch - currentPosts.length;
@@ -623,11 +609,6 @@ class PostServiceImpl extends PostService
           .sublist(0, postsToTake)
           .map((postData) => OnlinePostModel.fromMap(postData))
           .toList();
-
-      processedPostModels.addAll(postDataList
-          .sublist(postsToTake)
-          .map((postData) => OnlinePostModel.fromMap(postData))
-          .toList());
 
       currentPosts.addAll(newPosts);
 
@@ -646,10 +627,6 @@ class PostServiceImpl extends PostService
       bool skipLocalFetch = false,
       OnlinePostModel? lastFetchedPost}) async {
     try {
-      if (isOffline) {
-        return await _getLocalPostsData('following');
-      }
-
       List<QueryDocumentSnapshot<Object?>> topicPosts = [];
       List<QueryDocumentSnapshot<Object?>> followingPosts = [];
       bool isNSFWTurnOn = true;
@@ -671,7 +648,7 @@ class PostServiceImpl extends PostService
           Query followingQuery = _postRef
               .where('userRef', whereIn: userRefs)
               .orderBy('timestamp', descending: true)
-              .limit(10);
+              .limit(30);
 
           if (lastFetchedPost != null) {
             followingQuery = followingQuery
@@ -738,8 +715,6 @@ class PostServiceImpl extends PostService
 
         posts.add(post);
       }
-
-      // await _savePostsLocally(posts, 'following');
 
       return posts;
     } catch (e) {
@@ -1413,13 +1388,6 @@ class PostServiceImpl extends PostService
 
       DocumentReference newPostRef = await _postRef.add(newPost.toMap());
 
-      // Trigger stream update
-      _usersRef
-          .doc(currentUserId)
-          .collection('posts')
-          .doc(newPostRef.id)
-          .set({});
-
       for (Map<String, dynamic> asset in imagesAndVideos) {
         final String mediaKey = asset['index'].toString();
         mediaKeys.add(mediaKey);
@@ -1508,6 +1476,14 @@ class PostServiceImpl extends PostService
           }
         }
       }
+
+      // Trigger stream update
+      _usersRef
+          .doc(currentUserId)
+          .collection('posts')
+          .doc(newPostRef.id)
+          .set({});
+
     } catch (error) {
       if (kDebugMode) {
         print('Error uploading media: $error');
@@ -1701,9 +1677,10 @@ class PostServiceImpl extends PostService
       }
 
       Map<String, dynamic> documentMap =
-      postSnapshot.data() as Map<String, dynamic>;
+          postSnapshot.data() as Map<String, dynamic>;
 
-      List<String> comments = await _fetchSubCollection(postSnapshot, 'comments');
+      List<String> comments =
+          await _fetchSubCollection(postSnapshot, 'comments');
       List<String> likes = await _fetchSubCollection(postSnapshot, 'likes');
 
       DocumentReference userRef = documentMap['userRef'];
@@ -1789,9 +1766,13 @@ class PostServiceImpl extends PostService
   @override
   Future<void> deletePost(String postId) async {
     try {
-      if(currentUserId.isEmpty) return;
+      if (currentUserId.isEmpty) return;
 
-      await _usersRef.doc(currentUserId).collection('posts').doc(postId).delete();
+      await _usersRef
+          .doc(currentUserId)
+          .collection('posts')
+          .doc(postId)
+          .delete();
 
       DocumentReference postRef = _postRef.doc(postId);
 

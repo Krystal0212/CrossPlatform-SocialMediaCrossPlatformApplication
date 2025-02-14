@@ -13,6 +13,7 @@ class HomeLoadedPostsSuccess extends HomeState {
   HomeLoadedPostsSuccess(this.postLists);
 }
 
+class HomeOffline extends HomeState{}
 
 abstract class HomeState {}
 

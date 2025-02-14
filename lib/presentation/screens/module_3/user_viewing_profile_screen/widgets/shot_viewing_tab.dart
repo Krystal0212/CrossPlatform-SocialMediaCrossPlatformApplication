@@ -17,7 +17,7 @@ class ShotViewingTab extends StatefulWidget {
 }
 
 class _ShotViewingTabState extends State<ShotViewingTab>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, FlashMessage {
   late double deviceHeight = 0, deviceWidth = 0;
 
   @override
@@ -56,49 +56,84 @@ class _ShotViewingTabState extends State<ShotViewingTab>
               } else if (state is ShotViewingPostLoaded) {
                 List<PreviewAssetPostModel> imagePreviews = state.posts;
 
-                UserModel? currentUser =
-                    HomePropertiesProvider.of(context)?.currentUser;
 
-                return Column(
-                  children: [
-                    MasonryGridView.count(
-                      shrinkWrap: true,
-                      crossAxisCount: 2,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: imagePreviews.length,
-                      mainAxisSpacing: 16.0,
-                      crossAxisSpacing: 16.0,
-                      itemBuilder: (context, index) {
-                        if (index < imagePreviews.length) {
-                          double imageWidth =
-                              imagePreviews[index].width.toDouble();
-                          double imageHeight =
-                              imagePreviews[index].height.toDouble();
-                          bool isVideo = imagePreviews[index].isVideo;
-                          bool isNSFW = imagePreviews[index].isNSFW;
-                          Color dominantColor = Color(int.parse(
-                              '0x${imagePreviews[index].dominantColor}'));
 
-                          return ImageDisplayerWidget(
-                            width: imageWidth,
-                            height: imageHeight,
-                            imageUrl: imagePreviews[index].mediasOrThumbnailUrl,
-                            isVideo: isVideo,
-                            isNSFWAllowed: (isNSFW &&
-                                (currentUser?.isNSFWFilterTurnOn ?? true)),
-                            dominantColor: dominantColor,
-                            videoUrl:
-                                isVideo ? imagePreviews[index].videoUrl : null,
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      },
-                    ),
-                    SizedBox(
-                      height: deviceHeight * 0.02,
-                    )
-                  ],
+                return FutureBuilder<UserModel?>(
+                    future: serviceLocator<UserRepository>()
+                        .getCurrentUserData(),
+                    builder: (context, userSnapshot) {
+                      UserModel? currentUser = userSnapshot.data;
+                    return Column(
+                      children: [
+                        MasonryGridView.count(
+                          shrinkWrap: true,
+                          crossAxisCount: 2,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: imagePreviews.length,
+                          mainAxisSpacing: 16.0,
+                          crossAxisSpacing: 16.0,
+                          itemBuilder: (context, index) {
+                            if (index < imagePreviews.length) {
+                              double imageWidth =
+                                  imagePreviews[index].width.toDouble();
+                              double imageHeight =
+                                  imagePreviews[index].height.toDouble();
+                              bool isVideo = imagePreviews[index].isVideo;
+                              bool isNSFW = imagePreviews[index].isNSFW;
+                              Color dominantColor = Color(int.parse(
+                                  '0x${imagePreviews[index].dominantColor}'));
+
+                              bool isNSFWAllowed = (isNSFW &&
+                                  (currentUser?.isNSFWFilterTurnOn ??
+                                      true));
+
+                              return GestureDetector(
+                                onLongPress: () {
+                                  if (currentUser != null &&
+                                      !isNSFWAllowed) {
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                        builder: (context) => PostDetailScreen(
+                                              postId: imagePreviews[index].postId,
+                                              currentUser: currentUser,
+                                              searchController:
+                                                  TextEditingController(),
+                                            )));
+                                  }else if (isNSFWAllowed) {
+                                    showAttentionMessage(
+                                        context: context,
+                                        title: 'This is contain nsfw content');
+                                  } else {
+                                    showNotSignedInMessage(
+                                        context: context,
+                                        description: AppStrings
+                                            .notSignedInCollectionDescription);
+                                  }
+                                },
+                                child: ImageDisplayerWidget(
+                                  width: imageWidth,
+                                  height: imageHeight,
+                                  imageUrl:
+                                      imagePreviews[index].mediasOrThumbnailUrl,
+                                  isVideo: isVideo,
+                                  isNSFWAllowed: (isNSFW &&
+                                      (currentUser?.isNSFWFilterTurnOn ?? true)),
+                                  dominantColor: dominantColor,
+                                  videoUrl: isVideo
+                                      ? imagePreviews[index].videoUrl
+                                      : null,
+                                ),
+                              );
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          },
+                        ),
+                        SizedBox(
+                          height: deviceHeight * 0.02,
+                        )
+                      ],
+                    );
+                  }
                 );
               }
               return NoPublicDataAvailablePlaceholder(
