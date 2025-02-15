@@ -165,7 +165,7 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
     );
   }
 
-  Future<bool> _showDeleteDialog() async {
+  Future<bool> _showDeleteDialog(BuildContext parentContext) async {
     return await showDialog(
           context: context,
           builder: (context) {
@@ -183,21 +183,8 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
                   BlocConsumer<PostDetailCubit, PostDetailState>(
                     listener: (context, state) {
                       if (state is PostDetailDeleteSuccess) {
-                        if (!kIsWeb) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const CustomNavigatorBar()),
-                          );
-                        } else {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const WebsiteHomeScreen()),
-                          );
-                        }
+                        Navigator.pop(context);
+                        Navigator.pop(parentContext);
                       }
                     },
                     builder: (context, state) => AuthElevatedButton(
@@ -239,7 +226,7 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
     );
   }
 
-  void showPostOptionsDialogForOwner() {
+  void showPostOptionsDialogForOwner(BuildContext parentContext) {
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -275,7 +262,7 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
                 title: const Text("Delete This Post"),
                 onTap: () {
                   Navigator.of(dialogContext).pop();
-                  _showDeleteDialog();
+                  _showDeleteDialog(parentContext);
                 },
               ),
               ListTile(
@@ -330,7 +317,7 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
                   }
                 },
                 ownerInteraction: () {
-                  showPostOptionsDialogForOwner();
+                  showPostOptionsDialogForOwner( context);
                 },
                 post: widget.post,
                 currentUser: widget.currentUser,

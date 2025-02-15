@@ -128,7 +128,7 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<void> deletePost(String postId) {
-    return serviceLocator.get<PostService>().deletePost(postId);
+  Future<void> deletePost(String postId) async {
+    return await serviceLocator.get<PostService>().deletePost(postId);
   }
 }
