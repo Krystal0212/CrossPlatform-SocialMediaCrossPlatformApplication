@@ -29,8 +29,7 @@ class AppRoutes with FlashMessage {
       GoRoute(
         path: '/sign-in',
         pageBuilder: (context, state) {
-          final isNotSignedIn = state.extra as bool?;
-          return _buildPageRoute(SignInScreen(isNotSignedIn: isNotSignedIn));
+          return _buildPageRoute(const SignInScreen());
         },
       ),
       GoRoute(

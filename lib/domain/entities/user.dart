@@ -5,7 +5,7 @@ class UserModel {
   final String email;
   final String lastName;
   final String location;
-  final bool isNSFWFilterTurnOn;
+   bool isNSFWFilterTurnOn;
 
   final String avatar;
   bool emailChanged;

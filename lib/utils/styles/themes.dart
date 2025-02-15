@@ -254,8 +254,14 @@ class AppTheme {
   static TextStyle get gridItemTitleStyle => GoogleFonts.plusJakartaSans(
         color: white,
         fontSize: 14,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w900,
       );
+
+  static TextStyle get gridItemTitleMobileStyle => GoogleFonts.plusJakartaSans(
+    color: white,
+    fontSize: 20,
+    fontWeight: FontWeight.w900,
+  );
 
   static TextStyle get forgotPasswordLabelStyle => GoogleFonts.plusJakartaSans(
         color: white,

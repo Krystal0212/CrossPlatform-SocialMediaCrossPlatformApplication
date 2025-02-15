@@ -122,6 +122,11 @@ class UserServiceImpl extends UserService {
 
       return UserModel.fromMap(documentMap);
     } catch (e) {
+      if (e is CustomFirestoreException) {
+        if (e.code == 'new-user') {
+          rethrow;
+        }
+      }
       if (kDebugMode) {
         print('Error during fetching user service data: $e');
       }

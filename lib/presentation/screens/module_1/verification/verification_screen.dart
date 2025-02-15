@@ -21,16 +21,21 @@ class _VerificationScreenState extends State<VerificationScreen> {
   late ValueNotifier<String> _verifyMessageChangeNotifier;
   late double deviceWidth, deviceHeight;
   late bool _isWeb;
+  late ValueNotifier<int> _countdownNotifier;
+  late Timer? _timer;
 
   @override
   void initState() {
-
     final dynamicLinkService = DeepLinkServiceImpl();
     dynamicLinkService.handleIncomingLinks(AppRoutes.router);
 
     _formKey = GlobalKey<FormState>();
     _codeController = TextEditingController();
-    _verifyMessageChangeNotifier = ValueNotifier<String>(AppStrings.messageDefault);
+    _verifyMessageChangeNotifier =
+        ValueNotifier<String>(AppStrings.messageDefault);
+
+    _countdownNotifier = ValueNotifier<int>(0);
+    _timer = null;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       String hash = widget.hashParameters ?? "";
@@ -40,13 +45,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
       } else if (!context
           .read<VerificationCubit>()
           .checkNecessaryConditionToUseScreen(
-          context, widget.isFromSignIn ?? false)) {
+              context, widget.isFromSignIn ?? false)) {
         context.go('/home');
       }
     });
 
     FlutterNativeSplash.remove();
-
 
     super.initState();
   }
@@ -70,6 +74,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
     super.dispose();
   }
 
+  void _startCountdown() {
+    _countdownNotifier.value = 30; // Set 30 seconds countdown
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_countdownNotifier.value > 0) {
+        _countdownNotifier.value--;
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -80,7 +96,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         }
       },
       child: Scaffold(
-      resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: false,
         body: Material(
           child: BackgroundContainer(
             center: AuthSizedBox(
@@ -96,7 +112,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   ),
                   AuthBody(
                     isWeb: _isWeb,
-                    marginTop: deviceHeight * 0.26,
+                    marginTop: deviceHeight * 0.12,
                     height: deviceHeight,
                     child: AuthScrollView(
                       child: Form(
@@ -120,33 +136,53 @@ class _VerificationScreenState extends State<VerificationScreen> {
                             const SizedBox(
                               height: 30,
                             ),
-                            AuthTextFormField(
-                                textEditingController: _codeController,
-                                hintText: AppStrings.typeCode),
-                            const SizedBox(
-                              height: 10,
-                            ),
+                            // AuthTextFormField(
+                            //     textEditingController: _codeController,
+                            //     hintText: AppStrings.typeCode),
+
                             BlocBuilder<VerificationCubit, VerificationState>(
                                 builder: (context, state) {
                               return Column(
                                 children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      if (state is VerificationLoadingFromSignIn) {
-                                        context.go('/sign-in');
-                                      } else {
-                                        context
-                                            .read<VerificationCubit>()
-                                            .sendVerifyEmail(
-                                                _verifyMessageChangeNotifier);
-                                      }
-                                    },
-                                    child: Text(
-                                      (state is VerificationLoadingFromSignIn)
-                                          ? "Cancel"
-                                          : AppStrings.notReceiveTheCode,
+                                  if (state is! VerificationLoadingFromSignIn)
+                                    PinCodeTextFieldWidget(
+                                        onCompleted: (String value) {
+                                      context
+                                          .read<VerificationCubit>()
+                                          .verifyByCode(context, value);
+                                    }),
+                                  if (state is! VerificationLoadingFromSignIn)
+                                    const SizedBox(
+                                      height: 10,
                                     ),
-                                  ),
+                                  if (state is! VerificationLoadingFromSignIn)
+                                    ValueListenableBuilder<int>(
+                                      valueListenable: _countdownNotifier,
+                                      builder: (context, seconds, child) {
+                                        return TextButton(
+                                          onPressed: seconds == 0
+                                              ? () {
+                                                  _startCountdown();
+                                                  context
+                                                      .read<VerificationCubit>()
+                                                      .sendVerifyEmail(
+                                                          _verifyMessageChangeNotifier);
+                                                }
+                                              : null,
+                                          // Disable button if countdown is active
+                                          child: Text(
+                                            seconds == 0
+                                                ? AppStrings.notReceiveTheCode
+                                                : "Remember to check your spam box. Resend in $seconds s",
+                                            style: TextStyle(
+                                              color: seconds == 0
+                                                  ? AppColors.lightIris
+                                                  : AppColors.trolleyGrey, // Gray out when disabled
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   const SizedBox(
                                     height: 10,
                                   ),
@@ -158,7 +194,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                             ? AppStrings.buttonSendToMyEmail
                                             : AppStrings.verify,
                                     onPressed: () async {
-                                      if (state is VerificationLoadingFromSignIn) {
+                                      FocusScope.of(context).unfocus();
+                                      if (state
+                                          is VerificationLoadingFromSignIn) {
                                         context
                                             .read<VerificationCubit>()
                                             .sendVerifyEmail(

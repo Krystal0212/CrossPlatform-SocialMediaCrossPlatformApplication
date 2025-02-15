@@ -108,13 +108,18 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                                 Align(
                                   alignment: Alignment.topLeft,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(left: 40.0, top: 35),
+                                    padding: const EdgeInsets.only(
+                                        left: 40.0, top: 35),
                                     child: IconButton(
                                       onPressed: () {
                                         Navigator.pop(context);
                                         FocusScope.of(context).unfocus();
                                       },
-                                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30,),
+                                      icon: const Icon(
+                                        Icons.arrow_back,
+                                        color: Colors.white,
+                                        size: 30,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -234,7 +239,7 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                                     ProfileTab(
                                       index: 1,
                                       selectedIndexNotifier:
-                                      _selectedIndexNotifier,
+                                          _selectedIndexNotifier,
                                       label: (state is ViewingLoaded)
                                           ? '${state.recordsNumber} Records'
                                           : '0 Records',
@@ -262,8 +267,7 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                 body: IgnorePointer(
                   ignoring: isDrawerOpen,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: 8),
                     child: BlocBuilder<ViewingCubit, ViewingState>(
                         builder: (context, state) {
                       return TabBarView(
@@ -282,7 +286,8 @@ class _UserViewingProfileScreenState extends State<UserViewingProfileScreen>
                                 child: CircularProgressIndicator(
                                     color: AppColors.iris)),
                           if (state is ViewingLoaded)
-                            CollectionViewingTab(userId: state.userModel.id ?? '')
+                            CollectionViewingTab(
+                                userId: state.userModel.id ?? '')
                           else
                             const Center(
                                 child: CircularProgressIndicator(
@@ -318,7 +323,8 @@ class ViewingInformationBox extends StatefulWidget {
   State<ViewingInformationBox> createState() => _ViewingInformationBoxState();
 }
 
-class _ViewingInformationBoxState extends State<ViewingInformationBox> with FlashMessage {
+class _ViewingInformationBoxState extends State<ViewingInformationBox>
+    with FlashMessage {
   late bool isFollowed;
   late int followersCount;
 
@@ -352,7 +358,10 @@ class _ViewingInformationBoxState extends State<ViewingInformationBox> with Flas
               TextButton(
                 onPressed: () {
                   context.read<ViewingCubit>().removeFollowing();
-                  showSuccessMessage(context: context, title: 'Unfollowed ${widget.userModel!.name}', );
+                  showSuccessMessage(
+                    context: context,
+                    title: 'Unfollowed ${widget.userModel!.name}',
+                  );
                   Navigator.of(buildContext).pop(true);
                 }, // Confirm
                 child: const Text('Unfollow'),
@@ -363,9 +372,12 @@ class _ViewingInformationBoxState extends State<ViewingInformationBox> with Flas
       );
 
       if (!confirmUnfollow) return; // Exit if user cancels
-    }else{
+    } else {
       context.read<ViewingCubit>().addFollowing();
-      showSuccessMessage(context: context, title: 'Followed ${widget.userModel!.name}', );
+      showSuccessMessage(
+        context: context,
+        title: 'Followed ${widget.userModel!.name}',
+      );
     }
 
     setState(() {
@@ -376,6 +388,7 @@ class _ViewingInformationBoxState extends State<ViewingInformationBox> with Flas
 
   @override
   Widget build(BuildContext context) {
+    ChatService _chatService = ChatServiceImpl();
     return Container(
       width: MediaQuery.of(context).size.width * 0.9,
       alignment: Alignment.center,
@@ -440,7 +453,24 @@ class _ViewingInformationBoxState extends State<ViewingInformationBox> with Flas
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () async{
+                    bool isUser1 = await _chatService.checkIsUser1(widget.userModel?.id ?? '');
+                    UserModel? currentUser = await serviceLocator<UserService>().getCurrentUserData();
+
+                    if(currentUser != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(
+                            receiverUserName: widget.userModel!.name,
+                            receiverUserID: widget.userModel!.id!,
+                            receiverAvatar: widget.userModel!.avatar,
+                            isUser1: isUser1,
+                            currentUser: currentUser,
+                          ),
+                        ));
+                    }
+                  },
                   icon: const Icon(
                     Icons.message_outlined,
                     color: AppColors.goshawkGrey,

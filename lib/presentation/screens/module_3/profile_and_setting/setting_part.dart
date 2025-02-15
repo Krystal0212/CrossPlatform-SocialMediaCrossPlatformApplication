@@ -126,7 +126,7 @@ class _SettingPartBaseState extends State<SettingPartBase> with FlashMessage {
                                       );
                                       if (isOptionSubmit ?? false){
                                         currentUserNotifier.value = currentUser.copyWith(
-                                            isNSFWFilterTurnOn: !currentUser.isNSFWFilterTurnOn);
+                                            isNSFWFilterTurnOn: currentUser.isNSFWFilterTurnOn);
                                       }
 
                                     }
@@ -275,6 +275,7 @@ class _NSFWToggleScreenState extends State<NSFWToggleScreen> {
                     : () async {
                   isLoading.value = true; // Set loading to true before operation
                   await context.read<NSFWToggleScreenCubit>().updateNSFWFilter(isNSFWFilterTurnOn.value);
+                  widget.currentUser.isNSFWFilterTurnOn = isNSFWFilterTurnOn.value;
                   isLoading.value = false; // Set loading to false after completion
                   Navigator.pop(context, true); // Submit with new value
                 },

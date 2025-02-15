@@ -7,14 +7,14 @@ import 'cubit/preferred_topic_cubit.dart';
 import 'cubit/preferred_topic_state.dart';
 
 class PreferredTopicsScreen extends StatefulWidget {
-
   const PreferredTopicsScreen({super.key});
 
   @override
   State<PreferredTopicsScreen> createState() => _PreferredTopicsScreenState();
 }
 
-class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> with AutomaticKeepAliveClientMixin{
+class _PreferredTopicsScreenState extends State<PreferredTopicsScreen>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -206,7 +206,9 @@ class _PreferredTopicsScreenState extends State<PreferredTopicsScreen> with Auto
                             ),
                           );
                         } else {
-                          return   ProcessingDataPlaceholder(width: deviceWidth*0.9,);
+                          return ProcessingDataPlaceholder(
+                            width: deviceWidth * 0.9,
+                          );
                         }
                       },
                     ),

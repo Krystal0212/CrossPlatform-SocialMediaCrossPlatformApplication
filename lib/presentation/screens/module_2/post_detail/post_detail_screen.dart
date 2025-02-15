@@ -1,6 +1,7 @@
 import 'package:socialapp/presentation/screens/module_2/post_detail/widgets/post_detail_info.dart';
 import 'package:socialapp/utils/import.dart';
 
+import '../home/widgets/collection_dialog.dart';
 import '../mobile_navigator/navigator_bar.dart';
 import 'cubit/post_detail_cubit.dart';
 import 'cubit/post_detail_load_cubit.dart';
@@ -228,6 +229,16 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
         false;
   }
 
+
+  void showCollectionPicker(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (context) => CollectionPickerDialog(
+        userId: userId, postId: widget.post.postId, medias: widget.post.media!,
+      ),
+    );
+  }
+
   void showPostOptionsDialogForOwner() {
     showDialog(
       context: context,
@@ -244,6 +255,19 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
                 onTap: () {
                   Navigator.of(dialogContext).pop();
                   showEditPostDialog();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.add_circle_outline_outlined),
+                title: const Text("Add To Collection"),
+                onTap: () async{
+                  UserModel? currentUser = await serviceLocator<UserRepository>().getCurrentUserData();
+
+                  Navigator.of(dialogContext).pop();
+                  if(currentUser?.id?.isNotEmpty ?? false) {
+                    showCollectionPicker(context, currentUser!.id!);
+                  }
+
                 },
               ),
               ListTile(

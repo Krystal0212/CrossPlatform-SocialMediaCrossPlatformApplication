@@ -86,6 +86,7 @@ dependencies:
   dropdown_button2: ^2.3.9
   inview_notifier_list: ^3.0.0
   camera_web: ^0.3.4+1
+  pin_code_fields: ^8.0.1
 
 flutter_launcher_icons:
   android: true

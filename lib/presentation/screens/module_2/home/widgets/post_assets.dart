@@ -131,7 +131,7 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
                       ? AspectRatio(
                           aspectRatio: theAsset.width / theAsset.height,
                           child: VideoPlayerWidget(
-                            isNSFWAllowed: isNSFWFilterTurnOn,
+                            isNSFWAllowed: isNSFWAllowed,
                             thumbnailUrl: theAsset.thumbnailUrl,
                             videoUrl: theAsset.imageUrl,
                             height: theAsset.height,
@@ -140,7 +140,6 @@ class _PostAssetState extends State<PostAsset> with FlashMessage {
                           ),
                         )
                       : ImageDisplayerWidget(
-
                           width: theAsset.width,
                           height: theAsset.height,
                           imageUrl: theAsset.imageUrl,

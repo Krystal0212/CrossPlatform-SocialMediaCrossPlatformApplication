@@ -63,10 +63,10 @@ class AppStrings {
   static const String messageDefault =
       "A message with verification code was sent to your email.";
   static const String messageNotVerifiedYet =
-      "Your email is not verified. Please verify to proceed.";
+      "Your account is not verified. Please verify to proceed.";
   static const String notReceiveTheCode = "DON'T RECEIVE THE CODE";
   static const String typeCode = "Type verification code";
-  static const String buttonSendToMyEmail = 'Send OTP code to my email';
+  static const String buttonSendToMyEmail = 'Send OTP code to my email again';
   static const String verify = "VERIFY";
 
   // For reset password section

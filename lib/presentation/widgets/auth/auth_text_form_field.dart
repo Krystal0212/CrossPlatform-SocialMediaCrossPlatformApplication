@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:socialapp/utils/styles/colors.dart';
 
 import '../../../utils/styles/themes.dart';
@@ -51,6 +52,37 @@ class AuthTextFormField extends StatelessWidget {
       validator: validator,
       textInputAction: textInputAction,
       textAlign: textAlign ?? TextAlign.start,
+    );
+  }
+}
+
+class PinCodeTextFieldWidget extends StatelessWidget {
+  final ValueChanged<String> onCompleted;
+
+  const PinCodeTextFieldWidget({super.key, required this.onCompleted});
+
+  @override
+  Widget build(BuildContext context) {
+    return PinCodeTextField(
+      length: 6,
+      obscureText: false,
+      keyboardType: TextInputType.number,
+      animationType: AnimationType.fade,
+      textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      pinTheme: PinTheme(
+        shape: PinCodeFieldShape.box,
+        borderRadius: BorderRadius.circular(10),
+        fieldHeight: 50,
+        fieldWidth: 45,
+        activeFillColor: Colors.white,
+        inactiveFillColor: Colors.white,
+        selectedFillColor: Colors.white,
+      ),
+      cursorColor: AppColors.iris,
+      animationDuration: const Duration(milliseconds: 300),
+      enableActiveFill: false,
+      onCompleted: onCompleted,
+      appContext: context,
     );
   }
 }

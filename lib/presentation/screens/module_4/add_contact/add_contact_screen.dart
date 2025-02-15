@@ -1,3 +1,4 @@
+import 'package:socialapp/presentation/widgets/general/debounce_search_bar.dart';
 import 'package:socialapp/utils/import.dart';
 
 import '../message_list/providers/user_data_properties.dart';
@@ -69,17 +70,10 @@ class _AddContactScreenState extends State<AddContactScreen> {
         child: Column(
           children: [
             // Search field to enter the tag name to search
-            TextField(
+            DebouncedTextField(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: "Search by tag-name...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.trolleyGrey),
-                ),
-              ),
-              onChanged: (value) {
+              hintText: "Search by tag-name...",
+              onChangedDebounced: (value) {
                 setState(() {
                   searchQuery = value.trim();
                 });
@@ -207,14 +201,14 @@ class UserListTile extends StatelessWidget {
               ),
             ),
             onTap: () async {
-             bool isUser1 = await _chatService.checkIsUser1(otherUserRef.id);
+              bool isUser1 = await _chatService.checkIsUser1(otherUserRef.id);
 
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChatPage(
                     isUser1: isUser1,
-                    receiverUserEmail: userName,
+                    receiverUserName: userName,
                     receiverUserID: otherUserRef.id,
                     receiverAvatar: userAvatar,
                     currentUser: currentUser,

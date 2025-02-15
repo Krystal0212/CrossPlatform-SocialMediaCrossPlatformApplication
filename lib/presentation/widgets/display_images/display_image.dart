@@ -10,6 +10,7 @@ class ImageDisplayerWidget extends StatelessWidget {
   final Color dominantColor;
   final double width, height;
 
+
   const ImageDisplayerWidget({
     super.key,
     required this.imageUrl,

@@ -67,12 +67,18 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
           (provider) => provider.providerId == GoogleAuthProvider.PROVIDER_ID);
 
       if (!user.emailVerified && !isGoogleUser) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('signed-in-not-verified', true);
+
         throw FirebaseAuthException(
           code: 'email-not-verified',
           message:
               'Your email address has not been verified. Please verify your email before proceeding.',
         );
       }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('signed-in-not-verified', false);
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         print("${AppStrings.firebaseAuthError}: ${e.toString()}");
@@ -250,6 +256,10 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }));
 
       if (response.statusCode == 200) {
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('signed-in-not-verified', false);
+
         if (kDebugMode) {
           print(response.body);
         }
@@ -280,6 +290,9 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
       }));
 
       if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('signed-in-not-verified', false);
+
         if (kDebugMode) {
           print(response.body);
         }
@@ -409,6 +422,11 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<void> signOut() async {
     await _auth.signOut();
+
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    if (await googleSignIn.isSignedIn()) {
+      await googleSignIn.signOut();
+    }
   }
 
   @override

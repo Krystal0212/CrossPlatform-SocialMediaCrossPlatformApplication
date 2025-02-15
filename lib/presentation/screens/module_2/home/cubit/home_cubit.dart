@@ -169,16 +169,15 @@ import 'home_state.dart';
 // }
 
 class HomeCubit extends Cubit<HomeState> {
-  final Connectivity connectivity = Connectivity();
   final Map<String, bool> likedPostsCache = {};
+  final BuildContext homeContext;
   bool isBackgroundFetchComplete = false;
 
   Timer? _syncTimer;
-  StreamSubscription? _connectivitySubscription;
   UserModel? currentUser;
 
-  HomeCubit() : super(HomeViewModeInitial()) {
-    _listenToConnectivity();
+  HomeCubit({required this.homeContext}) : super(HomeViewModeInitial()) {
+    _checkIsUserVerified(homeContext);
 
     _startPeriodicSync();
   }
@@ -249,16 +248,16 @@ class HomeCubit extends Cubit<HomeState> {
     likedPostsCache[postId] = false;
   }
 
-  void _listenToConnectivity() {
-    _connectivitySubscription = connectivity.onConnectivityChanged.listen(
-      (connectivityList) {
-        final connectivityResult = connectivityList.isNotEmpty
-            ? connectivityList.first
-            : ConnectivityResult.none;
+  Future<void> _checkIsUserVerified(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    bool isSignedInNotVerified = prefs.getBool('signed-in-not-verified') ?? false;
 
-        if (connectivityResult != ConnectivityResult.none) {}
-      },
-    );
+    if(isSignedInNotVerified) {
+      if (!context.mounted) return;
+      context.go('/verify',
+          extra: {"isFromSignIn": true});
+    }
+
   }
 
   Future<void> logout() async {
@@ -298,7 +297,6 @@ class HomeCubit extends Cubit<HomeState> {
   @override
   Future<void> close() {
     triggerSync();
-    _connectivitySubscription?.cancel();
     _syncTimer?.cancel();
     return super.close();
   }

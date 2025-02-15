@@ -7,15 +7,14 @@ import 'cubit/sign_in_cubit.dart';
 import 'cubit/sign_in_state.dart';
 
 class SignInScreen extends StatefulWidget {
-  final bool? isNotSignedIn;
-
-  const SignInScreen({super.key, this.isNotSignedIn});
+  const SignInScreen({super.key});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessage {
+class _SignInScreenState extends State<SignInScreen>
+    with Validator, FlashMessage {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
@@ -26,7 +25,6 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
 
   @override
   void initState() {
-
     _formKey = GlobalKey<FormState>();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
@@ -41,16 +39,6 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
     _isWeb = PlatformConfig.of(context)?.isWeb ?? false;
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
-    if (widget.isNotSignedIn ?? false) {
-      // Defer the call to after the current frame
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showNotSignedInMessage(
-          context: context,
-          description: AppStrings.notSignedInTitle,
-        );
-      });
-    }
-
   }
 
   @override
@@ -149,7 +137,8 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
                                   valueListenable: _obscureText,
                                   builder: (context, value, child) {
                                     return AuthTextFormField(
-                                      textEditingController: _passwordController,
+                                      textEditingController:
+                                          _passwordController,
                                       hintText: AppStrings.passwordHint,
                                       obscureText: value,
                                       textInputAction: TextInputAction.done,
@@ -187,12 +176,14 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
                             listener: (context, state) {
                               if (state is SignInSuccessButNotVerified) {
                                 if (!context.mounted) return;
-                                context
-                                    .go('/verify', extra: {"isFromSignIn": true});
-                              } else if (state is SignInSuccessButNotPickTopics) {
+                                context.go('/verify',
+                                    extra: {"isFromSignIn": true});
+                              } else if (state
+                                  is SignInSuccessButNotPickTopics) {
                                 if (!context.mounted) return;
                                 context.go('/preferred-topic');
-                              } else if (state is SignInSuccessProcessCompleted) {
+                              } else if (state
+                                  is SignInSuccessProcessCompleted) {
                                 if (!context.mounted) return;
                                 context.go('/home');
                               }
@@ -210,12 +201,12 @@ class _SignInScreenState extends State<SignInScreen> with Validator, FlashMessag
                                           .loginWithEmailAndPassword(
                                             context,
                                             _formKey,
-                                                email: _emailController.text,
-                                                password:
-                                                    _passwordController.text,
+                                            email: _emailController.text,
+                                            password: _passwordController.text,
                                           ),
-                                      isLoading:
-                                          (state is SignInLoading ? true : false),
+                                      isLoading: (state is SignInLoading
+                                          ? true
+                                          : false),
                                     ),
                                     const SizedBox(
                                       height: 20,

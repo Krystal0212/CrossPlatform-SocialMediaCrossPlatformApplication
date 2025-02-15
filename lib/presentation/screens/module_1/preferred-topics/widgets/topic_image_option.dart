@@ -18,7 +18,7 @@ class TopicImageOption extends StatelessWidget {
 
     double scale = isChosen ? 0.85 : 1.0;
     double boxShadowScale = isChosen ? 1.35 : 1.0;
-    double padding = optionSize * 0.07;
+    double padding = (kIsWeb)? optionSize * 0.07 : optionSize * 0.3;
 
     return Stack(
       children: [
@@ -30,12 +30,17 @@ class TopicImageOption extends StatelessWidget {
               children: [
                 Align(
                   alignment: Alignment.center,
-                  child: CachedNetworkImage(imageUrl: topic.thumbnailUrl, fit: BoxFit.cover,
-                    placeholder: (context, url) => const CircularProgressIndicator(
+                  child: CachedNetworkImage(
+                    imageUrl: topic.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(
                       color: AppColors.iris,
                       strokeWidth: 2,
                     ),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                  ),
                 ),
                 Align(
                   alignment: Alignment.center,
@@ -55,33 +60,32 @@ class TopicImageOption extends StatelessWidget {
           left: padding * boxShadowScale,
           bottom: padding * boxShadowScale,
           child: SizedBox(
-            width: optionSize * 0.6,
+            width: (kIsWeb)? optionSize * 0.6 : optionSize * 1.5,
             child: Text(
               topic.name,
-              style: AppTheme.gridItemTitleStyle,
+              style: (kIsWeb)? AppTheme.gridItemTitleStyle : AppTheme.gridItemTitleMobileStyle,
               softWrap: true,
               overflow: TextOverflow.visible,
             ),
           ),
         ),
-        if (isChosen)
-          ...[
-            Positioned(
-              top: padding+3,
-              right: padding,
-              child: SvgPicture.asset(
-                AppIcons.checked,
+        if (isChosen) ...[
+          Positioned(
+            top: padding + 3,
+            right: padding,
+            child: SvgPicture.asset(
+              AppIcons.checked,
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: AppTheme.black, width: 5.0),
+                borderRadius: AppTheme.smallBorderRadius,
               ),
             ),
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.black, width: 5.0),
-                  borderRadius: AppTheme.smallBorderRadius,
-                ),
-              ),
-            ),
-          ],
+          ),
+        ],
       ],
     );
   }

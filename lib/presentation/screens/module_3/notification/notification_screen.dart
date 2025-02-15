@@ -300,7 +300,7 @@ class NotificationTile extends StatelessWidget with Methods {
         MaterialPageRoute(
           builder: (context) => ChatPage(
             isUser1: isUser1,
-            receiverUserEmail: otherUserName,
+            receiverUserName: otherUserName,
             receiverUserID: otherUserRef.id,
             receiverAvatar: otherUserAvatar,
             currentUser: currentUser,

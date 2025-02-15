@@ -9,11 +9,11 @@ import 'widgets/chat_page_properties.dart';
 class ChatPage extends StatefulWidget {
   final bool isUser1;
   final UserModel currentUser;
-  final String receiverUserEmail, receiverUserID, receiverAvatar;
+  final String receiverUserName, receiverUserID, receiverAvatar;
 
   const ChatPage(
       {super.key,
-      required this.receiverUserEmail,
+      required this.receiverUserName,
       required this.receiverUserID,
       required this.receiverAvatar,
       required this.isUser1,
@@ -100,7 +100,7 @@ class _ChatPageState extends State<ChatPage> with AppDialogs {
                     ),
                   ),
                   title: Text(
-                    widget.receiverUserEmail,
+                    widget.receiverUserName,
                     style: AppTheme.messageStyle.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,

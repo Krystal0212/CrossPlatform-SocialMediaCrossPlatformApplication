@@ -20,7 +20,7 @@ class MobileHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => HomeCubit(),
+      create: (context) => HomeCubit(homeContext: context),
       child: MultiBlocProvider(providers: [
         BlocProvider(
             create: (context) => ExploreCubit(serviceLocator<PostRepository>(),

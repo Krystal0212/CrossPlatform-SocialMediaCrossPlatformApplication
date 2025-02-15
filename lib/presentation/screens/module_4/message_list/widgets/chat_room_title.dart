@@ -190,7 +190,7 @@ class ChatRoomListTile extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ChatPage(
               isUser1: isUser1,
-              receiverUserEmail: otherUserName,
+              receiverUserName: otherUserName,
               receiverUserID: otherUserRef.id,
               receiverAvatar: otherUserAvatar,
               currentUser: currentUser,
@@ -201,7 +201,7 @@ class ChatRoomListTile extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ChatPage(
               isUser1: isUser1,
-              receiverUserEmail: otherUserName,
+              receiverUserName: otherUserName,
               receiverUserID: otherUserRef.id,
               receiverAvatar: otherUserAvatar,
               currentUser: currentUser,

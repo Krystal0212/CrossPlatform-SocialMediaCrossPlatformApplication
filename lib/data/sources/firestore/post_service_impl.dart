@@ -222,7 +222,7 @@ class PostServiceImpl extends PostService
         DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
         DocumentSnapshot topicRankBoardSnapshot =
             await userTopics['topicRankBoardRef'].get();
-        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'];
+        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'] ?? true;
 
         Map<String, String> preferredTopics = {};
 
@@ -240,7 +240,6 @@ class PostServiceImpl extends PostService
             preferredTopics[(i + 1).toString()] = sortedTopics[i].key;
           }
         }
-        ;
 
         Map<String, String> userTopicRefs = preferredTopics;
         List topicIds = userTopicRefs.values.toList();
@@ -530,9 +529,8 @@ class PostServiceImpl extends PostService
       bool isNSFWTurnOn = true;
       if (currentUser != null) {
         // Fetch topic posts
-        DocumentSnapshot userTopics = await _usersRef.doc(currentUserId).get();
-        await userTopics['topicRankBoardRef'].get();
-        isNSFWTurnOn = userTopics['isNSFWFilterTurnOn'];
+        DocumentSnapshot currentUserDocumentSnapshot = await _usersRef.doc(currentUserId).get();
+        isNSFWTurnOn = currentUserDocumentSnapshot['isNSFWFilterTurnOn'];
       }
 
       List<Map<String, dynamic>> postDataList = [];
@@ -629,6 +627,7 @@ class PostServiceImpl extends PostService
     try {
       List<QueryDocumentSnapshot<Object?>> topicPosts = [];
       List<QueryDocumentSnapshot<Object?>> followingPosts = [];
+      const int amountOfBatch = 30;
       bool isNSFWTurnOn = true;
 
       if (currentUser != null) {
@@ -648,7 +647,7 @@ class PostServiceImpl extends PostService
           Query followingQuery = _postRef
               .where('userRef', whereIn: userRefs)
               .orderBy('timestamp', descending: true)
-              .limit(30);
+              .limit(amountOfBatch);
 
           if (lastFetchedPost != null) {
             followingQuery = followingQuery

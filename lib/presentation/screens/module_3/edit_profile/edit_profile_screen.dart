@@ -91,7 +91,9 @@ class _EditProfileBaseState extends State<EditProfileBase>
     } else if (locationController.text != originalUser.location) {
       hasChanges = true;
     } else if (avatarMapNotifier.value['localImageData'] != null) {
-      hasChanges = true;
+
+        hasChanges = true;
+
     }
 
     bool isValidated = _formKey.currentState!.validate();
@@ -281,11 +283,23 @@ class _EditProfileBaseState extends State<EditProfileBase>
                             updatedUserData.copyWith(location: location);
                       }
 
+
+                      if(avatarMapNotifier.value['isNSFW'] == true){
+                        if (!context.mounted) return;
+                        showAttentionMessage(
+                          context: context,
+                          title: 'This image is NSFW, can not set as avatar',
+                        );
+                        return;
+                      }
+
                       changesNotifier.value = ChangeState.processing;
                       UpdateState updateState = await context
                           .read<EditPageCubit>()
                           .updateCurrentUserData(
                               updatedUserData, previousUserData, newAvatar);
+
+
 
                       if (updateState == UpdateState.success) {
                         if (!context.mounted) return;
