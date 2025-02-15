@@ -1708,7 +1708,7 @@ class PostServiceImpl extends PostService
     try {
       if (currentUserId.isEmpty) return;
 
-      int topicScoreChange = 5;
+      int topicScoreChange = 20;
 
       DocumentSnapshot postSnapshot = await _postRef.doc(postId).get();
 
