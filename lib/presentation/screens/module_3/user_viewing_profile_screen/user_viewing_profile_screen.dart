@@ -341,6 +341,12 @@ class _ViewingInformationBoxState extends State<ViewingInformationBox>
   }
 
   void toggleFollow() async {
+    User? currentUser =
+        await serviceLocator.get<AuthRepository>().getCurrentUser();
+    if (currentUser == null) {
+      showNotSignedInMessage(context: context, description: 'Please sign in');
+      return;
+    }
     if (isFollowed) {
       // Show confirmation dialog before unfollowing
       bool confirmUnfollow = await showDialog(
@@ -453,22 +459,33 @@ class _ViewingInformationBoxState extends State<ViewingInformationBox>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  onPressed: () async{
-                    bool isUser1 = await _chatService.checkIsUser1(widget.userModel?.id ?? '');
-                    UserModel? currentUser = await serviceLocator<UserService>().getCurrentUserData();
+                  onPressed: () async {
+                    User? currentUserAuth = await serviceLocator
+                        .get<AuthRepository>()
+                        .getCurrentUser();
+                    if (currentUserAuth == null) {
+                      showNotSignedInMessage(
+                          context: context, description: 'Please sign in');
+                      return;
+                    }
 
-                    if(currentUser != null) {
+                    if (currentUserAuth != null) {
+                      bool isUser1 = await _chatService
+                          .checkIsUser1(widget.userModel?.id ?? '');
+                      UserModel? currentUser =
+                          await serviceLocator<UserService>()
+                              .getCurrentUserData();
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatPage(
-                            receiverUserName: widget.userModel!.name,
-                            receiverUserID: widget.userModel!.id!,
-                            receiverAvatar: widget.userModel!.avatar,
-                            isUser1: isUser1,
-                            currentUser: currentUser,
-                          ),
-                        ));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatPage(
+                              receiverUserName: widget.userModel!.name,
+                              receiverUserID: widget.userModel!.id!,
+                              receiverAvatar: widget.userModel!.avatar,
+                              isUser1: isUser1,
+                              currentUser: currentUser!,
+                            ),
+                          ));
                     }
                   },
                   icon: const Icon(

@@ -118,24 +118,23 @@ class _SettingPartBaseState extends State<SettingPartBase> with FlashMessage {
                                       showNotOnlineMessage(
                                           context: context, description: '');
                                     } else if (state is SettingPartLoaded) {
-                                      bool? isOptionSubmit = await showDialog<bool>(
+                                      bool? isOptionSubmit =
+                                          await showDialog<bool>(
                                         context: context,
-                                        builder: (dialogContext) => NSFWToggleScreen(
-                                            parentContext: providerContext,
-                                            currentUser: currentUser),
+                                        builder: (dialogContext) =>
+                                            NSFWToggleScreen(
+                                                parentContext: providerContext,
+                                                currentUser: currentUser),
                                       );
-                                      if (isOptionSubmit ?? false){
-                                        currentUserNotifier.value = currentUser.copyWith(
-                                            isNSFWFilterTurnOn: currentUser.isNSFWFilterTurnOn);
+                                      if (isOptionSubmit ?? false) {
+                                        currentUserNotifier.value =
+                                            currentUser.copyWith(
+                                                isNSFWFilterTurnOn: currentUser
+                                                    .isNSFWFilterTurnOn);
                                       }
-
                                     }
                                   });
                             }),
-                        DrawerItem(
-                            title: AppStrings.aboutZineround, onPressed: () {}),
-                        DrawerItem(
-                            title: AppStrings.termPrivacy, onPressed: () {}),
                         const Padding(
                           padding: EdgeInsets.all(16.0),
                           child: LogOutButton(),
@@ -273,12 +272,17 @@ class _NSFWToggleScreenState extends State<NSFWToggleScreen> {
                 onPressed: loading
                     ? null
                     : () async {
-                  isLoading.value = true; // Set loading to true before operation
-                  await context.read<NSFWToggleScreenCubit>().updateNSFWFilter(isNSFWFilterTurnOn.value);
-                  widget.currentUser.isNSFWFilterTurnOn = isNSFWFilterTurnOn.value;
-                  isLoading.value = false; // Set loading to false after completion
-                  Navigator.pop(context, true); // Submit with new value
-                },
+                        isLoading.value =
+                            true; // Set loading to true before operation
+                        await context
+                            .read<NSFWToggleScreenCubit>()
+                            .updateNSFWFilter(isNSFWFilterTurnOn.value);
+                        widget.currentUser.isNSFWFilterTurnOn =
+                            isNSFWFilterTurnOn.value;
+                        isLoading.value =
+                            false; // Set loading to false after completion
+                        Navigator.pop(context, true); // Submit with new value
+                      },
                 isLoading: loading, // Update button state based on loading
               );
             },

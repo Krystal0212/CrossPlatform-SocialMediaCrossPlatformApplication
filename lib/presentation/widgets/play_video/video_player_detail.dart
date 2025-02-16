@@ -111,7 +111,7 @@ class _VideoPlayerPreviewWidgetState extends State<VideoPlayerWidget>
       _fadeController.forward();
     }
 
-    _controller.play();
+    // _controller.play();
     isPlaying.value = false;
 
     _controller.addListener(() {

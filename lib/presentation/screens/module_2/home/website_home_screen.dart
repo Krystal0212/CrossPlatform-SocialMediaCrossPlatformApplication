@@ -189,6 +189,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return RefreshIndicator(
                                 onRefresh: () => refreshExplore(),
                                 child: PostListView(
+                                  homeCubit: BlocProvider.of<HomeCubit>(context),
                                   posts:
                                   (state is TabLoaded) ? state.posts : [],
                                   tabCubit:
@@ -208,6 +209,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                               return RefreshIndicator(
                                 onRefresh: () => refreshTrending(),
                                 child: PostListView(
+                                  homeCubit: BlocProvider.of<HomeCubit>(context),
                                   posts:
                                   (state is TabLoaded) ? state.posts : [],
                                   tabCubit:
@@ -235,6 +237,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                                       return RefreshIndicator(
                                         onRefresh: () => refreshFollowing(),
                                         child: PostListView(
+                                          homeCubit: BlocProvider.of<HomeCubit>(context),
                                           posts: (state is TabLoaded)
                                               ? state.posts
                                               : [],
@@ -254,6 +257,7 @@ class _WebsiteHomeBaseState extends State<WebsiteHomeBase>
                                           child: CircularProgressIndicator());
                                     }
                                     return SearchPostListView(
+                                      homeCubit: BlocProvider.of<HomeCubit>(context),
                                       posts: (state is SearchLoaded)
                                           ? state.posts
                                           : [],

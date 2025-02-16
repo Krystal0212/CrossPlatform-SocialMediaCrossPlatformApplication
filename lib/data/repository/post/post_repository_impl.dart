@@ -108,11 +108,6 @@ class PostRepositoryImpl extends PostRepository {
   }
 
   @override
-  Future<void> addViewCount(String postId) {
-    return serviceLocator.get<PostService>().addViewCount(postId);
-  }
-
-  @override
   Future<List<OnlinePostModel>> searchPost(String query) {
     return serviceLocator.get<PostService>().searchPost(query);
   }
@@ -130,5 +125,10 @@ class PostRepositoryImpl extends PostRepository {
   @override
   Future<void> deletePost(String postId) async {
     return await serviceLocator.get<PostService>().deletePost(postId);
+  }
+
+  @override
+  Future<void> syncViewsToFirestore(Map<String, bool> viewedPostsCache) {
+    return serviceLocator.get<PostService>().syncViewsToFirestore(viewedPostsCache);
   }
 }

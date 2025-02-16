@@ -2,6 +2,7 @@ import 'package:inview_notifier_list/inview_notifier_list.dart';
 import 'package:socialapp/presentation/screens/module_2/home/cubit/tab_cubit.dart';
 import 'package:socialapp/utils/import.dart';
 
+import '../cubit/home_cubit.dart';
 import '../providers/home_properties_provider.dart';
 import 'post_header.dart';
 import 'post_bottom.dart';
@@ -10,11 +11,13 @@ import 'post_assets.dart';
 class PostListView extends StatefulWidget {
   final List<OnlinePostModel> posts;
   final TabCubit tabCubit;
+  final HomeCubit homeCubit;
 
   const PostListView({
     super.key,
     required this.posts,
     required this.tabCubit,
+    required this.homeCubit,
   });
 
   @override
@@ -35,7 +38,6 @@ class _PostListViewState extends State<PostListView>
   late bool isCompactView, isSignedIn, isWeb;
   late ScrollController scrollController;
 
-  Timer? _viewTimer;
   final Map<String, Timer?> _viewTimers = {};
 
 
@@ -107,7 +109,7 @@ class _PostListViewState extends State<PostListView>
 
     _viewTimers[postId] = Timer(const Duration(seconds: 15), () {
       if (mounted) {
-        widget.tabCubit.addViewCount(postId);
+        widget.homeCubit.addViewCount(postId);
         _viewTimers.remove(postId);
       }
     });

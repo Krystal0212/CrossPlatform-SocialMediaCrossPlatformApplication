@@ -10,7 +10,7 @@ class DiscoverScreen extends StatefulWidget {
   State<DiscoverScreen> createState() => _DiscoverScreenState();
 }
 
-class _DiscoverScreenState extends State<DiscoverScreen> {
+class _DiscoverScreenState extends State<DiscoverScreen> with FlashMessage {
   late double deviceWidth = 0, deviceHeight = 0;
   final TextEditingController _searchController = TextEditingController();
 
@@ -177,6 +177,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                           GridTile(
                                             child: GestureDetector(
                                               onTap: () {
+                                                if (currentUser!=null){
                                                 if (!isNSFWAllowed) {
                                                   FocusScope.of(context)
                                                       .unfocus();
@@ -193,6 +194,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                                                       ),
                                                     ),
                                                   );
+                                                }}else {
+                                                  showAttentionMessage(
+                                                      context: context,
+                                                      title:
+                                                      'Please sign in to view this collection.');
                                                 }
                                               },
                                               child: RadiusTile(

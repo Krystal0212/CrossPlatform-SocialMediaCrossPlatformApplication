@@ -47,6 +47,8 @@ abstract class PostService {
 
   Future<void> syncLikesToFirestore(Map<String, bool> likedPostsCache);
 
+  Future<void> syncViewsToFirestore(Map<String, bool> viewedPostsCache);
+
   Future<void> createSoundPost(String content, String filePath);
 
   Future<OnlinePostModel> getPostDataFromPostId(String postId);
@@ -56,7 +58,6 @@ abstract class PostService {
 
   Future<OnlinePostModel> getDataFromPostId(String postId);
 
-  Future<void> addViewCount(String postId);
 
   Future<List<OnlinePostModel>> searchPost(String query);
 
@@ -887,6 +888,82 @@ class PostServiceImpl extends PostService
     }
   }
 
+  bool isViewSyncing = false;
+
+  @override
+  Future<void> syncViewsToFirestore(Map<String, bool> viewedPostsCache) async {
+    if (viewedPostsCache.isEmpty || isViewSyncing) {
+      return;
+    }
+
+    WriteBatch batch = _firestoreDB.batch();
+    isViewSyncing = true;
+
+    try {
+      String userId = currentUserId;
+      int topicScoreChange = 1;
+
+      if (userId.isEmpty) return;
+
+      DocumentReference userRef = _usersRef.doc(userId);
+      DocumentReference? topicRankBoardRef = await userRef.get().then(
+              (snapshot) => snapshot.exists
+              ? snapshot.get('topicRankBoardRef') as DocumentReference?
+              : null);
+
+      if (topicRankBoardRef == null) {
+        throw Exception("User does not have a topicRankBoardRef");
+      }
+
+      DocumentSnapshot topicRankBoardSnapshot = await topicRankBoardRef.get();
+      Map<String, dynamic> rank = topicRankBoardSnapshot.exists
+          ? Map.from(topicRankBoardSnapshot['rank'])
+          : {};
+
+      for (var entry in viewedPostsCache.entries) {
+        String postId = entry.key;
+
+        DocumentReference postRef = _postRef.doc(postId);
+        DocumentSnapshot postSnapshot = await postRef.get();
+
+        if (!postSnapshot.exists) continue;
+
+        List<DocumentReference> topicRefs =
+        List.from(postSnapshot['topicRefs']);
+
+        for (DocumentReference topicRef in topicRefs) {
+          String topicId = topicRef.id;
+
+          // Update rank values
+          rank[topicId] = (rank[topicId] ?? 0) + topicScoreChange;
+        }
+
+        batch.update(postRef, {
+          'viewAmount': FieldValue.increment(1),
+        });
+      }
+
+      // Update Firestore with accumulated rank changes **only once**
+      batch.update(topicRankBoardRef, {'rank': rank});
+
+      // Commit batch updates
+      await batch.commit();
+
+      if (kDebugMode) {
+        print('Views synced to Firestore successfully.');
+      }
+
+      viewedPostsCache.clear();
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error adding view count: $error');
+      }
+    } finally {
+      isViewSyncing = false;
+    }
+  }
+
+
   @override
   Future<List<OnlinePostModel>?> getAssetPostsByUserId(String userId) async {
     List<OnlinePostModel> posts = [];
@@ -1541,53 +1618,6 @@ class PostServiceImpl extends PostService
     } catch (error) {
       if (kDebugMode) {
         print('Error uploading sound post: $error');
-      }
-    }
-  }
-
-  @override
-  Future<void> addViewCount(String postId) async {
-    try {
-      String userId = currentUserId;
-      int topicScoreChange = 1;
-
-      if (userId.isEmpty) return;
-
-      DocumentReference userRef = _usersRef.doc(userId);
-      DocumentReference? topicRankBoardRef = await userRef.get().then(
-          (snapshot) => snapshot.exists
-              ? snapshot.get('topicRankBoardRef') as DocumentReference?
-              : null);
-
-      if (topicRankBoardRef == null) {
-        throw Exception("User does not have a topicRankBoardRef");
-      }
-
-      DocumentSnapshot topicRankBoardSnapshot = await topicRankBoardRef.get();
-      Map<String, dynamic> rank = topicRankBoardSnapshot.exists
-          ? Map.from(topicRankBoardSnapshot['rank'])
-          : {};
-
-      DocumentReference postRef = _postRef.doc(postId);
-      DocumentSnapshot postSnapshot = await postRef.get();
-
-      await postRef.update({
-        'viewAmount': FieldValue.increment(1), // Increase view count by 1
-      });
-
-      List<DocumentReference> topicRefs = List.from(postSnapshot['topicRefs']);
-
-      for (DocumentReference topicRef in topicRefs) {
-        String topicId = topicRef.id;
-
-        // Update rank values
-        rank[topicId] = (rank[topicId] ?? 0) + topicScoreChange;
-      }
-
-      await topicRankBoardRef.update({'rank': rank});
-    } catch (error) {
-      if (kDebugMode) {
-        print('Error adding view count: $error');
       }
     }
   }

@@ -142,6 +142,13 @@ class CollectionServiceImpl extends CollectionService {
 
                 DocumentSnapshot postSnapshot =
                     await _postRef.doc(asset.postId).get();
+                if (!postSnapshot.exists || postSnapshot.data() == null) {
+                  await _collectionRef.doc(collectionId).update({
+                    'assets': FieldValue.arrayRemove([assetMap]),
+                  });
+                  continue;
+                }
+
                 if (postSnapshot.exists && postSnapshot.data() != null) {
                   Map<String, dynamic> postData =
                       postSnapshot.data() as Map<String, dynamic>;
@@ -448,6 +455,14 @@ class CollectionServiceImpl extends CollectionService {
               // Fetch the post document associated with this asset
               DocumentSnapshot postSnapshot =
                   await _postRef.doc(asset.postId).get();
+
+              if (!postSnapshot.exists || postSnapshot.data() == null) {
+                await _collectionRef.doc(collectionId).update({
+                  'assets': FieldValue.arrayRemove([assetMap]),
+                });
+                continue;
+              }
+
               if (postSnapshot.exists && postSnapshot.data() != null) {
                 Map<String, dynamic> postData =
                     postSnapshot.data() as Map<String, dynamic>;
@@ -772,6 +787,14 @@ class CollectionServiceImpl extends CollectionService {
           // Fetch the post document associated with this asset
           DocumentSnapshot postSnapshot =
               await _postRef.doc(asset.postId).get();
+
+          if (!postSnapshot.exists || postSnapshot.data() == null) {
+            await _collectionRef.doc(collectionDoc.id).update({
+              'assets': FieldValue.arrayRemove([assetMap]),
+            });
+            continue;
+          }
+
           if (postSnapshot.exists && postSnapshot.data() != null) {
             Map<String, dynamic> postData =
                 postSnapshot.data() as Map<String, dynamic>;
@@ -908,6 +931,14 @@ class CollectionServiceImpl extends CollectionService {
 
               DocumentSnapshot postSnapshot =
                   await _postRef.doc(asset.postId).get();
+
+              if (!postSnapshot.exists || postSnapshot.data() == null) {
+                await _collectionRef.doc(collectionDoc.id).update({
+                  'assets': FieldValue.arrayRemove([assetMap]),
+                });
+                continue;
+              }
+
               if (postSnapshot.exists && postSnapshot.data() != null) {
                 Map<String, dynamic> postData =
                     postSnapshot.data() as Map<String, dynamic>;

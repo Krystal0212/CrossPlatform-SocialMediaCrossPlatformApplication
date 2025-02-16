@@ -1,6 +1,4 @@
-
 import 'package:socialapp/utils/import.dart';
-
 
 final serviceLocator = GetIt.instance;
 

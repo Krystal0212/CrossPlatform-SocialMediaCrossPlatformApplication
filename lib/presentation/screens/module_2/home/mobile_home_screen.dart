@@ -324,6 +324,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                               return RefreshIndicator(
                                 onRefresh: () => refreshExplore(),
                                 child: PostListView(
+                                  homeCubit: BlocProvider.of<HomeCubit>(context),
                                   posts:
                                       (state is TabLoaded) ? state.posts : [],
                                   tabCubit:
@@ -343,6 +344,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                               return RefreshIndicator(
                                 onRefresh: () => refreshTrending(),
                                 child: PostListView(
+                                  homeCubit: BlocProvider.of<HomeCubit>(context),
                                   posts:
                                       (state is TabLoaded) ? state.posts : [],
                                   tabCubit:
@@ -370,6 +372,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                                       return RefreshIndicator(
                                         onRefresh: () => refreshFollowing(),
                                         child: PostListView(
+                                          homeCubit: BlocProvider.of<HomeCubit>(context),
                                           posts: (state is TabLoaded)
                                               ? state.posts
                                               : [],
@@ -389,6 +392,7 @@ class _HomeScreenState extends State<MobileHomeBase>
                                       child: CircularProgressIndicator());
                                 }
                                 return SearchPostListView(
+                                  homeCubit: BlocProvider.of<HomeCubit>(context),
                                   posts: (state is SearchLoaded)
                                       ? state.posts
                                       : [],

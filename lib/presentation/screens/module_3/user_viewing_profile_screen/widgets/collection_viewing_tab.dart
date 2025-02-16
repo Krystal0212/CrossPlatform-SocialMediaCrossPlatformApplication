@@ -16,8 +16,7 @@ class CollectionViewingTab extends StatefulWidget {
 }
 
 class _CollectionViewingTabState extends State<CollectionViewingTab>
-    with AutomaticKeepAliveClientMixin {
-
+    with AutomaticKeepAliveClientMixin, FlashMessage {
   late double deviceHeight = 0, deviceWidth = 0;
 
   @override
@@ -36,15 +35,16 @@ class _CollectionViewingTabState extends State<CollectionViewingTab>
       child:
           BlocBuilder<CollectionViewingPostCubit, CollectionViewingPostState>(
         builder: (context, state) {
-          if(state is CollectionViewingPostLoading || state is CollectionViewingPostInitial){
-            return  SizedBox(
-              height: deviceHeight*0.3,
-              child: const Center(child: CircularProgressIndicator(
+          if (state is CollectionViewingPostLoading ||
+              state is CollectionViewingPostInitial) {
+            return SizedBox(
+              height: deviceHeight * 0.3,
+              child: const Center(
+                  child: CircularProgressIndicator(
                 color: AppColors.iris,
               )),
             );
-          } else
-          if (state is CollectionViewingPostLoaded) {
+          } else if (state is CollectionViewingPostLoaded) {
             if (state.collections.isEmpty) {
               return const Center(child: Text('No collections found.'));
             }
@@ -83,17 +83,27 @@ class _CollectionViewingTabState extends State<CollectionViewingTab>
                           GridTile(
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            CollectionViewingScreen(
-                                              userId: widget.userId,
-                                              collection: collection,
-                                              isInSavedCollections: false,
-                                            )));
+                                bool isSignedIn =
+                                    serviceLocator<AuthRepository>()
+                                        .isSignedIn();
 
-                              },
+                                if (isSignedIn) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CollectionViewingScreen(
+                                                userId: widget.userId,
+                                                collection: collection,
+                                                isInSavedCollections: false,
+                                              )));
+                                }else {
+                                  showAttentionMessage(
+                                      context: context,
+                                      title:
+                                      'Please sign in to view this collection.');
+                                }
+                              } ,
                               child: RadiusTile(
                                 presentationUrl: collectionPostImages,
                                 tileDominantColor: collectionDominantColor,
@@ -127,7 +137,9 @@ class _CollectionViewingTabState extends State<CollectionViewingTab>
               ),
             );
           }
-          return NoPublicDataAvailablePlaceholder(width: deviceWidth*0.9,);
+          return NoPublicDataAvailablePlaceholder(
+            width: deviceWidth * 0.9,
+          );
         },
       ),
     );

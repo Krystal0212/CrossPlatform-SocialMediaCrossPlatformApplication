@@ -30,16 +30,6 @@ abstract class TabCubit extends Cubit<TabState> {
     }
   }
 
-  Future<void> addViewCount(String postId) async {
-    try {
-      await postRepository.addViewCount(postId);
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error adding view count: $e");
-      }
-    }
-  }
-
   Future<List<OnlinePostModel>> loadMorePosts();
 
   Future<void> refresh() async {

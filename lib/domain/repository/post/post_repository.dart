@@ -35,6 +35,8 @@ abstract class PostRepository {
   Future<void> syncLikesToFirestore(
       Map<String, bool> likedPostsCache);
 
+  Future<void> syncViewsToFirestore(Map<String, bool> viewedPostsCache);
+
   Future<List<OnlinePostModel>?> getAssetPostsByUserId(String userId);
 
   Stream<List<PreviewAssetPostModel>?> getAssetPostsByUserIdRealTime(String userId);
@@ -46,8 +48,6 @@ abstract class PostRepository {
       String userId);
 
   Future<OnlinePostModel> getDataFromPostId(String postId);
-
-  Future<void> addViewCount(String postId);
 
   Future<List<OnlinePostModel>> searchPost(String query);
 

@@ -15,14 +15,4 @@ class SearchCubit extends Cubit<SearchState> {
     emit(SearchLoaded(posts));
 
   }
-
-  Future<void> addViewCount(String postId) async {
-    try {
-      await serviceLocator.get<PostRepository>().addViewCount(postId);
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error adding view count: $e");
-      }
-    }
-  }
 }

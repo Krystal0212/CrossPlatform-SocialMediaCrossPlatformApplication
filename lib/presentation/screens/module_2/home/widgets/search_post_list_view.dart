@@ -2,6 +2,7 @@ import 'package:inview_notifier_list/inview_notifier_list.dart';
 import 'package:socialapp/presentation/screens/module_2/home/widgets/search_post_header.dart';
 import 'package:socialapp/utils/import.dart';
 
+import '../cubit/home_cubit.dart';
 import '../cubit/search_cubit.dart';
 import '../providers/home_properties_provider.dart';
 import 'post_assets.dart';
@@ -11,11 +12,12 @@ import 'post_header.dart';
 class SearchPostListView extends StatefulWidget {
   final List<OnlinePostModel> posts;
   final SearchCubit searchCubit;
+  final HomeCubit homeCubit;
 
   const SearchPostListView({
     super.key,
     required this.posts,
-    required this.searchCubit,
+    required this.searchCubit, required this.homeCubit,
   });
 
   @override
@@ -86,7 +88,7 @@ class _SearchPostListViewState extends State<SearchPostListView>
 
     _viewTimers[postId] = Timer(const Duration(seconds: 15), () {
       if (mounted) {
-        widget.searchCubit.addViewCount(postId);
+        widget.homeCubit.addViewCount(postId);
         _viewTimers.remove(postId);
       }
     });
