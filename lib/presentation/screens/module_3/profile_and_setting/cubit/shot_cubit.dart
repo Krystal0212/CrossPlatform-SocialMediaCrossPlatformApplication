@@ -2,9 +2,7 @@ import 'package:socialapp/presentation/screens/module_3/profile_and_setting/cubi
 import 'package:socialapp/utils/import.dart';
 
 class ShotPostCubit extends Cubit<ShotPostState> {
-  final String userId;
-
-  ShotPostCubit({required this.userId}) : super(ShotPostInitial()) {
+  ShotPostCubit() : super(ShotPostInitial()) {
     _initialize();
   }
 
@@ -12,48 +10,30 @@ class ShotPostCubit extends Cubit<ShotPostState> {
     getImageUrlsForUserPostsStream();
   }
 
-  // Future<void> getImageUrlsForUserPosts() async {
-  //   emit(ShotPostLoading());
-  //
-  //   try {
-  //
-  //     List<OnlinePostModel>? posts = await serviceLocator<PostRepository>()
-  //         .getPostsByUserId(userId);
-  //     List<PreviewAssetPostModel> imageUrls = [];
-  //
-  //     if (posts != null) {
-  //       for (var post in posts) {
-  //         List<PreviewAssetPostModel> imageUrlsForPost = await serviceLocator<PostRepository>()
-  //             .getPostImagesByPostId(post.postId);
-  //         if (imageUrlsForPost.isNotEmpty) {
-  //           imageUrls.addAll(imageUrlsForPost);
-  //         }
-  //       }
-  //     }
-  //
-  //     emit(ShotPostLoaded(imageUrls));
-  //   } catch (error) {
-  //     debugPrint("Error fetching image URLs: $error");
-  //     emit(ShotPostError());
-  //   }
-  // }
-
   Future<void> getImageUrlsForUserPostsStream() async {
     emit(ShotPostLoading());
+    final User? user = await serviceLocator<AuthRepository>().getCurrentUser();
 
     try {
+      if (user != null) {
+        Stream<List<PreviewAssetPostModel>?> postStreams =
+            serviceLocator<PostRepository>()
+                .getAssetPostsByUserIdRealTime(user.uid);
 
-      Stream<List<PreviewAssetPostModel>?> postStreams = serviceLocator<PostRepository>()
-          .getAssetPostsByUserIdRealTime(userId);
+        UserModel? currentUser =
+            await serviceLocator<UserRepository>().getCurrentUserData();
 
-      UserModel? currentUser = await serviceLocator<UserRepository>().getCurrentUserData();
-
-      emit(ShotPostLoaded(postStreams, currentUser));
+        emit(ShotPostLoaded(postStreams, currentUser));
+      }
+      else{
+        if (kDebugMode) {
+          print('Error fetching user data for shot tab: User is null');
+        }
+        emit(ShotPostError());
+      }
     } catch (error) {
       debugPrint("Error fetching image URLs: $error");
       emit(ShotPostError());
     }
   }
-
-
 }

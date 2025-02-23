@@ -8,6 +8,8 @@ abstract class UserService {
   // No need add to repository
   Future<UserModel?> fetchUserData(String userID);
 
+  Stream<UserModel?> streamCurrentUserData();
+
   Future<void> addCurrentUserData(UserModel addUser);
 
   Future<bool> updateCurrentUserData(UserModel updatedUserData,
@@ -134,6 +136,21 @@ class UserServiceImpl extends UserService {
     }
   }
 
+  Stream<UserModel?> streamCurrentUserData() {
+    return _usersRef.doc(currentUser?.uid).snapshots().asyncMap((userDoc) async {
+
+      Map<String, dynamic> documentMap = userDoc.data() as Map<String, dynamic>;
+      documentMap['id'] = userDoc.id;
+
+      return UserModel.fromMap(documentMap);
+    }).handleError((e) {
+      if (kDebugMode) {
+        print('Error during fetching user stream data: $e');
+      }
+      return null;
+    });
+  }
+
   @override
   Future<void> addCurrentUserData(UserModel addUser) async {
     if (currentUser == null) {
@@ -177,8 +194,12 @@ class UserServiceImpl extends UserService {
         }
       }
 
-      final storageRef =
-          _storage.ref().child('/user_avatars/${currentUser!.uid}/avatar.webp');
+      final String uniqueFileName =
+          'avatar_${DateTime.now().millisecondsSinceEpoch}.webp';
+
+      final storageRef = _storage
+          .ref()
+          .child('/user_avatars/${currentUser!.uid}/$uniqueFileName');
 
       final SettableMetadata metadata =
           SettableMetadata(contentType: 'image/webp');
@@ -218,12 +239,14 @@ class UserServiceImpl extends UserService {
         _usersRef.doc(currentUser?.uid).update({
           'avatar': newAvatarUrl,
         });
+
+        updatedUserData.avatar = newAvatarUrl;
+
         hasChanges = true;
       }
 
       if (updatedUserData.tagName.isNotEmpty &&
           updatedUserData.tagName != previousUserData.tagName) {
-
         final QuerySnapshot existingUsers = await _usersRef
             .where('tag-name', isEqualTo: updatedUserData.tagName)
             .get();
@@ -232,7 +255,7 @@ class UserServiceImpl extends UserService {
             existingUsers.docs.any((doc) => doc.id != currentUser?.uid);
 
         if (isTagNameTaken) {
-          throw(CustomFirestoreException(
+          throw (CustomFirestoreException(
             code: 'tag-name-taken',
             message: 'Tag name is already taken.',
           ));
@@ -387,7 +410,7 @@ class UserServiceImpl extends UserService {
 
   @override
   Future<void> updateCurrentUserNSFWOption(bool isNSFWFilterTurnOn) async {
-    try{
+    try {
       if (currentUser == null) {
         if (kDebugMode) {
           throw ("No user is currently signed in.");
@@ -402,7 +425,6 @@ class UserServiceImpl extends UserService {
       final docRef = _usersRef.doc(currentUser!.uid).collection('posts').doc();
       await docRef.set({});
       await docRef.delete();
-
     } catch (error) {
       if (kDebugMode) {
         print("Error updating user nsfw option: $error");

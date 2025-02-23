@@ -659,7 +659,7 @@ class PostServiceImpl extends PostService
           followingPosts = followingPostsQuery.docs;
         } else {
           if (kDebugMode) {
-            print("No userRefs available, skipping query.");
+            print("No userRefs available, skipping query for get following.");
           }
         }
       }

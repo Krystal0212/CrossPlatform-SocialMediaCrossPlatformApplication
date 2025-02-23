@@ -17,14 +17,14 @@ class ProfileUpdated extends ProfileState{
 }
 
 class ProfileLoaded extends ProfileState {
-  final UserModel userModel;
+  final Stream<UserModel?> userDataStream;
   final List<String> userFollowers;
   final List<String> userFollowings;
   final int mediasNumber;
   final int collectionsNumber;
   final int recordsNumber;
 
-  ProfileLoaded(this.userModel, this.userFollowers, this.userFollowings, this.mediasNumber, this.collectionsNumber, this.recordsNumber);
+  ProfileLoaded(this.userDataStream, this.userFollowers, this.userFollowings, this.mediasNumber, this.collectionsNumber, this.recordsNumber);
 }
 
 class ProfileLoggedOut extends ProfileState{}

@@ -11,9 +11,8 @@ import '../cubit/sound_cubit.dart';
 import '../cubit/sound_state.dart';
 
 class SoundTab1 extends StatefulWidget {
-  final String userId;
 
-  const SoundTab1({super.key, required this.userId});
+  const SoundTab1({super.key});
 
   @override
   State<SoundTab1> createState() => _SoundTab1State();
@@ -35,7 +34,7 @@ class _SoundTab1State extends State<SoundTab1>
     super.build(context);
 
     return BlocProvider(
-      create: (context) => SoundPostCubit(userId: widget.userId),
+      create: (context) => SoundPostCubit(),
       child: Padding(
         padding: EdgeInsets.only(
           top: 30,

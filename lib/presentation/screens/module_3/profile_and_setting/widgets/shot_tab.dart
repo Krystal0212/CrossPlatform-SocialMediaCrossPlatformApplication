@@ -5,9 +5,8 @@ import '../cubit/shot_cubit.dart';
 import '../cubit/shot_state.dart';
 
 class ShotTab1 extends StatefulWidget {
-  final String userId;
 
-  const ShotTab1({super.key, required this.userId});
+  const ShotTab1({super.key});
 
   @override
   State<ShotTab1> createState() => _ShotTab1State();
@@ -29,7 +28,7 @@ class _ShotTab1State extends State<ShotTab1>
     super.build(context);
 
     return BlocProvider(
-      create: (context) => ShotPostCubit(userId: widget.userId),
+      create: (context) => ShotPostCubit(),
       child: Padding(
         padding: EdgeInsets.only(
           top: 30,

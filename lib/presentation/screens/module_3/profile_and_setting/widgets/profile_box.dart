@@ -77,7 +77,22 @@ class _ProfileBoxBaseState extends State<ProfileBoxBase> {
                           padding: const EdgeInsets.only(right: 20),
                           child: CircleAvatar(
                             radius: 45,
-                            backgroundImage: NetworkImage(avatarData.avatar),
+                            child: CachedNetworkImage(
+                              imageUrl: avatarData.avatar,
+                              imageBuilder: (context, imageProvider) => Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                      image: imageProvider, fit: BoxFit.cover),
+                                ),
+                              ),
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(
+                                color: AppColors.iris,
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            ),
                           ),
                         ),
                         SizedBox(

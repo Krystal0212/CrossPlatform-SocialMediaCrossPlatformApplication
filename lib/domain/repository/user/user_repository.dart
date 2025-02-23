@@ -5,6 +5,8 @@ abstract class UserRepository {
 
   Future<UserModel?>? getCurrentUserData();
 
+  Stream<UserModel?> streamCurrentUserData();
+
   Future<void> addCurrentUserData(UserModel addUserReq);
 
   Future<bool> updateCurrentUserData(UserModel updatedUserData,

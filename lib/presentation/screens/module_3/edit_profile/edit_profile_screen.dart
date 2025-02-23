@@ -299,8 +299,6 @@ class _EditProfileBaseState extends State<EditProfileBase>
                           .updateCurrentUserData(
                               updatedUserData, previousUserData, newAvatar);
 
-
-
                       if (updateState == UpdateState.success) {
                         if (!context.mounted) return;
                         widget.userDataNotifier.value = updatedUserData;

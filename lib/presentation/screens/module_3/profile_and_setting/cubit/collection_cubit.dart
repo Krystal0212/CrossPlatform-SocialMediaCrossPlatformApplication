@@ -2,29 +2,33 @@ import 'package:socialapp/utils/import.dart';
 import 'collection_state.dart';
 
 class CollectionPostCubit extends Cubit<CollectionPostState> {
-  bool isCurrentUser = false;
-  final String userId;
-
-  CollectionPostCubit({required this.userId}) : super(CollectionPostInitial()) {
+  CollectionPostCubit() : super(CollectionPostInitial()) {
     _initialize();
   }
 
   void _initialize() async {
-    final User? currentUser =
-        await serviceLocator<AuthRepository>().getCurrentUser();
-    if (currentUser?.uid == userId) {
-      isCurrentUser = true;
-    }
     getCollectionsOfUser();
   }
 
   Future<void> getCollectionsOfUser() async {
     try {
-      Stream<List<CollectionModel>> collections =
-           serviceLocator<CollectionRepository>().getCollectionsFromUserRealtime(userId);
-      emit(CollectionPostLoaded(collections));
+      final User? user =
+          await serviceLocator<AuthRepository>().getCurrentUser();
+
+      if (user != null) {
+        Stream<List<CollectionModel>> collections =
+            serviceLocator<CollectionRepository>()
+                .getCollectionsFromUserRealtime(user.uid);
+        emit(CollectionPostLoaded(collections));
+      } else {
+        if (kDebugMode) {
+          print('Error fetching user data for shot tab: User is null');
+        }
+        emit(CollectionPostError());
+      }
     } catch (error) {
       debugPrint('Error fetching collections: $error');
+      emit(CollectionPostError());
     }
   }
 }

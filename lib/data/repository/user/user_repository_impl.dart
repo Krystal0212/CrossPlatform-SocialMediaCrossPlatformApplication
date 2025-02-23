@@ -12,6 +12,11 @@ class UserRepositoryImpl extends UserRepository {
   }
 
   @override
+  Stream<UserModel?> streamCurrentUserData() {
+    return serviceLocator<UserService>().streamCurrentUserData();
+  }
+
+  @override
   Future<UserModel?>? getUserData(String userID) {
     return serviceLocator<UserService>().getUserData(userID);
   }

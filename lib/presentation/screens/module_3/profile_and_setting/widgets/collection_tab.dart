@@ -7,9 +7,8 @@ import '../cubit/collection_state.dart';
 import '../cubit/collection_cubit.dart';
 
 class CollectionTab1 extends StatefulWidget {
-  final String userId;
 
-  const CollectionTab1({super.key, required this.userId});
+  const CollectionTab1({super.key});
 
   @override
   State<CollectionTab1> createState() => _CollectionTab1State();
@@ -30,7 +29,7 @@ class _CollectionTab1State extends State<CollectionTab1>
   Widget build(BuildContext context) {
     super.build(context);
     return BlocProvider(
-      create: (context) => CollectionPostCubit(userId: widget.userId),
+      create: (context) => CollectionPostCubit(),
       child: BlocBuilder<CollectionPostCubit, CollectionPostState>(
         builder: (context, state) {
           if (state is CollectionPostLoaded) {

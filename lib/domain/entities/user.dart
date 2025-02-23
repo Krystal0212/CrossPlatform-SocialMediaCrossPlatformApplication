@@ -5,9 +5,9 @@ class UserModel {
   final String email;
   final String lastName;
   final String location;
-   bool isNSFWFilterTurnOn;
+  bool isNSFWFilterTurnOn;
 
-  final String avatar;
+  String avatar;
   bool emailChanged;
   bool avatarChanged;
   late final Map<String, String> preferredTopics;
@@ -87,7 +87,7 @@ class UserModel {
       email: map['email'] ?? '',
       lastName: map['lastname'] ?? '',
       location: map['location'] ?? '',
-      preferredTopics:{},
+      preferredTopics: {},
       avatar: map['avatar'] ?? '',
       tagName: map['tag-name'] ?? '',
       isNSFWFilterTurnOn: map['isNSFWFilterTurnOn'] ?? true,

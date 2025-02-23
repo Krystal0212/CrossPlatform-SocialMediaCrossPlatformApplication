@@ -15,8 +15,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     try {
       final User? currentUser =
           await serviceLocator<AuthRepository>().getCurrentUser();
-      final UserModel? userModel =
-          await serviceLocator<UserRepository>().getCurrentUserData();
+      final Stream<UserModel?> userDataStream = serviceLocator<UserRepository>().streamCurrentUserData();
 
       if (currentUser != null) {
         Map<String, dynamic> userRelatedMap =
@@ -30,12 +29,9 @@ class ProfileCubit extends Cubit<ProfileState> {
         final int mediaNumber = (userRelatedMap['mediasNumber'] as int);
         final int recordNumber = (userRelatedMap['recordsNumber'] as int);
 
-        if (userModel != null) {
-          emit(ProfileLoaded(userModel, userFollowers, userFollowings,
+          emit(ProfileLoaded(userDataStream, userFollowers, userFollowings,
               mediaNumber, collectionNumber, recordNumber));
-        } else {
-          throw "User data not found";
-        }
+
       }
     } catch (e) {
       if (kDebugMode) {

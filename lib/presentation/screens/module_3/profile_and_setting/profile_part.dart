@@ -164,19 +164,33 @@ class _ProfilePartState extends State<ProfilePart>
                                             ),
                                           ),
                                         ),
-                                        BlocBuilder<ProfileCubit, ProfileState>(
-                                            builder: (context, state) {
-                                          return Align(
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              (state is ProfileLoaded)
-                                                  ? state.userModel.tagName
-                                                  : 'Username',
-                                              textAlign: TextAlign.center,
-                                              style: AppTheme.profileTagStyle,
-                                            ),
+                                    BlocBuilder<ProfileCubit, ProfileState>(
+                                      builder: (context, state) {
+                                        if (state is ProfileLoaded) {
+                                          return StreamBuilder<UserModel?>(
+                                            stream: state.userDataStream,
+                                            builder: (context, snapshot) {
+                                              return Align(
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  snapshot.hasData ? snapshot.data!.tagName : 'Username',
+                                                  textAlign: TextAlign.center,
+                                                  style: AppTheme.profileTagStyle,
+                                                ),
+                                              );
+                                            },
                                           );
-                                        }),
+                                        }
+                                        return Align(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            'Username',
+                                            textAlign: TextAlign.center,
+                                            style: AppTheme.profileTagStyle,
+                                          ),
+                                        );
+                                      },
+                                    )
                                       ],
                                     ),
                                   ),
@@ -197,26 +211,39 @@ class _ProfilePartState extends State<ProfilePart>
                                       children: [
                                         BlocBuilder<ProfileCubit, ProfileState>(
                                           builder: (context, state) {
+                                            if (state is ProfileLoaded) {
+                                              return StreamBuilder<UserModel?>(
+                                                stream: state.userDataStream,
+                                                builder: (context, snapshot) {
+                                                  return Align(
+                                                    child: CircleAvatar(
+                                                      radius: avatarRadius,
+                                                      backgroundColor:
+                                                      snapshot.hasData ? Colors.transparent : AppColors.roseDragee,
+                                                      backgroundImage: snapshot.hasData
+                                                          ? CachedNetworkImageProvider(snapshot.data!.avatar)
+                                                          : null,
+                                                      child: !snapshot.hasData
+                                                          ? Icon(
+                                                        Icons.person,
+                                                        size: avatarRadius,
+                                                        color: Colors.grey.shade600,
+                                                      )
+                                                          : null,
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            }
                                             return Align(
                                               child: CircleAvatar(
                                                 radius: avatarRadius,
-                                                backgroundColor:
-                                                    state is ProfileLoaded
-                                                        ? Colors.transparent
-                                                        : AppColors.roseDragee,
-                                                backgroundImage: state
-                                                        is ProfileLoaded
-                                                    ? CachedNetworkImageProvider(
-                                                        state.userModel.avatar)
-                                                    : null,
-                                                child: state is! ProfileLoaded
-                                                    ? Icon(
-                                                        Icons.person,
-                                                        size: avatarRadius,
-                                                        color: Colors
-                                                            .grey.shade600,
-                                                      )
-                                                    : null,
+                                                backgroundColor: AppColors.roseDragee,
+                                                child: Icon(
+                                                  Icons.person,
+                                                  size: avatarRadius,
+                                                  color: Colors.grey.shade600,
+                                                ),
                                               ),
                                             );
                                           },
@@ -233,20 +260,26 @@ class _ProfilePartState extends State<ProfilePart>
                           IgnorePointer(
                             ignoring: isDrawerOpen,
                             child: BlocBuilder<ProfileCubit, ProfileState>(
-                                builder: (context, state) {
-                              if (state is ProfileLoaded) {
-                                return InformationBox(
-                                  userModel: state.userModel,
-                                  userFollowers: state.userFollowers,
-                                  userFollowings: state.userFollowings,
+                              builder: (context, state) {
+                                if (state is ProfileLoaded) {
+                                  return StreamBuilder<UserModel?>(
+                                    stream: state.userDataStream,
+                                    builder: (context, snapshot) {
+                                      return InformationBox(
+                                        userModel: snapshot.data,
+                                        userFollowers: state.userFollowers,
+                                        userFollowings: state.userFollowings,
+                                      );
+                                    },
+                                  );
+                                }
+                                return const InformationBox(
+                                  userModel: null,
+                                  userFollowers: null,
+                                  userFollowings: null,
                                 );
-                              }
-                              return const InformationBox(
-                                userModel: null,
-                                userFollowers: null,
-                                userFollowings: null,
-                              );
-                            }),
+                              },
+                            ),
                           ),
 
                           // Nested Tab
@@ -308,14 +341,14 @@ class _ProfilePartState extends State<ProfilePart>
                         controller: _tabController,
                         children: [
                           if (state is ProfileLoaded)
-                            ShotTab1(userId: state.userModel.id ?? '')
+                            const ShotTab1()
                           else
                             const Center(
                                 child: CircularProgressIndicator(
                                     color: AppColors.iris)),
 
                           if (state is ProfileLoaded)
-                            SoundTab1(userId: state.userModel.id ?? '')
+                            const SoundTab1()
                           else
                             const Center(
                                 child: CircularProgressIndicator(
@@ -323,7 +356,7 @@ class _ProfilePartState extends State<ProfilePart>
 
                           // const ShotTab1(),
                           if (state is ProfileLoaded)
-                            CollectionTab1(userId: state.userModel.id ?? '')
+                            const CollectionTab1()
                           else
                             const Center(
                                 child: CircularProgressIndicator(
