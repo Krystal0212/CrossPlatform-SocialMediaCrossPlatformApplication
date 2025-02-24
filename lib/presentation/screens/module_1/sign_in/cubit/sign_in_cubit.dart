@@ -80,8 +80,13 @@ class SignInCubit extends Cubit<SignInState> {
   void loginWithGoogle(BuildContext context) async {
     try {
       await serviceLocator<AuthRepository>().signInWithGoogle();
+      UserModel? currentUser =
       await serviceLocator<UserRepository>().getCurrentUserData();
-      emit(SignInSuccess());
+      if (currentUser != null) {
+        if (!context.mounted) return;
+
+        context.go('/home');
+      }
     } catch (e) {
       if (e is CustomFirestoreException) {
         if (e.code == 'new-user') {

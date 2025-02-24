@@ -226,9 +226,9 @@ class _EditProfileBaseState extends State<EditProfileBase>
                               // Location max 50 characters
                               return AppStrings.locationTooLong;
                             }
-                            final regex = RegExp(r'^[a-zA-Z_ ]+$');
+                            final regex = RegExp(r'^[a-zA-Z_, ]+$');
                             if (!regex.hasMatch(value)) {
-                              return AppStrings.invalidName;
+                              return AppStrings.invalidLocation;
                             }
                           }
                           return null;

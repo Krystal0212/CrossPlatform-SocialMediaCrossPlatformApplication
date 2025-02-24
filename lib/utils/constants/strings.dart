@@ -112,7 +112,7 @@ class AppStrings {
 
   // Sign in message
   static const String defaultAvatarUrl =
-      "https://firebasestorage.googleapis.com/v0/b/ac-social-internship.appspot.com/o/default_avatar.png?alt=media&token=822ddf23-8cf3-434e-87e3-81fd35491e84";
+      "https://firebasestorage.googleapis.com/v0/b/it-project---zineround.firebasestorage.app/o/user_avatars%2Fdefault_avatar.png?alt=media&token=40f0fd34-3f62-4db5-a4be-452a908dc96c";
   static const String emailExistedError =
       "The account already exists for that email.";
   static const String emailNotVerifiedError =
@@ -143,6 +143,7 @@ class AppStrings {
   static const locationTooLong = 'Location must be at most 30 characters long.';
   static const String invalidTagName = 'Only lowercase letters, numbers and "_" are allowed';
   static const String invalidName = 'Only letters and spaces are allowed';
+  static const String invalidLocation = 'Only letters, commas and spaces are allowed';
   static const String tagTaken = 'Tag name is already taken';
   static const String email = 'Email';
   static const String instagram = 'Instagram';

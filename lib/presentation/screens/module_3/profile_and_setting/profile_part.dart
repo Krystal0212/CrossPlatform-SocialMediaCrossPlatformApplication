@@ -218,8 +218,7 @@ class _ProfilePartState extends State<ProfilePart>
                                                   return Align(
                                                     child: CircleAvatar(
                                                       radius: avatarRadius,
-                                                      backgroundColor:
-                                                      snapshot.hasData ? Colors.transparent : AppColors.roseDragee,
+                                                      backgroundColor: AppColors.iris,
                                                       backgroundImage: snapshot.hasData
                                                           ? CachedNetworkImageProvider(snapshot.data!.avatar)
                                                           : null,
