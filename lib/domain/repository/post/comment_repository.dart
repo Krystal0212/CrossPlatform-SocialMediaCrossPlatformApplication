@@ -1,8 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 
 abstract class CommentRepository {
-  Future<List<CommentPostModel>> fetchInitialComments(
-      String postId, String sortBy);
 
   Future<void> sendComment(
       String postId, String postOwnerId, String comment);
@@ -14,10 +12,7 @@ abstract class CommentRepository {
 
   Future<void> removeReplyComment(String postId, String repliedTo, int replyOrder);
 
-  Stream<CommentPostModel?> getCommentStream(String postId);
-
-  Future<List<CommentPostModel>> fetchMoreComments(
-      String postId, String sortBy, DocumentSnapshot lastDoc);
+  Stream<List<CommentPostModel>> getCommentsStream(String postId, String sortBy);
 
   Future<void> syncCommentLikesToFirestore(
       String postId, Map<String, bool> likedCommentsCache);

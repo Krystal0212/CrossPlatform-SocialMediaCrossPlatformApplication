@@ -11,13 +11,7 @@ abstract class CommentService {
   Future<void> removeReplyComment(String postId, String repliedTo,
       int replyOrder);
 
-  Future<List<CommentPostModel>> fetchInitialComments(String postId,
-      String sortBy);
-
-  Stream<CommentPostModel?> getCommentStream(String postId);
-
-  Future<List<CommentPostModel>> fetchMoreComments(String postId, String sortBy,
-      DocumentSnapshot lastDoc);
+  Stream<List<CommentPostModel>> getCommentsStream(String postId, String sortBy);
 
   Future<void> syncCommentLikesToFirestore(String postId,
       Map<String, bool> likedCommentsCache);
@@ -26,11 +20,6 @@ abstract class CommentService {
 class CommentServiceImpl extends CommentService {
   final FirebaseFirestore _firestoreDB = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  final int loadSize = 5;
-
-  bool noMoreNewestComments = false;
-  bool noMoreMostLikedComments = false;
 
   // ToDo : Reference Define
   User? get currentUser => _auth.currentUser;
@@ -334,151 +323,22 @@ class CommentServiceImpl extends CommentService {
     }
   }
 
-
   @override
-  Future<List<CommentPostModel>> fetchInitialComments(String postId,
-      String sortBy) async {
-    try {
-      noMoreNewestComments = false;
-      noMoreMostLikedComments = false;
+  Stream<List<CommentPostModel>> getCommentsStream(String postId, String sortBy) {
+    Query query = _commentPostsRef(postId).orderBy('priorityRank', descending: true);
 
-      Query query = _commentPostsRef(postId).orderBy('priorityRank');
-
-      if (sortBy == "newest") {
-        query = query.orderBy('timestamp', descending: true);
-      } else if (sortBy == "mostLiked") {
-        query = query.orderBy('likesCount', descending: true);
-      }
-
-      query = query.limit(5);
-
-      QuerySnapshot querySnapshot = await query.get();
-
-      List<CommentPostModel> comments = [];
-      for (var document in querySnapshot.docs) {
-        Map<String, dynamic> documentMap =
-        document.data() as Map<String, dynamic>;
-
-        DocumentReference userRef = document['userRef'];
-        DocumentSnapshot userSnapshot = await userRef.get();
-
-        String username = userSnapshot['name'];
-        String userAvatar = userSnapshot['avatar'];
-
-        documentMap['commentId'] = document.id;
-        documentMap['userId'] = userRef.id;
-        documentMap['username'] = username;
-        documentMap['userAvatar'] = userAvatar;
-        documentMap['documentSnapshot'] = document;
-
-        // Handle replyComments asynchronously
-        var replyComments = <String, ReplyCommentPostModel>{};
-        for (var key
-        in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
-          Map<String, dynamic> replyData = documentMap['replyComments'][key];
-          DocumentReference replyUserRef = replyData['userRef'];
-          DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
-
-          replyData['order'] = key;
-          replyData['userId'] = replyUserRef.id;
-          replyData['username'] = replyUserSnapshot['name'];
-          replyData['userAvatar'] = replyUserSnapshot['avatar'];
-          replyComments[key] = ReplyCommentPostModel.fromMap(replyData);
-        }
-
-        documentMap['replyComments'] = replyComments;
-
-        CommentPostModel parentComment = CommentPostModel.fromMap(documentMap);
-
-        comments.add(parentComment);
-      }
-
-      return comments;
-    } catch (error) {
-      if (kDebugMode) {
-        print('Error fetching comments: $error');
-      }
-      throw Exception('Failed to fetch comments');
+    if (sortBy == "newest") {
+      query = query.orderBy('timestamp', descending: true);
+    } else if (sortBy == "mostLiked") {
+      query = query
+          .orderBy('likesCount', descending: true)
+          .orderBy('timestamp', descending: true);
     }
-  }
 
-  @override
-  Stream<CommentPostModel?> getCommentStream(String postId) {
-      return _commentPostsRef(postId)
-          .orderBy('priorityRank')
-          .orderBy('timestamp', descending: true)
-          .limit(1)
-          .snapshots()
-          .asyncMap((snapshot) async {
-        if (snapshot.docs.isNotEmpty) {
-          var document = snapshot.docs.first;
-
-          Map<String, dynamic> documentMap =
-          document.data() as Map<String, dynamic>;
-
-          DocumentReference userRef = document['userRef'];
-          DocumentSnapshot userSnapshot = await userRef.get();
-
-          String username = userSnapshot['name'];
-          String userAvatar = userSnapshot['avatar'];
-
-          documentMap['commentId'] = document.id;
-          documentMap['userId'] = userRef.id;
-          documentMap['username'] = username;
-          documentMap['userAvatar'] = userAvatar;
-          documentMap['documentSnapshot'] = document;
-
-          // Handle replyComments asynchronously
-          var replyComments = <String, ReplyCommentPostModel>{};
-          for (var key
-          in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
-            Map<String, dynamic> replyData = documentMap['replyComments'][key];
-            DocumentReference replyUserRef = replyData['userRef'];
-            DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
-
-            replyData['order'] = key;
-            replyData['userId'] = replyUserRef.id;
-            replyData['username'] = replyUserSnapshot['name'];
-            replyData['userAvatar'] = replyUserSnapshot['avatar'];
-            replyComments[key] = ReplyCommentPostModel.fromMap(replyData);
-          }
-
-          documentMap['replyComments'] = replyComments;
-
-          return CommentPostModel.fromMap(documentMap);
-        }
-        if (kDebugMode) {
-          print('Error fetching comments for posts: No new comments found');
-        }
-        return null;
-      });
-
-
-  }
-
-  @override
-  Future<List<CommentPostModel>> fetchMoreComments(String postId, String sortBy,
-      DocumentSnapshot lastDoc) async {
-    try {
-      if (sortBy == "newest" && noMoreNewestComments) {
-        throw 'no-more-newest-comments';
-      } else if (sortBy == "mostLiked" && noMoreMostLikedComments) {
-        throw 'no-more-most-liked-comments';
-      }
-      Query query = _commentPostsRef(postId).orderBy('priorityRank');
-
-      if (sortBy == "newest") {
-        query = query.orderBy('timestamp', descending: true);
-      } else if (sortBy == "mostLiked") {
-        query = query.orderBy('likesCount', descending: true);
-      }
-
-      query = query.startAfterDocument(lastDoc).limit(5);
-
-      QuerySnapshot querySnapshot = await query.get();
-
+    return query.snapshots().asyncMap((QuerySnapshot snapshot) async {
       List<CommentPostModel> comments = [];
-      for (var document in querySnapshot.docs) {
+
+      for (var document in snapshot.docs) {
         Map<String, dynamic> documentMap =
         document.data() as Map<String, dynamic>;
 
@@ -491,46 +351,29 @@ class CommentServiceImpl extends CommentService {
         documentMap['userAvatar'] = userSnapshot['avatar'];
         documentMap['documentSnapshot'] = document;
 
-        // Handle replyComments asynchronously
+        // Process reply comments if any.
         var replyComments = <String, ReplyCommentPostModel>{};
-        for (var key
-        in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
-          Map<String, dynamic> replyData = documentMap['replyComments'][key];
-          DocumentReference replyUserRef = replyData['userRef'];
-          DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
+        if (documentMap['replyComments'] != null) {
+          for (var key
+          in (documentMap['replyComments'] as Map<String, dynamic>).keys) {
+            Map<String, dynamic> replyData =
+            documentMap['replyComments'][key] as Map<String, dynamic>;
+            DocumentReference replyUserRef = replyData['userRef'];
+            DocumentSnapshot replyUserSnapshot = await replyUserRef.get();
 
-          replyData['order'] = key;
-          replyData['userId'] = replyUserRef.id;
-          replyData['username'] = replyUserSnapshot['name'];
-          replyData['userAvatar'] = replyUserSnapshot['avatar'];
-          replyComments[key] = ReplyCommentPostModel.fromMap(replyData);
+            replyData['order'] = key;
+            replyData['userId'] = replyUserRef.id;
+            replyData['username'] = replyUserSnapshot['name'];
+            replyData['userAvatar'] = replyUserSnapshot['avatar'];
+            replyComments[key] = ReplyCommentPostModel.fromMap(replyData);
+          }
         }
-
         documentMap['replyComments'] = replyComments;
 
         comments.add(CommentPostModel.fromMap(documentMap));
       }
-
-      if (comments.length < loadSize) {
-        if (sortBy == "newest") {
-          noMoreNewestComments = true;
-        } else {
-          noMoreMostLikedComments = true;
-        }
-      }
-
       return comments;
-    } catch (error) {
-      if (error.toString() == 'no-more-newest-comments') {
-        rethrow;
-      } else if (error.toString() == 'no-more-most-liked-comments') {
-        rethrow;
-      }
-      if (kDebugMode) {
-        print('Error fetching more comments: $error');
-      }
-      throw Exception('Failed to fetch more comments');
-    }
+    });
   }
 
   @override

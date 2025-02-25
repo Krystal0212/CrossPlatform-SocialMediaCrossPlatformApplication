@@ -344,7 +344,6 @@ class _PostDetailBaseState extends State<PostDetailBase> with FlashMessage {
                 post: widget.post,
                 currentUser: widget.currentUser,
               ),
-              const SizedBox(height: 190),
             ]),
       ),
     )));

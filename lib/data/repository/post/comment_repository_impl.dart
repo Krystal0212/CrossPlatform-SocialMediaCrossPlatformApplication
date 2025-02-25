@@ -1,13 +1,6 @@
 import 'package:socialapp/utils/import.dart';
 
 class CommentRepositoryImpl extends CommentRepository {
-  @override
-  Future<List<CommentPostModel>> fetchInitialComments(
-      String postId, String sortBy) {
-    return serviceLocator
-        .get<CommentService>()
-        .fetchInitialComments(postId, sortBy);
-  }
 
   @override
   Future<void> sendComment(String postId, String postOwnerId, String comment,) {
@@ -28,13 +21,8 @@ class CommentRepositoryImpl extends CommentRepository {
   }
 
   @override
-  Future<List<CommentPostModel>> fetchMoreComments(String postId, String sortBy, DocumentSnapshot<Object?> lastDoc) {
-    return serviceLocator.get<CommentService>().fetchMoreComments(postId, sortBy, lastDoc);
-  }
-
-  @override
-  Stream<CommentPostModel?> getCommentStream(String postId) {
-    return serviceLocator.get<CommentService>().getCommentStream(postId);
+  Stream<List<CommentPostModel>> getCommentsStream(String postId, String sortBy) {
+    return serviceLocator.get<CommentService>().getCommentsStream(postId, sortBy);
   }
 
   @override
