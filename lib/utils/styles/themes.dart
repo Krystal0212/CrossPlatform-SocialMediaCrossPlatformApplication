@@ -251,6 +251,12 @@ class AppTheme {
         letterSpacing: -0.1,
       );
 
+  static TextStyle get alertDialogTextStyle => GoogleFonts.plusJakartaSans(
+    color: black,
+    fontSize: 18,
+    letterSpacing: -0.1,
+  );
+
   static TextStyle get gridItemTitleStyle => GoogleFonts.plusJakartaSans(
         color: white,
         fontSize: 14,

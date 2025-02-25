@@ -137,8 +137,10 @@ class UserServiceImpl extends UserService {
   }
 
   Stream<UserModel?> streamCurrentUserData() {
-    return _usersRef.doc(currentUser?.uid).snapshots().asyncMap((userDoc) async {
-
+    return _usersRef
+        .doc(currentUser?.uid)
+        .snapshots()
+        .asyncMap((userDoc) async {
       Map<String, dynamic> documentMap = userDoc.data() as Map<String, dynamic>;
       documentMap['id'] = userDoc.id;
 
@@ -194,19 +196,32 @@ class UserServiceImpl extends UserService {
         }
       }
 
+      final String folderPath = '/user_avatars/${currentUser!.uid}/';
+      final storageRef = _storage.ref().child(folderPath);
+
+      // List all files in the folder
+      final ListResult result = await storageRef.listAll();
+
+      // Delete each file in the folder
+      if (result.items.isNotEmpty) {
+        for (final Reference fileRef in result.items) {
+          await fileRef.delete();
+        }
+      }
+
+      // Upload new avatar
       final String uniqueFileName =
           'avatar_${DateTime.now().millisecondsSinceEpoch}.webp';
 
-      final storageRef = _storage
-          .ref()
-          .child('/user_avatars/${currentUser!.uid}/$uniqueFileName');
+      final newFileRef = _storage.ref().child('$folderPath$uniqueFileName');
 
       final SettableMetadata metadata =
           SettableMetadata(contentType: 'image/webp');
 
-      await storageRef.putData(image, metadata);
+      await newFileRef.putData(image, metadata);
 
-      String downloadUrl = await storageRef.getDownloadURL();
+      // Get the download URL of the new file
+      String downloadUrl = await newFileRef.getDownloadURL();
 
       return downloadUrl;
     } catch (e) {

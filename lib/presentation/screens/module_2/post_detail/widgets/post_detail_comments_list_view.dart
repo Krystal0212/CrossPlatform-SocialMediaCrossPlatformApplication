@@ -890,11 +890,6 @@ class _CommentCardState extends State<CommentCard> with FlashMessage, Methods {
                                       Text(widget.replyComment.username!,
                                           style:
                                               AppTheme.blackHeaderMobileStyle),
-                                      Text(
-                                        "${widget.replyComment.likes.length} likes",
-                                        style: AppTheme.blackHeaderMobileStyle
-                                            .copyWith(fontSize: 16),
-                                      ),
                                     ],
                                   ),
                                 ),

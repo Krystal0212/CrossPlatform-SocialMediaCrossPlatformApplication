@@ -49,7 +49,7 @@ mixin ImageAndVideoProcessingHelper {
     final originalWidth = imageElement.width!;
     final originalHeight = imageElement.height!;
 
-    const maxDimension = 1200;
+    const maxDimension = 1600;
 
     late int targetWidth, targetHeight;
     if (originalWidth > originalHeight) {

@@ -232,9 +232,12 @@ class _NSFWToggleScreenState extends State<NSFWToggleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const prefixText =
+        "Your changes will be updated next time when you open the app.";
     return BlocProvider(
       create: (context) => NSFWToggleScreenCubit(),
       child: AlertDialog(
+        backgroundColor: AppColors.white,
         title: const Text("NSFW Content Filter"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -244,9 +247,11 @@ class _NSFWToggleScreenState extends State<NSFWToggleScreen> {
               builder: (context, value, child) {
                 return Column(
                   children: [
-                    Text(value
-                        ? "NSFW filter is currently ON. Do you want to turn it OFF?"
-                        : "NSFW filter is currently OFF. Do you want to turn it ON?"),
+                    Text(
+                        value
+                            ? "$prefixText NSFW filter is currently ON. Do you want to turn it OFF?"
+                            : "$prefixText NSFW filter is currently OFF. Do you want to turn it ON?",
+                        style: AppTheme.alertDialogTextStyle),
                     const SizedBox(height: 16),
                     SwitchListTile(
                       title: Text(value ? "Turn Off" : "Turn On"),
