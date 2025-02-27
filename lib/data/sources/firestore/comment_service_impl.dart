@@ -325,7 +325,7 @@ class CommentServiceImpl extends CommentService {
 
   @override
   Stream<List<CommentPostModel>> getCommentsStream(String postId, String sortBy) {
-    Query query = _commentPostsRef(postId).orderBy('priorityRank', descending: true);
+    Query query = _commentPostsRef(postId).orderBy('priorityRank');
 
     if (sortBy == "newest") {
       query = query.orderBy('timestamp', descending: true);

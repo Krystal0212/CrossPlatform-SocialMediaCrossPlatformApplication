@@ -755,7 +755,7 @@ class _CommentCardState extends State<CommentCard> with FlashMessage, Methods {
                                 const SizedBox(width: 16),
                                 Text(
                                     calculateTimeFromNow(
-                                        widget.comment.timestamp),
+                                        widget.replyComment.timestamp),
                                     style: AppTheme.blackHeaderMobileStyle
                                         .copyWith(fontSize: 16)),
                               ],
