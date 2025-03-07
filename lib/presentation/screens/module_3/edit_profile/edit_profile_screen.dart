@@ -171,7 +171,7 @@ class _EditProfileBaseState extends State<EditProfileBase>
                             if (value.length > 20) {
                               return AppStrings.nameTooLong;
                             }
-                            final regex = RegExp(r'^[a-zA-Z_ ]+$');
+                            final regex = RegExp(r'^[a-zA-ZÀ-Ỹà-ỹĂăÂâÊêÔôƠơƯưĐđ_ ]+$');
                             if (!regex.hasMatch(value)) {
                               return AppStrings.invalidName;
                             }
@@ -199,7 +199,7 @@ class _EditProfileBaseState extends State<EditProfileBase>
                               // First & last names max 30 characters each
                               return AppStrings.nameTooLong;
                             }
-                            final regex = RegExp(r'^[a-zA-Z_ ]+$');
+                            final regex = RegExp(r'^[a-zA-ZÀ-Ỹà-ỹĂăÂâÊêÔôƠơƯưĐđ_ ]+$');
                             if (!regex.hasMatch(value)) {
                               return AppStrings.invalidName;
                             }

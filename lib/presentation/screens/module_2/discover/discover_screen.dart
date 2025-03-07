@@ -190,7 +190,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with FlashMessage {
                                                             .userData.id!,
                                                         collection: collection,
                                                         isInSavedCollections:
-                                                            true,
+                                                            false,
                                                       ),
                                                     ),
                                                   );

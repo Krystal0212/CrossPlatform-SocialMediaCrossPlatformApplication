@@ -11,8 +11,13 @@ mixin ImageAndVideoProcessingHelper {
       MemoryImage(imageData),
       size: const Size(75, 75),
     );
-    return palette.dominantColor?.color.value.toRadixString(16) ??
-        AppColors.tangledWeb.value.toRadixString(16);
+
+    Color dominant = palette.dominantColor?.color ?? Colors.grey;
+    Color vibrant = palette.vibrantColor?.color ?? Colors.grey;
+
+    Color dominantColor = Color.lerp(dominant, vibrant, 0.5) ?? Colors.grey;
+
+    return dominantColor.value.toRadixString(16);
   }
 
   double calculateAspectRatio(img.Image? image) {
@@ -26,7 +31,6 @@ mixin ImageAndVideoProcessingHelper {
     int height = image?.height ?? 0;
     return [width, height];
   }
-
 
   Future<String> getLocalVideoUrlForWebsite(html.File file) async {
     final completer = Completer<String>();

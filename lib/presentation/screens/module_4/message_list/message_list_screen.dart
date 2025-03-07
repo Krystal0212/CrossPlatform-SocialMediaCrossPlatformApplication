@@ -166,7 +166,7 @@ class _MessageListBaseState extends State<MessageListBase> {
                               WaitingMessagesHeader(
                                 totalItems: strangers.length,
                                 currentUser: currentUser,
-                                chatRoomList: chatRoomList,
+                                chatRoomList: strangers,
                               ),
                             ...contacts.map((contact) {
                               return Padding(
