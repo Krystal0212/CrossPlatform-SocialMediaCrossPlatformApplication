@@ -61,6 +61,7 @@ class CollectionPickerCubit extends Cubit<CollectionPickerState> {
           chosenPreviewAsset['isVideo'] = chosenAsset['type'] == 'video';
           chosenPreviewAsset['isNSFW'] = chosenAsset['isNSFW'];
           chosenPreviewAsset['dominantColor'] = chosenAsset['dominantColor'];
+          chosenPreviewAsset['videoUrl'] = chosenAsset['thumbnailUrl'] != null ? chosenAsset['imageUrl']:null;
 
           PreviewAssetPostModel newAsset = PreviewAssetPostModel.fromMap(chosenPreviewAsset);
 
@@ -87,6 +88,7 @@ class CollectionPickerCubit extends Cubit<CollectionPickerState> {
           previewAsset['isVideo'] = assetData['type'] == 'video';
           previewAsset['isNSFW'] = assetData['isNSFW'];
           previewAsset['dominantColor'] = assetData['dominantColor'];
+          previewAsset['videoUrl'] = assetData['thumbnailUrl'] != null ? assetData['imageUrl']:null;
 
           PreviewAssetPostModel newAsset = PreviewAssetPostModel.fromMap(previewAsset);
 

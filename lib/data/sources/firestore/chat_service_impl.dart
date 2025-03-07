@@ -62,7 +62,7 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
     return ids.join("_");
   }
 
-  Future<void> _checkAndCreateChatRoom(
+  Future<bool> _checkAndCreateChatRoom(
     String chatRoomId,
     String receiverId,
   ) async {
@@ -112,11 +112,15 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
             'deletedAtUser2': null,
           });
         }
+
+        return true;
       }
+      return false;
     } catch (error) {
       if (kDebugMode) {
         print('Error during chat room creation : $error');
       }
+      return false;
     }
   }
 
@@ -277,15 +281,16 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
     try {
       if (currentUserId.isNotEmpty && currentUserEmail.isNotEmpty) {
-        ChatMessageModel newMessage = ChatMessageModel(
-          isFromUser1: isUser1,
-          message: message,
-          timestamp: timestamp,
-        );
 
         String chatRoomId = _getChatRoomId(currentUserId, receiverId);
 
-        await _checkAndCreateChatRoom(chatRoomId, receiverId);
+        bool isChatRoomCreated = await _checkAndCreateChatRoom(chatRoomId, receiverId);
+
+        ChatMessageModel newMessage = ChatMessageModel(
+          isFromUser1: isChatRoomCreated? isChatRoomCreated : isUser1,
+          message: message,
+          timestamp: timestamp,
+        );
 
         // Add new message to database
         await _chatRoomRef
@@ -432,11 +437,11 @@ class ChatServiceImpl extends ChatService with ImageAndVideoProcessingHelper {
 
       String chatRoomId = _getChatRoomId(currentUserId, receiverId);
 
-      await _checkAndCreateChatRoom(chatRoomId, receiverId);
+      bool isChatRoomCreated = await _checkAndCreateChatRoom(chatRoomId, receiverId);
 
       // Create new message object with placeholder data for images
       ChatMessageModel newMessage = ChatMessageModel(
-        isFromUser1: isUser1,
+        isFromUser1: isChatRoomCreated? isChatRoomCreated : isUser1,
         message: message,
         timestamp: timestamp,
         media: mediaMap,

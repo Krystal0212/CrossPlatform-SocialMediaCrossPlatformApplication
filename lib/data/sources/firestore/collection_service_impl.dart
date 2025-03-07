@@ -894,21 +894,6 @@ class CollectionServiceImpl extends CollectionService {
             //     await topicRankBoardRef.get();
 
             Map<String, String> preferredTopics = {};
-            // if (topicRankBoardSnapshot.exists) {
-            //   Map<String, dynamic> rank = Map<String, dynamic>.from(topicRankBoardSnapshot['rank']);
-            //
-            //   List<MapEntry<String, int>> sortedTopics = rank.entries
-            //       .map((entry) {
-            //     int value = entry.value is int ? entry.value : (entry.value as double).toInt();
-            //     return MapEntry(entry.key, value);
-            //   })
-            //       .toList()
-            //     ..sort((a, b) => b.value.compareTo(a.value));
-            //
-            //   for (int i = 0; i < sortedTopics.length && i < 5; i++) {
-            //     preferredTopics[(i + 1).toString()] = sortedTopics[i].key;
-            //   }
-            // }
 
             documentMap['preferred-topics'] = preferredTopics;
             documentMap['id'] = userRef.id;
